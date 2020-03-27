@@ -1,0 +1,71 @@
+{
+  "extjs-locale": "ext-lang-en.js",
+  "**COMMON": "**--** common stuff",
+  "COMMON": {
+    "js": {
+      "ERROR": "ERROR",
+      "noServerResponse": "Error occurred or server unreachable",
+      "unknownError": "An unknown error occurred.",
+      "loadingTxt": "Loading...",
+      "dateChange": "Change date...",
+      "GALLERY_TITLE": ".:: My Family Gallery ::.",
+      "filesCount": "Files",
+      "diskStatus": "Disk free space"
+    },
+    "php": {
+      "GALLERY-TITLE": ".:: My Family Gallery ::.",
+      "ERROR": "ERROR",
+      "INFO": "INFO",
+      "passwordInvalid": "Invalid username or password..."
+    }
+  },
+  "**JS": "**--** stuff for javascript files",
+  "JS": {
+    "**0": "**--** file - /login/js/Main.js",
+    "0": {
+      "loginWinTitle": "Gallery login",
+      "lblUser": "Username",
+      "lblPass": "Password",
+      "lblLanguage": "Language",
+      "lblUITheme": "Style",
+      "btnLogin": "Login",
+      "btnCancel": "Cancel"
+    },
+    "**1": "**--** file - /dzz/scripts/tree/Tree.js",
+    "1": {
+      "navTreeTitle": "CHRONOLOGY",
+      "rootNodeText": "ALL",
+      "sortASC": "Sort by date, ascending",
+      "sortDESC": "Sort by date, descending"
+    },
+    "**4": "**--** file - inc/js/common/commonComponents.js",
+    "4": {
+      "homeGalleryDataView": {
+        "emptyText": "No photos to show",
+        "menuRotate": "Rotation",
+        "menuRotate90": "90°",
+        "menuRotateMinus90": "-90°",
+        "menuRotate180": "180°",
+        "menuDelete": "Erasing...",
+        "menuDeleteConfirmTitle": "FILE DELETION",
+        "menuDeleteConfirmText": " files to be deleted"
+      },
+      "indexerButton": {
+        "processingPhotos": "PHOTOS PROCESSING",
+        "noPhotos": "No photos to add",
+        "remaining": "remaining",
+        "newPhotos": "NEW PHOTOS"
+      },
+      "photoDateChange": {
+        "displayField": "Change date for the selected photos",
+        "dateFieldLbl": "New date",
+        "btnWrite": "Save",
+        "btnCancel": "Cancel",
+        "winTitle": "PHOTOS DATE CHANGE"
+      }
+    }
+  },
+  "**PHP": "**--** stuff for PHP files",
+  "PHP": {
+  }
+}

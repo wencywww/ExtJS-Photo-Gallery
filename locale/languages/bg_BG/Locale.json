@@ -1,0 +1,71 @@
+{
+  "extjs-locale": "ext-lang-bg.js",
+  "**COMMON": "**--** common stuff",
+  "COMMON": {
+    "js": {
+      "ERROR": "ГРЕШКА",
+      "noServerResponse": "Възникна грешка или сървърът не отговаря",
+      "unknownError": "Възникна непозната грешка.",
+      "loadingTxt": "Зареждане...",
+      "dateChange": "Смяна на датата...",
+      "GALLERY_TITLE": ".:: My Family Gallery ::.",
+      "filesCount": "Файлове",
+      "diskStatus": "Свободно място на диска"
+    },
+    "php": {
+      "GALLERY-TITLE": ".:: My Family Gallery ::.",
+      "ERROR": "ГРЕШКА",
+      "INFO": "ИНФОРМАЦИЯ",
+      "passwordInvalid": "Невалидно име или парола..."
+    }
+  },
+  "**JS": "**--** stuff for javascript files",
+  "JS": {
+    "**0": "**--** file - /login/js/Main.js",
+    "0": {
+      "loginWinTitle": "Вход галерия",
+      "lblUser": "Потребител",
+      "lblPass": "Парола",
+      "lblLanguage": "Език",
+      "lblUITheme": "Стил",
+      "btnLogin": "Вход",
+      "btnCancel": "Отказ"
+    },
+    "**1": "**--** file - /dzz/scripts/tree/Tree.js",
+    "1": {
+      "navTreeTitle": "ХРОНОЛОГИЯ",
+      "rootNodeText": "ВСИЧКО",
+      "sortASC": "Сортиране по дата, най-ранни най-отгоре",
+      "sortDESC": "Сортиране по дата, най-скорошните най-отгоре"
+    },
+    "**4": "**--** file - inc/js/common/commonComponents.js",
+    "4": {
+      "homeGalleryDataView": {
+        "emptyText": "Няма снимки за показване",
+        "menuRotate": "Завъртане",
+        "menuRotate90": "90°",
+        "menuRotateMinus90": "-90°",
+        "menuRotate180": "180°",
+        "menuDelete": "Изтриване...",
+        "menuDeleteConfirmTitle": "ИЗТРИВАНЕ НА ФАЙЛОВЕ",
+        "menuDeleteConfirmText": " файла ще бъдат изтрити"
+      },
+      "indexerButton": {
+        "processingPhotos": "ОБРАБОТКА СНИМКИ",
+        "noPhotos": "Няма снимки за качване",
+        "remaining": "оставащи",
+        "newPhotos": "НОВИ СНИМКИ"
+      },
+      "photoDateChange": {
+        "displayField": "Смяна на датата на избраните снимки",
+        "dateFieldLbl": "Нова дата",
+        "btnWrite": "Запис",
+        "btnCancel": "Отказ",
+        "winTitle": "СМЯНА НА ДАТА НА СНИМКИ"
+      }
+    }
+  },
+  "**PHP": "**--** stuff for PHP files",
+  "PHP": {
+  }
+}

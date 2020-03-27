@@ -1,0 +1,10 @@
+{
+    "require": {
+        "symfony/filesystem": "^4.1",
+        "symfony/finder": "^4.1",
+        "miljar/php-exif": "^0.6.4",
+        "symfony/validator": "^4.1",
+        "symfony/http-foundation": "^4.1",
+        "imagine/imagine": "^0.7.1"
+    }
+}

@@ -1,0 +1,132 @@
+/* classes for the language-switching combo */
+.dzz-flag-bg, .dzz-flag-bg-displayField {
+    background: url("pictures/silk-flags/icons/bg.png");
+    background-repeat: no-repeat;
+    padding-left: 26px;
+    background-position: 0px 4px;
+}
+
+.dzz-flag-en, .dzz-flag-en-displayField {
+    background: url("pictures/silk-flags/icons/gb.png");
+    background-repeat: no-repeat;
+    padding-left: 26px;
+    background-position: 0px 4px;
+}
+
+.dzz-flag-bg-displayField, .dzz-flag-en-displayField {
+    background-repeat: no-repeat;
+    padding-left: 25px;
+    background-position: 4px 6px;
+    background-color: #ffffff;
+}
+
+.dzz-icon-calendar {
+    background: url("pictures/silk-icons/icons/date_next.png") no-repeat scroll 0 0 transparent !important;
+}
+
+.dzz-icon-rotate {
+    background: url("pictures/silk-icons/icons/arrow_refresh.png") no-repeat scroll 0 0 transparent !important;
+}
+
+.dzz-icon-rotate-right {
+    background: url("pictures/silk-icons/icons/arrow_rotate_clockwise.png") no-repeat scroll 0 0 transparent !important;
+}
+
+.dzz-icon-rotate-left {
+    background: url("pictures/silk-icons/icons/arrow_rotate_anticlockwise.png") no-repeat scroll 0 0 transparent !important;
+}
+
+.dzz-icon-rotate-flip {
+    background: url("pictures/silk-icons/icons/arrow_refresh_small.png") no-repeat scroll 0 0 transparent !important;
+}
+
+.dzz-icon-yes, .dzz-icon-ok {
+    background: url("pictures/silk-icons/icons/tick.png") no-repeat scroll 0 0 transparent !important;
+}
+
+.dzz-icon-no, .dzz-icon-delete {
+    background: url("pictures/silk-icons/icons/cross.png") no-repeat scroll 0 0 transparent !important;
+}
+
+.dzz-cursor-pointer {
+    cursor: pointer;
+}
+
+
+#dzz-sliding-msg-container {
+    position: fixed;
+    width: 100%;
+    border-radius: 10px;
+    z-index: 20000;
+    display: none;
+    opacity: 0;
+}
+
+#dzz-sliding-msg-container-msg {
+    position: relative;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+    padding: 20px;
+    top: -2px;
+    border: 2px solid #008000;
+    background-color: #B7FFBf;
+    color: #000000;
+    font-weight: bold;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    z-index: 20000;
+    box-shadow: 2px 2px 5px #888888;
+
+}
+
+.dzz-thumb-wrapper {
+    width: 200px;
+    height: 230px;
+    margin: 3px;
+    padding: 3px;
+    float: left;
+    overflow: hidden;
+    cursor: pointer;
+    /*background-color: #ffa000;*/
+}
+
+.dzz-thumb-inner-wrapper {
+    width: 100%;
+    height: 90%;
+    background-color: #dddddd;
+    overflow: hidden;
+    border-radius: 3px;
+    padding: 3px
+}
+
+.dzz-thumb-container {
+    width: 100%;
+    height: 100%;
+    background-size: 200%;
+    background-origin: content-box;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.dzz-thumb-name {
+    font-size: 11px;
+    text-align: center;
+    word-break: break-all;
+}
+
+.dzz-item-over {
+    background-color: #EEEEEE;
+    border-radius: 5px
+}
+
+.dzz-item-selected {
+    background-color: #99BBE8
+}
+
+
+
+
+
+
