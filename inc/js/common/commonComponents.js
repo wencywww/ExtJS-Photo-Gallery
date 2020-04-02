@@ -172,15 +172,15 @@ Ext.onReady(function () {
                         text: LOC.homeGalleryDataView.menuDelete,
                         iconCls: 'dzz-icon-delete',
                         handler: function () {
-
-                            Ext.Msg.confirm(LOC.homeGalleryDataView.menuDeleteConfirmTitle, view.getSelection().length + LOC.homeGalleryDataView.menuDeleteConfirmText, function (btnText) {
-                                if (btnText === "yes") {
-                                    me.sendRequest(
-                                        {action: 'deletePhotos', recs: view.getSelection()}
-                                    );
-                                }
-                            }, view);
-
+                            Ext.Msg.confirm(LOC.homeGalleryDataView.menuDeleteConfirmTitle,
+                                view.getSelection().length + LOC.homeGalleryDataView.menuDeleteConfirmText,
+                                function (btnText) {
+                                    if (btnText === "yes") {
+                                        me.sendRequest(
+                                            {action: 'deletePhotos', recs: view.getSelection()}
+                                        );
+                                    }
+                                }, view);
                         }
                     }
                 ]
@@ -215,7 +215,7 @@ Ext.onReady(function () {
 
     });
 
-    //the button in the far bottom left
+    //the process files/pinger button in the bottom left
     Ext.define('dzz.COMPONENTS.indexerButton', {
         extend: 'Ext.button.Button',
 
@@ -314,14 +314,14 @@ Ext.onReady(function () {
                 editable: false,
                 allowBlank: false,
                 value: new Date(),
-                //fieldLabel: 'Нова дата',
                 fieldLabel: LOC.photoDateChange.dateFieldLbl
             }
         ],
         buttons: [
             {
                 text: LOC.photoDateChange.btnWrite,
-                iconCls: 'dzz-icon-ok',
+                //iconCls: 'dzz-icon-ok',
+                iconCls: 'fas fa-check', faIconColor: '#008000', scale: 'medium',
                 formBind: true,
                 handler: function (btn) {
                     btn.up('form').submit();
@@ -329,7 +329,8 @@ Ext.onReady(function () {
             },
             {
                 text: LOC.photoDateChange.btnCancel,
-                iconCls: 'dzz-icon-delete',
+                //iconCls: 'dzz-icon-delete',
+                iconCls: 'fas fa-times', faIconColor: '#ff0000', scale: 'medium',
                 handler: function (btn) {
                     btn.up('window').close();
                 }
@@ -361,8 +362,7 @@ Ext.onReady(function () {
             Ext.widget({
                 xtype: 'window',
                 modal: true,
-                //title: 'СМЯНА НА ДАТА НА СНИМКИ',
-                title: 'СМЯНА НА ДАТА НА СНИМКИ',
+                title: LOC.photoDateChange.winTitle,
                 items: [me]
             }).show();
         },
@@ -375,5 +375,232 @@ Ext.onReady(function () {
         }
     });
 
+    //a drag-n-drop upload window
+    Ext.define('dzz.COMPONENTS.photoUploader', {
+        extend: 'Ext.panel.Panel',
+        alias: 'widget.photoUploader',
+        //id: 'photoUploader',
+        bodyPadding: 3,
+        scrollable: true,
+        html: '<div style="width: 100%; height: 100%;" id="galleryUploader"; class="dropzone"></div>',
+        dockedItems: [
+            {
+                xtype: 'toolbar', dock: 'top',
+                items: [
+                    {
+                        xtype: 'button', //text: 'Close',
+                        text: LOC.photoUploader.tbBtnClose,
+                        iconAlign: 'left', scale: 'large', iconCls: 'far fa-times-circle', faIconColor: '#ff0000',
+                        handler: function (btn) {
+                            btn.up('window').close();
+                        }
+                    },
+                    {
+                        xtype: 'button', //text: 'Start Uploading Images',
+                        text: LOC.photoUploader.tbBtnUpload,
+                        iconAlign: 'left', scale: 'large', iconCls: 'fas fa-play-circle', faIconColor: '#008000',
+                        handler: function (btn) {
+                            btn.up('photoUploader').dzInstance.processQueue();
+                        },
+                        bind: {
+                            disabled: '{dzQueuedFiles <= 0}'
+                        }
+                    }, '->',
+                    {
+                        xtype: 'tbtext',
+                        bind: {
+                            data: {
+                                total: '{dzTotalFiles}',
+                                succ: '{dzUploadedFiles}',
+                                fail: '{dzFailedFiles}',
+                                size: '{dzTotalBytes}'
+                            }
+                        },
+                        tpl: LOC.photoUploader.tbLblEnqueued + ': {total}; <span style="color: blue">' +
+                        LOC.photoUploader.tbLblUploaded + ': {succ}</span>; <span style="color: red">' +
+                        LOC.photoUploader.tbLblFailed + ': {fail}</span>; <b>{size:fileSize()}</b>'
+                    },
+                    {
+                        xtype: 'progressbar', value: 0, width: 300,
+                        id: 'pgbar',
+                        textTpl: LOC.photoUploader.tbLblProgress + ': {value:percent("0")}', //Ext.util.Format functions are available here in XTemplate
+                        bind: {
+                            value: '{dzUploadedBytes / dzTotalBytes}',
+                            visible: '{progressVisible}'
+                        }
+                    }
+                ]
+            }
+        ],
+
+        viewModel: {
+            data: {
+                dzTotalFiles: 0,
+                dzQueuedFiles: 0,
+                dzUploadedFiles: 0,
+                dzFailedFiles: 0,
+                dzTotalBytes: 0,
+                dzUploadedBytes: 0,
+                dzRemovedBytes: 0,
+                progressVisible: false
+            }
+        },
+
+        dzInstance: null,
+
+
+        initComponent: function () {
+            var me = this;
+
+            me.callParent(arguments);
+
+            me.on({
+                afterrender: me.initDropZone,
+                beforedestroy: me.handleDestroy
+            });
+
+            me.showInWindow();
+
+
+        },
+
+        initDropZone: function () {
+            var me = this;
+
+            //console.log('initalizing DropZone.js...');
+            var dzConfig = {
+                url: 'scripts/tree/php/dropZone/dropZone.php',
+                autoProcessQueue: false,
+                maxFilesize: null,
+                timeout: 120000,
+                acceptedFiles: 'image/*,video/*',
+                addRemoveLinks: true,
+                dictDefaultMessage: ''
+            };
+
+            //localize DZ if our locale is not en
+            var defMsgPrefix = '<span style="font-size: 2em; color: #cccccc"><i class="fas fa-camera fa-10x"></i><span><br>';
+            if (dzz.i18n.locale != 'en') {
+                dzConfig = Ext.Object.merge(dzConfig, LOC.photoUploader.dropZone);
+                dzConfig.dictDefaultMessage = defMsgPrefix + dzConfig.dictDefaultMessage;
+            } else {
+                dzConfig.dictDefaultMessage = defMsgPrefix + Dropzone.prototype.defaultOptions.dictDefaultMessage;
+            }
+
+            var dropZone = new Dropzone('div#galleryUploader', dzConfig);
+
+            dropZone = me.attachDropZoneListeners(dropZone);
+
+            me.dzInstance = dropZone;
+        },
+
+        attachDropZoneListeners: function (dz) {
+
+            var me = this;
+
+            var vm = me.getViewModel();
+
+            dz.on('complete', function () {
+                dz.processQueue();
+                vm.set('dzQueuedFiles', dz.getQueuedFiles().length);
+            });
+
+            dz.on('processing', function () {
+                dz.options.autoProcessQueue = true; //otherwise only 2 files will be processed upon processQueue() call (or the value of the parallelUploads config)
+                vm.set('progressVisible', true);
+            });
+
+            dz.on('queuecomplete', function () {
+                dz.options.autoProcessQueue = false;
+                //this event is strangely fired by the destroy() call when you open the uploader, drop some files and click the Close button WITHOUT uploading them
+                //seems to be the view model is already destroyed at this moment
+                if (!vm.isDestroyed) {
+                    vm.set('progressVisible', false);
+                    vm.set('dzQueuedFiles', dz.getQueuedFiles().length);
+                    //dz.removeAllFiles();
+                }
+
+            });
+
+            //file uploaded successfully
+            dz.on('success', function (file) {
+                vm.set('dzUploadedFiles', vm.get('dzUploadedFiles') + 1);
+                vm.set('dzUploadedBytes', vm.get('dzUploadedBytes') + file.upload.bytesSent);
+                //dz.removeFile(file);
+            });
+
+            //file upload failed
+            dz.on('error', function () {
+                vm.set('dzFailedFiles', vm.get('dzFailedFiles') + 1);
+            });
+
+            //file added to dropzone area
+            dz.on('addedfile', function (file) {
+                vm.set('dzTotalFiles', vm.get('dzTotalFiles') + 1);
+                vm.set('dzTotalBytes', vm.get('dzTotalBytes') + file.upload.total);
+                Ext.defer(function () {
+                    vm.set('dzQueuedFiles', dz.getQueuedFiles().length);
+                }, 5);
+            });
+
+            //file removed from the dropzone area
+            dz.on('removedfile', function (file) {
+                vm.set('dzTotalFiles', vm.get('dzTotalFiles') - 1);
+                vm.set('dzTotalBytes', vm.get('dzTotalBytes') - file.upload.total);
+                vm.set('dzQueuedFiles', dz.getQueuedFiles().length);
+            });
+
+            //this is working incorrectly (or at least, the logic is not mine); see https://gitlab.com/meno/dropzone/-/issues/226
+            dz.on('totaluploadprogress', function (val, tb, bs) {
+                //console.log('Percent: ' + val + '; Total: ' + tb + '; Sent: ' + bs);
+                //vm.set('dzTotalProgress', val / 100);
+            });
+
+            return dz;
+        },
+
+        showInWindow: function () {
+            var me = this;
+
+            var winConfig = {
+                title: LOC.photoUploader.winTitle,
+                width: window.innerWidth * .7,
+                height: window.innerHeight * .7,
+                layout: {type: 'fit'},
+                modal: true,
+                iconCls: 'fas fa-upload',
+                items: [me]
+            };
+
+            Ext.widget('window', winConfig).show();
+        },
+
+        handleDestroy: function () {
+            var me = this;
+
+            //console.log('entering before destroy...');
+
+            me.dzInstance.destroy(); //destroy DropZone instance
+
+            if (me.getViewModel().get('dzUploadedFiles') > 0) {
+
+                Ext.MessageBox.show({
+                    title: LOC.photoUploader.closeDialog.title,
+                    msg: LOC.photoUploader.closeDialog.text,
+                    buttons: Ext.MessageBox.YESNO,
+                    fn: function (btn) {
+                        if (btn === 'yes') {
+                            Ext.getCmp('dzzAppWindow').down('indexerButton').click();
+                            Ext.toast(LOC.photoUploader.closeDialog.toastYes);
+                        } else {
+                            Ext.toast(LOC.photoUploader.closeDialog.toastNo);
+                        }
+                    }
+                });
+            }
+
+
+        }
+    });
 
 });

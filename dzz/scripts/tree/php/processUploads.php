@@ -34,7 +34,7 @@ use Imagine\Image\Metadata;
 use Imagine\Filter\Basic;
 
 
-$imgPattern = '([^\s]+(\.(?i)(jpg|jpeg|png|gif|bmp|mp4|avi|mov|ogg))$)';
+$imgPattern = '([^\s]+(\.(?i)(jpg|jpeg|png|gif|bmp|mp4|avi|mov|ogg|mkv))$)';
 $videoPattern = '([^\s]+(\.(?i)(mp4|avi|mov|ogg))$)';
 
 

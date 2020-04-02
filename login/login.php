@@ -8,6 +8,9 @@ require($_SERVER["DOCUMENT_ROOT"] . "/inc/globals/globals.inc.php");
 
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
+    <!-- Font awesome -->
+    <link rel="stylesheet" type="text/css" href="<?=$glob['paths']['font-awesomeCSS']?>"/>
+
     <!-- ExtJS initialization stuff -->
     <link rel="stylesheet" type="text/css" href="<?= $glob['paths']['extThemeCSS'] ?>"/>
     <script type="text/javascript" src="<?= $glob['paths']['extAllJS'] ?>"></script>
@@ -25,6 +28,9 @@ require($_SERVER["DOCUMENT_ROOT"] . "/inc/globals/globals.inc.php");
     <!-- Common JS Stuff -->
     <script type="text/javascript"
             src="<?= $glob['paths']['appRootPrefix'] ?>/inc/js/common/commonFunctions.js"></script>
+
+    <!-- Common ExtJS overrides -->
+    <script type="text/javascript" src="<?=$glob['paths']['appRootPrefix']?>/inc/js/common/commonOverrides.js"></script>
 
     <!-- Include the main JavaScript file -->
     <script type="text/javascript" src="<?= $glob['paths']['appRootPrefix'] ?>/login/js/Main.js"></script>

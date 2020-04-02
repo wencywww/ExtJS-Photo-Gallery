@@ -21,11 +21,15 @@ $glob['paths']['extAllJS'] = $glob['paths']['extIncPath'] . "/build/ext-all.js";
 $glob['paths']['extLocaleJS'] = $glob['paths']['extIncPath'] . "/build/classic/locale/locale-$dzzLang.js";
 
 
-$glob['paths']['jqueryJS'] = "/libraries/js/jquery/jquery.min.js";
+$glob['paths']['font-awesomeCSS'] = $glob['paths']['appRootPrefix'] . "/libraries/css/fa/fontawesome-free-5.13.0-web/css/all.css";
 
-$glob['paths']['jquery-fancybox-css'] = "/libraries/js/jquery/jq-fancybox/jq-fancybox.css";
-$glob['paths']['jquery-fancybox-js'] = "/libraries/js/jquery/jq-fancybox/jq-fancybox.js";
+$glob['paths']['jqueryJS'] = $glob['paths']['appRootPrefix'] . "/libraries/js/jquery/jquery.min.js";
 
+$glob['paths']['jquery-fancybox-css'] = $glob['paths']['appRootPrefix'] . "/libraries/js/jquery/jq-fancybox/jq-fancybox.css";
+$glob['paths']['jquery-fancybox-js'] = $glob['paths']['appRootPrefix'] . "/libraries/js/jquery/jq-fancybox/jq-fancybox.js";
+
+$glob['paths']['dropzonejs-css'] = $glob['paths']['appRootPrefix'] . "/libraries/js/dropzoneJS/dropzone-5.7.0/dist/dropzone.css";
+$glob['paths']['dropzonejs-js'] = $glob['paths']['appRootPrefix'] . "/libraries/js/dropzoneJS/dropzone-5.7.0/dist/dropzone.js";
 
 
 ?>

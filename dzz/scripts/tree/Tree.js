@@ -6,6 +6,7 @@ Ext.onReady(function () {
         extend: 'Ext.tree.Panel',
         alias: 'widget.dzzAppNavTree',
         title: captions['navTreeTitle'],
+        iconCls: 'fas fa-file-alt',
         store: {
             storeId: 'treeStore',
             fields: [

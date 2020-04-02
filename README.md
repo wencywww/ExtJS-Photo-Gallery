@@ -19,6 +19,7 @@ ExtJS Photo Gallery
   * Items are automatically arranged by Year, Month and Day based on the EXIF information (if available)  
   * The data view can display items for particular day/month/year or all available items
   * Slideshow available via jquery/fancybox
+  * File uploading via the DropZone.js
   * Automatic rotation and thumbnail creation
   * Ability to delete, rotate and change the date of the item/items manually
   * Ability to recursively traverse the uploads directory for photos/videos in subdirs
@@ -29,7 +30,6 @@ ExtJS Photo Gallery
 **Cons:**
 
   * The EXIF information is NOT PRESERVED and removed after the items are processed
-  * There is no support for uploading the images via the GUI (you have to upload them within the data/uploads directory via FTP/Samba)
   * There is no support for thumbnails for the videos (a fixed one is used)
 
  
@@ -82,8 +82,8 @@ ExtJS Photo Gallery
 **Usage**
 
   * Login with the GUI using your browser
-  * Upload some photos/videos via SFTP/FTP/Samba within `/var/www/html/data/upload` directory making sure they are writable by the webserver
-  * Return to the GUI, the button in the bottom left of the screen should indicate the number of the new items
+  * Use the File Uploader button (bottom left) to upload files via the GUI or manually upload some photos/videos via SFTP/FTP/Samba within `/var/www/html/data/upload` directory making sure they are writable by the webserver
+  * The New Files button in the bottom left of the screen should indicate the number of the new items
   * Click the button. The system will process photos, will refresh the tree above and will delete the originals from the upload directory
   * Use the tree nodes to view the items
   * Double click an item to start the fancybox slideshow
@@ -95,4 +95,5 @@ ExtJS Photo Gallery
 
 **List of Changes**
 
+  * **2020-04-02**, added uploader component via DropZone.js, and some styling via Font Awesome, updated symfony/http-foundation to v. 4.4.7
   * **2018-03-10**, initial commit

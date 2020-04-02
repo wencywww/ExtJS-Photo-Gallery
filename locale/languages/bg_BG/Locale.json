@@ -8,12 +8,12 @@
       "unknownError": "Възникна непозната грешка.",
       "loadingTxt": "Зареждане...",
       "dateChange": "Смяна на датата...",
-      "GALLERY_TITLE": ".:: My Family Gallery ::.",
+      "GALLERY_TITLE": ".:: Галерия ::.",
       "filesCount": "Файлове",
       "diskStatus": "Свободно място на диска"
     },
     "php": {
-      "GALLERY-TITLE": ".:: My Family Gallery ::.",
+      "GALLERY-TITLE": ".:: Галерия ::.",
       "ERROR": "ГРЕШКА",
       "INFO": "ИНФОРМАЦИЯ",
       "passwordInvalid": "Невалидно име или парола..."
@@ -37,6 +37,10 @@
       "rootNodeText": "ВСИЧКО",
       "sortASC": "Сортиране по дата, най-ранни най-отгоре",
       "sortDESC": "Сортиране по дата, най-скорошните най-отгоре"
+    },
+    "**2": "**--** file - /dzz/scripts/Main.js",
+    "2": {
+      "btnStartUploader": "Качване на файлове..."
     },
     "**4": "**--** file - inc/js/common/commonComponents.js",
     "4": {
@@ -62,6 +66,35 @@
         "btnWrite": "Запис",
         "btnCancel": "Отказ",
         "winTitle": "СМЯНА НА ДАТА НА СНИМКИ"
+      },
+      "photoUploader": {
+        "winTitle": "КАЧВАНЕ НА СНИМКИ",
+        "tbBtnClose": "Затвори",
+        "tbBtnUpload": "Качване на файловете",
+        "tbLblEnqueued": "За качване",
+        "tbLblUploaded": "Качени",
+        "tbLblFailed": "Грешки",
+        "tbLblProgress": "Качване",
+        "closeDialog": {
+          "title": "НОВИ ФАЙЛОВЕ",
+          "text": "Файловете са качени, да започне ли обработката?",
+          "toastYes": "Обработката стартирана",
+          "toastNo": "Файловете са качени, обработката трябва да се стартира ръчно"
+        },
+        "dropZone": {
+          "dictDefaultMessage": "Дръпнете файловете тук или щракнете за избор...",
+          "dictFallbackMessage": "Браузърът не поддържа drag'n'drop качване на файлове.",
+          "dictFallbackText": "Изпозлвайте формата отдолу, за да качите файловете по стандартния начин.",
+          "dictFileTooBig": "Файлът е твърде голям ({{filesize}}MiB). Максималният размер е: {{maxFilesize}}MiB.",
+          "dictInvalidFileType": "Не са позволени файлове от този тип.",
+          "dictResponseError": "Сървърът върна код {{statusCode}}.",
+          "dictCancelUpload": "Отказ",
+          "dictUploadCanceled": "Качването отказано.",
+          "dictCancelUploadConfirmation": "Отказ от качване на файла?",
+          "dictRemoveFile": "Изтриване",
+          "dictRemoveFileConfirmation": null,
+          "dictMaxFilesExceeded": "Не може да качвате повече файлове."
+        }
       }
     }
   },

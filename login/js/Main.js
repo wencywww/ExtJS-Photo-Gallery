@@ -89,7 +89,8 @@ Ext.onReady(function () {
             buttons: [
                 {
                     text: captions['btnLogin'],
-                    iconCls: 'dzz-icon-yes',
+                    //iconCls: 'dzz-icon-yes',
+                    iconCls: 'fas fa-check', faIconColor: '#008000', scale: 'medium',
                     id: 'goLogin',
                     formBind: true,
                     listeners: {
@@ -124,7 +125,8 @@ Ext.onReady(function () {
                 },
                 {
                     text: captions['btnCancel'],
-                    iconCls: 'dzz-icon-no',
+                    //iconCls: 'dzz-icon-no',
+                    iconCls: 'fas fa-times', faIconColor: '#ff0000', scale: 'medium',
                     handler: function () {
                         this.up('form').getForm().reset();
                     }

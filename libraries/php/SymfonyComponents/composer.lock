@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "bbd675721f1f983287163a78c5947a6f",
+    "content-hash": "b1fbc341fe8e9afc6957d4eadfc7db5c",
     "packages": [
         {
             "name": "imagine/imagine",
@@ -221,16 +221,16 @@
         },
         {
             "name": "symfony/http-foundation",
-            "version": "v4.4.6",
+            "version": "v4.4.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-foundation.git",
-                "reference": "0a3b7711229f816a06fac805f4ed4a8f4641c719"
+                "reference": "62f92509c9abfd1f73e17b8cf1b72c0bdac6611b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/0a3b7711229f816a06fac805f4ed4a8f4641c719",
-                "reference": "0a3b7711229f816a06fac805f4ed4a8f4641c719",
+                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/62f92509c9abfd1f73e17b8cf1b72c0bdac6611b",
+                "reference": "62f92509c9abfd1f73e17b8cf1b72c0bdac6611b",
                 "shasum": ""
             },
             "require": {
@@ -272,7 +272,7 @@
             ],
             "description": "Symfony HttpFoundation Component",
             "homepage": "https://symfony.com",
-            "time": "2020-03-23T12:37:11+00:00"
+            "time": "2020-03-30T14:07:33+00:00"
         },
         {
             "name": "symfony/mime",

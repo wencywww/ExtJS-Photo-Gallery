@@ -15,5 +15,36 @@ Ext.onReady(function () {
         }
     );
 
+    //allows to set FontAwesome icon color when provided via faIconColor-config
+    Ext.define('override.Ext.Component.FontAwesome.IconColor',
+        {
+            override: 'Ext.Component',
+            initComponent: function () {
+                var me = this;
+                if (!Ext.isEmpty(me.iconCls) && !Ext.isEmpty(me.faIconColor)) {
+                    me.on({
+                        render: function () {
+                            me.setFaIconColor();
+                        }
+                    });
+                }
+                me.callParent(arguments);
+            },
+
+            setFaIconColor: function () {
+                var me = this;
+                var el = me.getEl();
+
+                var iconNode = el.selectNode('[class*="' + me.iconCls + '"]', false);
+
+                if (iconNode) {
+                    iconNode.applyStyles({color: me.faIconColor});
+                }
+
+            }
+
+
+        });
+
 
 });

@@ -52,7 +52,6 @@
     cursor: pointer;
 }
 
-
 #dzz-sliding-msg-container {
     position: fixed;
     width: 100%;
@@ -125,8 +124,20 @@
     background-color: #99BBE8
 }
 
+/* dropzone.js overrides*/
+.dropzone .dz-preview .dz-image {
+    border-radius: 5px;
+}
 
+.dropzone .dz-preview .dz-details .dz-size {
+    font-size: inherit;
+}
 
+.dropzone .dz-preview .dz-remove{
+    font-size: inherit;
+    text-decoration: none;
+}
 
-
-
+.dropzone .dz-preview .dz-error-message{
+    top: 150px;
+}

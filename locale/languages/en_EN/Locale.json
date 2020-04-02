@@ -38,6 +38,10 @@
       "sortASC": "Sort by date, ascending",
       "sortDESC": "Sort by date, descending"
     },
+    "**2": "**--** file - /dzz/scripts/Main.js",
+    "2": {
+      "btnStartUploader": "File Uploader..."
+    },
     "**4": "**--** file - inc/js/common/commonComponents.js",
     "4": {
       "homeGalleryDataView": {
@@ -46,22 +50,37 @@
         "menuRotate90": "90°",
         "menuRotateMinus90": "-90°",
         "menuRotate180": "180°",
-        "menuDelete": "Erasing...",
+        "menuDelete": "Erase selected...",
         "menuDeleteConfirmTitle": "FILE DELETION",
         "menuDeleteConfirmText": " files to be deleted"
       },
       "indexerButton": {
-        "processingPhotos": "PHOTOS PROCESSING",
+        "processingPhotos": "PROCESSING FILES",
         "noPhotos": "No photos to add",
         "remaining": "remaining",
-        "newPhotos": "NEW PHOTOS"
+        "newPhotos": "NEW FILES"
       },
       "photoDateChange": {
         "displayField": "Change date for the selected photos",
         "dateFieldLbl": "New date",
         "btnWrite": "Save",
         "btnCancel": "Cancel",
-        "winTitle": "PHOTOS DATE CHANGE"
+        "winTitle": "FILE DATE CHANGE"
+      },
+      "photoUploader": {
+        "winTitle": "FILE UPLOADER",
+        "tbBtnClose": "Close",
+        "tbBtnUpload": "Start upload",
+        "tbLblEnqueued": "Enqueued",
+        "tbLblUploaded": "Uploaded",
+        "tbLblFailed": "Failed",
+        "tbLblProgress": "Uploading progress",
+        "closeDialog": {
+          "title": "NEW FILES",
+          "text": "Files ready - should i start to process them?",
+          "toastYes": "Processing uploaded files started",
+          "toastNo": "Files uploaded, the processing have to be started manually"
+        }
       }
     }
   },
