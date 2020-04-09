@@ -28,7 +28,7 @@ Ext.onReady(function () {
             ],
             proxy: {
                 type: 'ajax',
-                url: '/dzz/scripts/tree/php/processUploads.php',
+                url: 'scripts/tree/php/processUploads.php',
                 actionMethods: {read: 'POST'},
                 extraParams: {targetAction: 'getPhotos'},
                 reader: {
@@ -199,7 +199,7 @@ Ext.onReady(function () {
             }
 
             Ext.Ajax.request({
-                url: '/dzz/scripts/tree/php/processUploads.php',
+                url: 'scripts/tree/php/processUploads.php',
                 method: 'POST',
                 params: Ext.Object.merge({targetAction: config.action, photos: Ext.encode(photos)}, extraParams),
                 callback: function (opts, result, response) {
@@ -255,7 +255,7 @@ Ext.onReady(function () {
             }
 
             Ext.Ajax.request({
-                url: '/dzz/scripts/tree/php/processUploads.php',
+                url: 'scripts/tree/php/processUploads.php',
                 method: 'POST',
                 params: {targetAction: actionType},
                 callback: function (opts, result, response) {
@@ -298,7 +298,7 @@ Ext.onReady(function () {
         extend: 'Ext.form.Panel',
         alias: 'widget.photoDateChange',
         bodyPadding: 3,
-        url: '/dzz/scripts/tree/php/processUploads.php',
+        url: 'scripts/tree/php/processUploads.php',
         items: [
             {xtype: 'hiddenfield', name: 'targetAction', value: 'changePhotoDates'},
             {xtype: 'hiddenfield', name: 'photos', value: ''},
@@ -382,7 +382,9 @@ Ext.onReady(function () {
         //id: 'photoUploader',
         bodyPadding: 3,
         scrollable: true,
+        //html: '<div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;" id="galleryUploader"; class="dropzone"></div>',
         html: '<div style="width: 100%; height: 100%;" id="galleryUploader"; class="dropzone"></div>',
+
         dockedItems: [
             {
                 xtype: 'toolbar', dock: 'top',

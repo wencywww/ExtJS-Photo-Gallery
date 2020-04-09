@@ -1,6 +1,13 @@
 <?php
+//die(phpinfo());
+$glob['paths']['docRoot'] = $_SERVER['DOCUMENT_ROOT'];
 
+//should be empty if the application is running on a separate virtual host, or string with a leading slash if it lives in a subdirectory, e.g. "/gallery"
+//$glob['paths']['appRootPrefix'] = "/gallery";
 $glob['paths']['appRootPrefix'] = "";
+
+$glob['paths']['appRootPathAbsolute'] = $_SERVER['DOCUMENT_ROOT'];
+$glob['paths']['appRootPathAbsolute'] .= (strlen($glob['paths']['appRootPrefix'])) ? ($glob['paths']['appRootPrefix']) : ("");
 
 $glob['paths']['extIncPath'] = $glob['paths']['appRootPrefix'] . "/libraries/js/ext";
 

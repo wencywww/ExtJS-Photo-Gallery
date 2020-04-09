@@ -10,7 +10,8 @@ ini_set('date.timezone', 'Europe/Sofia');
 
 require 'paths.inc.php';
 
-require $_SERVER["DOCUMENT_ROOT"] . "/locale/php/getPhpStrings.php";
+//require $_SERVER["DOCUMENT_ROOT"] . "/locale/php/getPhpStrings.php";
+require $glob['paths']['appRootPathAbsolute'] . "/locale/php/getPhpStrings.php";
 
 //Defaults for the username/password - change them as needed
 $glob['usr'] = "admin";

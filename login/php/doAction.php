@@ -1,7 +1,9 @@
 <?php
 
-require($_SERVER["DOCUMENT_ROOT"] . "/inc/globals/globals.inc.php");
-require($_SERVER["DOCUMENT_ROOT"] . "/inc/php/common/commonFunctions.php");
+//require($_SERVER["DOCUMENT_ROOT"] . "/inc/globals/globals.inc.php");
+//require($_SERVER["DOCUMENT_ROOT"] . "/inc/php/common/commonFunctions.php");
+require("../../inc/globals/globals.inc.php");
+require("../../inc/php/common/commonFunctions.php");
 
 
 $a = $_POST;

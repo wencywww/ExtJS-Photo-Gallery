@@ -104,7 +104,7 @@ Ext.onReady(function () {
                                         var frmPanel = Ext.getCmp('loginFrmPanel');
 
                                         Ext.getCmp('loginWindow').close();
-                                        var redir = '/dzz';
+                                        var redir = '../dzz';
                                         window.location.href = redir;
                                     },
 

@@ -1,6 +1,7 @@
 <?php
 
-require($_SERVER['DOCUMENT_ROOT'] . "/inc/globals/globals.inc.php");
+//require($_SERVER['DOCUMENT_ROOT'] . "/inc/globals/globals.inc.php");
+require("../../../../inc/globals/globals.inc.php");
 
 $uploadsDir = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['uploadDir'];
 $photosDir = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['photosDir'];
@@ -9,7 +10,8 @@ $diskStatusFileName = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['diskStatusFile
 
 
 //require symfony (and not only) stuff
-require($_SERVER['DOCUMENT_ROOT'] . "/libraries/php/SymfonyComponents/vendor/autoload.php");
+//require($_SERVER['DOCUMENT_ROOT'] . "/libraries/php/SymfonyComponents/vendor/autoload.php");
+require($glob['paths']['appRootPathAbsolute'] . "/libraries/php/SymfonyComponents/vendor/autoload.php");
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
@@ -94,7 +96,6 @@ switch ($targetAction) {
 }
 
 
-
 function respondToPing()
 {
     global $fileSystem, $finder, $uploadsDir, $photosDir, $imgPattern, $diskStatusFileName;
@@ -171,8 +172,7 @@ function processUploads()
 
                 $exif = $exifReader->read($fileName);
 
-                if ($exif)
-                {
+                if ($exif) {
                     $creationDate = $exif->getCreationDate();
                 } else {
                     $creationDate = false;
@@ -261,8 +261,7 @@ function getPhotos($req)
 
     $path = $req['path'];
 
-    if (!file_exists("$photosDir/$path"))
-    {
+    if (!file_exists("$photosDir/$path")) {
         return [];
     }
 

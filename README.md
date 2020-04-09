@@ -68,6 +68,17 @@ ExtJS Photo Gallery
     sudo chmod -R 777 /var/www/html/data/photos
     sudo chmod -R 777 /var/www/html/data/upload
     ````
+    
+    By default, the gallery runs within the root directory of the virtual host. 
+    If it should live in a subdirectory instead, for example /var/www/html/gallery, the variable **$glob['paths']['appRootPrefix']** should be adjusted this way:
+    ````
+    nano /var/www/html/inc/globals/paths.inc.php
+        
+    //should be empty if the application is running on a separate virtual host, or string with a leading slash if it lives in a subdirectory, e.g. "/gallery"
+    //$glob['paths']['appRootPrefix'] = "/gallery";
+    $glob['paths']['appRootPrefix'] = "";
+    ````
+    
     Set your timezone and change the default username/password:
     ````
     nano /var/www/html/inc/globals/globals.inc.php

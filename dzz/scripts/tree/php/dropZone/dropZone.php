@@ -9,7 +9,8 @@ ini_set('post_max_size', '0');
 
 $ds = DIRECTORY_SEPARATOR;
 
-$storeFolder = '../../../../../data/upload';
+//$storeFolder = '../../../../../data/upload';
+$storeFolder = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['uploadDir'];
 
 if (!empty($_FILES)) {
 
