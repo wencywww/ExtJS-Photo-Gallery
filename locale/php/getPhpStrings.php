@@ -19,7 +19,7 @@ if (!array_key_exists($targetLang, $localesAvailable)) {
 
 
 //$str = file_get_contents($_SERVER["DOCUMENT_ROOT"] . "/locale/languages/$targetLocaleDir/Locale.json");
-$str = file_get_contents("../languages/$targetLocaleDir/Locale.json");
+$str = file_get_contents($glob['paths']['appRootPathAbsolute'] . "/locale/languages/$targetLocaleDir/Locale.json");
 
 $locText = json_decode($str, true);
 
