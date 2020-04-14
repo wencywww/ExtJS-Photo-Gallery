@@ -1,5 +1,5 @@
 Ext.onReady(function () {
-    //ДЕФИНИЦИИ НА РЕЮЗЪБЪЛНИ КОМПОНЕНТИ
+    //Reusable Components
 
     Ext.ns('dzz.COMPONENTS');
 
@@ -24,6 +24,7 @@ Ext.onReady(function () {
             fields: [
                 {name: 'thumbUri'},
                 {name: 'realUri'},
+                {name: 'fileType'},
                 {name: 'caption'}
             ],
             proxy: {
@@ -93,7 +94,13 @@ Ext.onReady(function () {
                 '<div class="dzz-thumb-wrapper" id="{caption}">',
                 '   <a>',
                 '       <div class="dzz-thumb-inner-wrapper" title="{caption}">',
-                '           <div class="dzz-thumb-container" style="background-image: url(\'{thumbUri}' + dc + '\');"></div>',
+                '           <tpl if="fileType == \'photo\'">',
+                '               <div class="dzz-thumb-container" style="background-image: url(\'{thumbUri}' + dc + '\');"></div>',
+                '           <tpl else>',
+                '               <div style="height: 100%; display: flex; align-items: center; justify-content: center;">',
+                '                   <video src="{realUri}" poster="{thumbUri}" autoplay muted width="100%"></video>',
+                '               </div>',
+                '           </tpl>',
                 '       </div>',
                 '       <div class="dzz-thumb-name">{caption}</div>',
                 '   </a>',

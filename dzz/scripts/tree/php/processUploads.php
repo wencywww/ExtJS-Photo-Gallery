@@ -257,7 +257,7 @@ function generateDirStruct()
 
 function getPhotos($req)
 {
-    global $finder, $photosDir, $glob;
+    global $finder, $photosDir, $imgPattern, $videoPattern, $glob;
 
     $path = $req['path'];
 
@@ -278,7 +278,9 @@ function getPhotos($req)
             $realFileName = substr($file->getFilename(), 0, mb_stripos($file->getFilename(), ".thumb."));
             $realUri = $uriBase . $realFileName;
             $realFileDateTime = date('Y-m-d', filemtime("$photosDir/$path/$relPath/$realFileName"));
-            $arr[] = ['thumbUri' => $thumbUri, 'caption' => "$realFileDateTime / $realFileName", 'realUri' => $realUri, 'date' => $realFileDateTime];
+            //check for file type
+            $fileType = (preg_match($videoPattern, str_replace('.thumb.jpg', '', $file->getFilename()))) ? ('video') : ('photo');
+            $arr[] = ['thumbUri' => $thumbUri, 'caption' => "$realFileDateTime / $realFileName", 'realUri' => $realUri, 'date' => $realFileDateTime, 'fileType' => $fileType];
         }
     }
 

@@ -30,7 +30,6 @@ ExtJS Photo Gallery
 **Cons:**
 
   * The EXIF information is NOT PRESERVED and removed after the items are processed
-  * There is no support for thumbnails for the videos (a fixed one is used)
 
  
 **Installation**
@@ -106,5 +105,6 @@ ExtJS Photo Gallery
 
 **List of Changes**
 
+  * **2020-04-14**, added support for autoplay for video files (audio muted) instead of the static thumbnail
   * **2020-04-02**, added uploader component via DropZone.js, and some styling via Font Awesome, updated symfony/http-foundation to v. 4.4.7
   * **2018-03-10**, initial commit
