@@ -35,6 +35,11 @@ use Imagine\Image\Point;
 use Imagine\Image\Metadata;
 use Imagine\Filter\Basic;
 
+use lsolesen\pel\PelJpeg;
+use lsolesen\pel\PelTiff;
+use lsolesen\pel\PelIfd;
+use lsolesen\pel\PelDataWindow;
+
 
 $imgPattern = '([^\s]+(\.(?i)(jpg|jpeg|png|gif|bmp|mp4|avi|mov|ogg|mkv))$)';
 $videoPattern = '([^\s]+(\.(?i)(mp4|avi|mov|ogg))$)';
@@ -43,6 +48,9 @@ $videoPattern = '([^\s]+(\.(?i)(mp4|avi|mov|ogg))$)';
 $targetAction = $_REQUEST['targetAction'];
 
 switch ($targetAction) {
+    case 'test':
+        setExifData('test.tif', getExifData('test.tif'));
+        break;
     case 'ping':
         $status = respondToPing();
         header("Content-type: application/json");
@@ -170,10 +178,11 @@ function processUploads()
                     continue;
                 }
 
-                $exif = $exifReader->read($fileName);
-
-                if ($exif) {
-                    $creationDate = $exif->getCreationDate();
+                $exifPresent = hasExif($fileName);
+                //$exif = $exifReader->read($fileName);
+                if ($exifPresent) {
+                    //$creationDate = $exif->getCreationDate();
+                    $creationDate = getExif($fileName)->getCreationDate();
                 } else {
                     $creationDate = false;
                 }
@@ -194,12 +203,20 @@ function processUploads()
             $fileSystem->mkdir("$photosDir/$targetPath");
             $newFileName = "$photosDir/$targetPath/" . $file->getFilename();
 
-
             if (!$isVideo) {
-
                 try {
-                    $autorotate = new Basic\Autorotate();
-                    $autorotate->apply($imagine->open($fileName))->save($newFileName);
+
+                    if ($exifPresent) {
+                        $exifData = getExifData($fileName);
+                        $autorotate = new Basic\Autorotate();
+                        $saveOpts = ['jpeg_quality' => 94, 'png_compression_level' => 1, 'webp_quality' => 100];
+                        $autorotate->apply($imagine->open($fileName))->save($newFileName, $saveOpts);
+                        setExifData($newFileName, $exifData);
+                    } else {
+                        //$autorotate->apply($imagine->open($fileName))->save($newFileName, $saveOpts);
+                        $fileSystem->copy($fileName, $newFileName);
+                    }
+
                 } catch (Imagine\Exception\Exception $exc) {
                     die (var_dump($exc));
                 }
@@ -545,5 +562,75 @@ function FileSizeConvert($bytes)
     return $result;
 }
 
+
+//check for EXIF presence using miljar/php-exif
+function hasExif($fileName)
+{
+    global $exifReader;
+
+    return (bool)$exifReader->read($fileName);
+}
+
+//get EXIF data using miljar/php-exif
+function getExif($fileName)
+{
+    global $exifReader;
+
+    return $exifReader->read($fileName);
+}
+
+//get entire EXIF data using lsolesen/PEL
+function getExifData($fileName)
+{
+    $data = new PelDataWindow(file_get_contents($fileName));
+
+    if (PelJpeg::isValid($data)) {
+        //die('jpeg');
+        $jpeg = new PelJpeg();
+        $jpeg->load($data);
+        return $jpeg->getExif();
+    } elseif (PelTiff::isValid($data)) {
+        //die('tif');
+        $tiff = new PelTiff($data);
+        return $tiff;
+    } else {
+        return null;
+    }
+
+}
+
+//write entire EXIF data using lsolesen/PEL
+function setExifData($fileName, $exifData)
+{
+
+    $data = new PelDataWindow(file_get_contents($fileName));
+
+    if (PelJpeg::isValid($data)) {
+        //die('jpeg');
+        $jpeg = new PelJpeg();
+        $jpeg->load($data);
+        $jpeg->setExif($exifData);
+        $jpeg->saveFile($fileName);
+
+    } elseif (PelTiff::isValid($data)) {
+        //die('tiff');
+        $tiff = new PelTiff();
+        $tiff->load($data);
+        $tiff->saveFile("1-" . $fileName);
+    } else {
+
+    }
+
+}
+
+
+function extractExifData($fileName)
+{
+
+    $jpeg = new PelJpeg($fileName);
+    var_dump($jpeg);
+    die();
+
+}
 
 ?>

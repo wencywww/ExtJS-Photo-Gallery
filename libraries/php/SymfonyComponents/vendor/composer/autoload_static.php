@@ -14,6 +14,10 @@ class ComposerStaticInit4833c16177a07c3f7a03eb17bc471595
     );
 
     public static $prefixLengthsPsr4 = array (
+        'l' => 
+        array (
+            'lsolesen\\pel\\' => 13,
+        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Php72\\' => 23,
@@ -30,6 +34,10 @@ class ComposerStaticInit4833c16177a07c3f7a03eb17bc471595
     );
 
     public static $prefixDirsPsr4 = array (
+        'lsolesen\\pel\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/lsolesen/pel/src',
+        ),
         'Symfony\\Polyfill\\Php72\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php72',
