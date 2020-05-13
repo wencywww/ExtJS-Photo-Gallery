@@ -43,9 +43,12 @@ setlocale(LC_ALL, '');
  */
 require_once '../autoload.php';
 
+use lsolesen\pel\Pel;
 use lsolesen\pel\PelDataWindow;
 use lsolesen\pel\PelJpeg;
 use lsolesen\pel\PelTiff;
+use lsolesen\pel\PelTag;
+use lsolesen\pel\PelEntryAscii;
 
 /*
  * Store the name of the script in $prog and remove this first part of
@@ -245,3 +248,4 @@ if ($desc == null) {
  */
 println('Writing file "%s".', $output);
 $file->saveFile($output);
+

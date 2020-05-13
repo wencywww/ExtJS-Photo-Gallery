@@ -48,9 +48,9 @@ $videoPattern = '([^\s]+(\.(?i)(mp4|avi|mov|ogg))$)';
 $targetAction = $_REQUEST['targetAction'];
 
 switch ($targetAction) {
-    case 'test':
+    /*case 'test':
         setExifData('test.tif', getExifData('test.tif'));
-        break;
+        break;*/
     case 'ping':
         $status = respondToPing();
         header("Content-type: application/json");
@@ -168,6 +168,7 @@ function processUploads()
 
             $fileName = $file->getRealPath();
 
+            //1. Determine the date for the file - from the EXIF data if present or from the modification time
             if (!$isVideo) {
                 $violations = $validator->validate($file, [new Image()]);
 
@@ -203,10 +204,12 @@ function processUploads()
             $fileSystem->mkdir("$photosDir/$targetPath");
             $newFileName = "$photosDir/$targetPath/" . $file->getFilename();
 
+            //2. Try to auto-rotate the image based on the EXIF data and copy it to the destination filename
             if (!$isVideo) {
                 try {
 
                     if ($exifPresent) {
+                        //2.1: Imagine/GD strips the EXIF data after processing, so we need to extract and restore it at the end
                         $exifData = getExifData($fileName);
                         $autorotate = new Basic\Autorotate();
                         $saveOpts = ['jpeg_quality' => 94, 'png_compression_level' => 1, 'webp_quality' => 100];
@@ -222,6 +225,7 @@ function processUploads()
                 }
             }
 
+            //3. Create the 300x300 thumb
             if (!$isVideo) {
 
                 $thumb = $imagine->open($newFileName);
@@ -241,6 +245,7 @@ function processUploads()
 
             }
 
+            //4. Update the timestamps for the newly created files and remove the original
             $fileSystem->touch($newFileName, $fileTimestamp);
             $fileSystem->touch($thumbName, $fileTimestamp);
 
@@ -562,7 +567,6 @@ function FileSizeConvert($bytes)
     return $result;
 }
 
-
 //check for EXIF presence using miljar/php-exif
 function hasExif($fileName)
 {
@@ -585,12 +589,12 @@ function getExifData($fileName)
     $data = new PelDataWindow(file_get_contents($fileName));
 
     if (PelJpeg::isValid($data)) {
-        //die('jpeg');
+        //file is recognized as jpeg
         $jpeg = new PelJpeg();
         $jpeg->load($data);
         return $jpeg->getExif();
     } elseif (PelTiff::isValid($data)) {
-        //die('tif');
+        //file is recognized as tiff
         $tiff = new PelTiff($data);
         return $tiff;
     } else {
@@ -606,23 +610,23 @@ function setExifData($fileName, $exifData)
     $data = new PelDataWindow(file_get_contents($fileName));
 
     if (PelJpeg::isValid($data)) {
-        //die('jpeg');
+        //file is recognized as jpeg
         $jpeg = new PelJpeg();
         $jpeg->load($data);
         $jpeg->setExif($exifData);
         $jpeg->saveFile($fileName);
 
     } elseif (PelTiff::isValid($data)) {
-        //die('tiff');
-        $tiff = new PelTiff();
-        $tiff->load($data);
-        $tiff->saveFile("1-" . $fileName);
+        //file is recognized as tiff
+        //there are problems with TIFF files processing so for now we are not saving tiffs, https://github.com/pel/pel/issues/157
+        //$tiff = new PelTiff();
+        //$tiff->load($data);
+        //$tiff->saveFile("1-" . $fileName);
     } else {
 
     }
 
 }
-
 
 function extractExifData($fileName)
 {
