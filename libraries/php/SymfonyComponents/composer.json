@@ -5,7 +5,7 @@
         "miljar/php-exif": "^0.6.4",
         "symfony/validator": "^4.1",
         "symfony/http-foundation": "^4.4.7",
-        "imagine/imagine": "^0.7.1",
+        "imagine/imagine": "^1.2",
         "lsolesen/pel": "^0.9.8"
     }
 }

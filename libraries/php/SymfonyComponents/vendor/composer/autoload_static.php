@@ -31,6 +31,10 @@ class ComposerStaticInit4833c16177a07c3f7a03eb17bc471595
             'Symfony\\Component\\Finder\\' => 25,
             'Symfony\\Component\\Filesystem\\' => 29,
         ),
+        'I' => 
+        array (
+            'Imagine\\' => 8,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
@@ -78,6 +82,10 @@ class ComposerStaticInit4833c16177a07c3f7a03eb17bc471595
         array (
             0 => __DIR__ . '/..' . '/symfony/filesystem',
         ),
+        'Imagine\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/imagine/imagine/src',
+        ),
     );
 
     public static $prefixesPsr0 = array (
@@ -86,13 +94,6 @@ class ComposerStaticInit4833c16177a07c3f7a03eb17bc471595
             'PHPExif' => 
             array (
                 0 => __DIR__ . '/..' . '/miljar/php-exif/lib',
-            ),
-        ),
-        'I' => 
-        array (
-            'Imagine' => 
-            array (
-                0 => __DIR__ . '/..' . '/imagine/imagine/lib',
             ),
         ),
     );

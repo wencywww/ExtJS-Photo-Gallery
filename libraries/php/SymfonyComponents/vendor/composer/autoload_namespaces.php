@@ -7,5 +7,4 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'PHPExif' => array($vendorDir . '/miljar/php-exif/lib'),
-    'Imagine' => array($vendorDir . '/imagine/imagine/lib'),
 );
