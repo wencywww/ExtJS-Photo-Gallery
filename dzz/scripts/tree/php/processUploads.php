@@ -33,6 +33,7 @@ $exifReader = \PHPExif\Reader\Reader::factory(\PHPExif\Reader\Reader::TYPE_NATIV
 use Imagine\Image\Box;
 use Imagine\Image\Point;
 use Imagine\Image\Metadata;
+use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Filter\Basic;
 
 use lsolesen\pel\PelJpeg;
@@ -43,7 +44,6 @@ use lsolesen\pel\PelDataWindow;
 
 $imgPattern = '([^\s]+(\.(?i)(jpg|jpeg|png|gif|bmp|mp4|avi|mov|ogg|mkv))$)';
 $videoPattern = '([^\s]+(\.(?i)(mp4|avi|mov|ogg))$)';
-
 
 $targetAction = $_REQUEST['targetAction'];
 
@@ -147,16 +147,18 @@ function respondToPing()
 
 function processUploads()
 {
-    global $fileSystem, $finder, $validator, $exifReader, $uploadsDir, $photosDir, $thumbTemplatesDir, $imgPattern, $videoPattern;
+    global $fileSystem, $finder, $validator, $uploadsDir, $photosDir, $thumbTemplatesDir, $imgPattern, $videoPattern;
 
     //execute the actual find
     //$finder->files()->name('*.jpg')->in($uploadsDir);
     //$imgPattern = '([^\s]+(\.(?i)(jpg|jpeg|png|gif|bmp))$)'; //http://www.mkyong.com/regular-expressions/how-to-validate-image-file-extension-with-regular-expression/
     $finder->files()->name($imgPattern)->in($uploadsDir);
 
-    $imagine = new Imagine\Gd\Imagine();
-
     if ($finder->hasResults()) {
+
+        $imagine = new Imagine\Gd\Imagine();
+        $autorotate = new Basic\Autorotate();
+
         foreach ($finder as $file) {
 
             $isVideo = false;
@@ -180,14 +182,12 @@ function processUploads()
                 }
 
                 $exifPresent = hasExif($fileName);
-                //$exif = $exifReader->read($fileName);
+
                 if ($exifPresent) {
-                    //$creationDate = $exif->getCreationDate();
                     $creationDate = getExif($fileName)->getCreationDate();
                 } else {
                     $creationDate = false;
                 }
-
             } else {
                 $creationDate = false;
             }
@@ -207,19 +207,40 @@ function processUploads()
             //2. Try to auto-rotate the image based on the EXIF data and copy it to the destination filename
             if (!$isVideo) {
                 try {
-
                     if ($exifPresent) {
-                        //2.1: Imagine/GD strips the EXIF data after processing, so we need to extract and restore it at the end
-                        $exifData = getExifData($fileName);
-                        $autorotate = new Basic\Autorotate();
-                        $saveOpts = ['jpeg_quality' => 94, 'png_compression_level' => 1, 'webp_quality' => 100];
-                        $autorotate->apply($imagine->open($fileName))->save($newFileName, $saveOpts);
-                        setExifData($newFileName, $exifData);
+                        //2.1:
+                        //We want Imagine to save the image only if the autorotate will be truly applied
+                        //Most of the images will not need to be rotated, and we will simply copy them to the new filename
+                        //This saves the overhead of extracting/restoring the Exif data,
+                        //and also - it preserves the original image, because Imagine tends to make strange filesizes
+                        //(that is why 'jpeg_quality' => 94 below - the value of 100 makes the file much larger)
+                        //The AutorotateClass has getTransformations() method from version 1.0.0 (we used 0.7.1 up to now)
+
+                        //$imagineFile = $imagine->open($fileName);
+                        //$pendingTransforms = $autorotate->getTransformations($imagineFile);
+
+                        //2020-05-14: Auto rotation is turned Off
+                        //Imagine Auto rotation makes things complicated -
+                        //if we autorotate an image and restore its EXIF data afterwards, the file becomes wrong oriented
+                        //So - we will simply copy the file (preserving it in original) and will auto-rotate only the thumbnail
+                        //The thumbnail must be auto rotated, because sometimes it will be oriented wrong
+                        //(for example, when making a thumbnail from portrait-oriented phone photo)
+                        //This way we will have the original file (with Exif) and correctly oriented thumb (without Exif)
+                        $pendingTransforms = [];
+
+                        if (count($pendingTransforms)) {
+                            //print_r($pendingTransforms).PHP_EOL;
+                            //2.2: Imagine/GD strips the EXIF data after processing, so we need to extract and restore it at the end
+                            $exifData = getExifData($fileName);
+                            $saveOpts = ['jpeg_quality' => 94, 'png_compression_level' => 1, 'webp_quality' => 100];
+                            $autorotate->apply($imagineFile)->save($newFileName, $saveOpts);
+                            setExifData($newFileName, $exifData);
+                        } else {
+                            $fileSystem->copy($fileName, $newFileName);
+                        }
                     } else {
-                        //$autorotate->apply($imagine->open($fileName))->save($newFileName, $saveOpts);
                         $fileSystem->copy($fileName, $newFileName);
                     }
-
                 } catch (Imagine\Exception\Exception $exc) {
                     die (var_dump($exc));
                 }
@@ -236,8 +257,12 @@ function processUploads()
                 } else {
                     $box = $thumb->getSize()->widen(300);
                 }
+
                 $thumbName = $newFileName . ".thumb." . $file->getExtension();
-                $thumb->resize($box)->save($thumbName);
+
+                //thumb must be autorotated, otherwise it could be incorrectly rotated
+                $autorotate->apply($thumb->resize($box))->save($thumbName);
+
             } else {
                 $fileSystem->copy($fileName, $newFileName);
                 $thumbName = $newFileName . ".thumb.jpg";
@@ -384,9 +409,17 @@ function rotatePhotos()
         $existingThumbFileName = $_SERVER['DOCUMENT_ROOT'] . $filePath . "/" . $thumbName;
         $existingThumbFileNameMtime = filemtime($existingThumbFileName);
 
+        $exifPresent = hasExif($existingFileName);
+        if ($exifPresent) {
+            $exifData = getExifData($existingFileName);
+        }
+
         $rotate->apply($imagine->open($existingFileName))->save($existingFileName);
         $rotate->apply($imagine->open($existingThumbFileName))->save($existingThumbFileName);
 
+        if ($exifPresent) {
+            setExifData($existingFileName, $exifData);
+        }
         touch($existingFileName, $existingFileNameMtime);
         touch($existingThumbFileName, $existingThumbFileNameMtime);
     }
@@ -625,15 +658,6 @@ function setExifData($fileName, $exifData)
     } else {
 
     }
-
-}
-
-function extractExifData($fileName)
-{
-
-    $jpeg = new PelJpeg($fileName);
-    var_dump($jpeg);
-    die();
 
 }
 
