@@ -35,6 +35,7 @@
     "1": {
       "navTreeTitle": "CHRONOLOGY",
       "rootNodeText": "ALL",
+      "settings": "Settings",
       "sortASC": "Sort by date, ascending",
       "sortDESC": "Sort by date, descending"
     },

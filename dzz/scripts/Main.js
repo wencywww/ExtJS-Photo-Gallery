@@ -4,6 +4,12 @@ Ext.onReady(function () {
 
     var LOC = dzz.i18n.txt[2];
 
+    Ext.define('MyApp.view.TestViewModel', {
+        extend: 'Ext.app.ViewModel',
+
+        alias: 'viewmodel.gallery'
+    });
+
     var adminWindow = Ext.create('Ext.window.Window',
         {
             id: 'dzzAppWindow',
@@ -16,6 +22,9 @@ Ext.onReady(function () {
             layout: 'border',
             defaults: {split: true, useSplitTips: true},
             minHeight: window.innerHeight,
+            viewModel: {
+                type: 'gallery'
+            },
             items: [
                 {
                     xtype: 'container',

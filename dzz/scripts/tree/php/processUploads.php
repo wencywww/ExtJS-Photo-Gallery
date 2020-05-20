@@ -48,9 +48,7 @@ $videoPattern = '([^\s]+(\.(?i)(mp4|avi|mov|ogg))$)';
 $targetAction = $_REQUEST['targetAction'];
 
 switch ($targetAction) {
-    /*case 'test':
-        setExifData('test.tif', getExifData('test.tif'));
-        break;*/
+
     case 'ping':
         $status = respondToPing();
         header("Content-type: application/json");
@@ -150,8 +148,6 @@ function processUploads()
     global $fileSystem, $finder, $validator, $uploadsDir, $photosDir, $thumbTemplatesDir, $imgPattern, $videoPattern;
 
     //execute the actual find
-    //$finder->files()->name('*.jpg')->in($uploadsDir);
-    //$imgPattern = '([^\s]+(\.(?i)(jpg|jpeg|png|gif|bmp))$)'; //http://www.mkyong.com/regular-expressions/how-to-validate-image-file-extension-with-regular-expression/
     $finder->files()->name($imgPattern)->in($uploadsDir);
 
     if ($finder->hasResults()) {
@@ -246,10 +242,15 @@ function processUploads()
                 }
             }
 
-            //3. Create the 300x300 thumb
+
+            //3. Create the thumb
             if (!$isVideo) {
 
-                $thumb = $imagine->open($newFileName);
+                $thumb = $imagine->open($newFileName); //this is slow, about 3 files per second
+                //$thumb = $imagine->load(file_get_contents($newFileName)); //same performance
+                //$thumb=file_get_contents($newFileName); //fast, about 20 files per second, but we need imagine instance
+                //continue;
+
                 $width = $thumb->getSize()->getWidth();
                 $height = $thumb->getSize()->getHeight();
                 if ($width > $height) {
@@ -260,7 +261,7 @@ function processUploads()
 
                 $thumbName = $newFileName . ".thumb." . $file->getExtension();
 
-                //thumb must be autorotated, otherwise it could be incorrectly rotated
+                //thumb must be autorotated, otherwise it could be incorrectly rotated based on the preserved Exif data
                 $autorotate->apply($thumb->resize($box))->save($thumbName);
 
             } else {
@@ -393,6 +394,8 @@ function rotatePhotos()
     $imagine = new Imagine\Gd\Imagine();
     $rotate = new Basic\Rotate($angle);
 
+    $saveOpts = ['jpeg_quality' => 94, 'png_compression_level' => 1, 'webp_quality' => 100];
+
     foreach ($files as $file) {
         $filePath = pathinfo($file, PATHINFO_DIRNAME);
         $fileName = pathinfo($file, PATHINFO_BASENAME);
@@ -414,7 +417,7 @@ function rotatePhotos()
             $exifData = getExifData($existingFileName);
         }
 
-        $rotate->apply($imagine->open($existingFileName))->save($existingFileName);
+        $rotate->apply($imagine->open($existingFileName))->save($existingFileName, $saveOpts);
         $rotate->apply($imagine->open($existingThumbFileName))->save($existingThumbFileName);
 
         if ($exifPresent) {

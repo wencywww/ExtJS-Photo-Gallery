@@ -71,11 +71,62 @@ Ext.onReady(function () {
                     return false;
                 }
 
+            },
+
+            //2020-05-20: uses XHR to convert an image URL to a dataURL
+            imgToDataURL: function (url, callback) {
+                var xhr = new XMLHttpRequest();
+                xhr.onload = function () {
+                    var reader = new FileReader();
+                    reader.onloadend = function () {
+                        callback(reader.result);
+                    }
+                    reader.readAsDataURL(xhr.response);
+                };
+                xhr.open('GET', url);
+                xhr.responseType = 'blob';
+                xhr.send();
+            },
+
+            //2020-05-20: converts dataURL to an Blob Javascript object
+            imgDataUrlToBlob: function(dataurl) {
+                var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                    bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+                while(n--){
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], {type:mime});
+            },
+
+            //2020-05-20: uses the Blob object to create an ArrayBuffer, which is used by the exifReader library
+            //to extract the metadata
+            imgBlobToExifData: function(blob, cmp, callback){
+
+                var reader = new FileReader();
+
+                reader.onload = function (readerEvent) {
+                    try {
+                        var tags = ExifReader.load(readerEvent.target.result, {expanded: true});
+                        //    window.exifReaderListTags(tags);
+                        //console.log(tags);
+                        callback(cmp, {success: true, data: tags});
+
+
+                    } catch (error) {
+                        //      window.exifReaderError(error.toString());
+                        //console.log(error.toString());
+                        callback(cmp, {success: false, msg: error.toString()});
+                    }
+                };
+
+                reader.readAsArrayBuffer(blob);
             }
 
 
+
         }
-    );
+    )
+    ;
 
 });
 

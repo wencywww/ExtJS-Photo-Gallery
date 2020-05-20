@@ -38,19 +38,26 @@ Ext.onReady(function () {
                 }
             }
         },
+        bind:{
+            hidden: '{!showExifData.checked}'
+        },
 
         initComponent: function () {
             var me = this;
+            //me.setViewModel(me.up('window').getViewModel()),
             me.prepareTpl();
             me.callParent(arguments);
             me.getStore().getProxy().setExtraParam('path', me.confData.node.path);
             me.getStore().getProxy().setExtraParam('photosSort', me.confData.photosSort);
             me.on({
+                render: function (view) {
+                    view.setViewModel(me.up('window').getViewModel());
+                },
                 itemcontextmenu: me.showContextMenu,
                 itemdblclick: function (view, rec, item, index) {
 
                     //Starting fancybox entirely programmatically (without data-attributes).
-                    //we need to build an array of elements, options and start index use for the $.fancybox.open() method:
+                    //we need to build an array of elements, options and start index required by the $.fancybox.open() method:
                     //https://fancyapps.com/fancybox/3/docs/#api
                     var data = view.getStore().getData(); //the data is Ext.util.Collection
                     var items = [];
@@ -79,7 +86,11 @@ Ext.onReady(function () {
                             "thumbs",
                             "close"
                         ],
-                        x_transitionEffect: "tube"
+                        x_transitionEffect: "tube",
+                        afterShow: function (instance, slide) {
+                            //console.info(slide);
+                            me.checkSlideMeta(slide);
+                        }
                     }, index);
                 }
             });
@@ -218,6 +229,42 @@ Ext.onReady(function () {
                 }
             });
 
+        },
+
+        //2020-05-20: check for and try to extract the image meta data / exif
+        checkSlideMeta: function (slide) {
+            var me = this;
+
+            if (!me.showSlideMeta) {
+                return;
+            }
+
+            var imgSrc = slide.src;
+            var imgDataUrl, imgBlob;
+
+            me.on({
+                    'exifdatachecked': me.getSlideMeta
+                }
+            );
+
+            dzz.func.imgToDataURL(imgSrc, function (result) {
+                imgDataUrl = result;
+                imgBlob = dzz.func.imgDataUrlToBlob(imgDataUrl);
+
+                dzz.func.imgBlobToExifData(imgBlob, me, function (cmp, exifData) {
+                    var me = cmp;
+                    me.slideExifData = exifData;
+                    me.fireEvent('exifdatachecked');
+                });
+
+            });
+
+
+        },
+
+        getSlideMeta: function () {
+            var me = this;
+            console.log(me.slideExifData);
         }
 
     });

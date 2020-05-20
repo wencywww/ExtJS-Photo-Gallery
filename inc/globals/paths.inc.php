@@ -38,5 +38,7 @@ $glob['paths']['jquery-fancybox-js'] = $glob['paths']['appRootPrefix'] . "/libra
 $glob['paths']['dropzonejs-css'] = $glob['paths']['appRootPrefix'] . "/libraries/js/dropzoneJS/dropzone-5.7.0/dist/dropzone.css";
 $glob['paths']['dropzonejs-js'] = $glob['paths']['appRootPrefix'] . "/libraries/js/dropzoneJS/dropzone-5.7.0/dist/dropzone.js";
 
+$glob['paths']['exifreader-js'] = $glob['paths']['appRootPrefix'] . "/libraries/js/exifReader/exif-reader.js";
+
 
 ?>
