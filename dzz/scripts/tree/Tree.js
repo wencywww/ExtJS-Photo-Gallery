@@ -62,7 +62,7 @@ Ext.onReady(function () {
         },
         tools: [
             {
-                type: 'gear', tooltip: captions['settings'],
+                type: 'gear', //tooltip: captions['settings'],
                 callback: function (panel, tool) {
                     panel.settingsMenu.showBy(tool);
                 }
@@ -99,14 +99,15 @@ Ext.onReady(function () {
             me.photosSort = 'ASC';
 
             me.settingsMenu = Ext.widget('menu', {
+                viewModel: me.lookupViewModel(),
                 items: [
                     {
-                        viewModel: me.up('window').getViewModel(),
-                        //viewModel: {type: 'gallery'},
-                        //viewModel: true,
-                        xtype: 'menucheckitem', text: 'Show Exif data',
-                        reference: 'showExifData',
-                        publishes: 'value'
+                        xtype: 'menucheckitem',
+                        checked: true,
+                        text: captions['showExif'],
+                        bind: {
+                            checked: '{showExifData}'
+                        }
                     }
                 ]
             });

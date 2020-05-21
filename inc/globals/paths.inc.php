@@ -25,6 +25,7 @@ $glob['dzzLang'] = $dzzLang;
 $glob['paths']['extThemeCSS'] = $glob['paths']['extIncPath'] . "/build/classic/theme-$dzzTheme/resources/theme-$dzzTheme-all.css";
 $glob['paths']['extThemeJS'] = $glob['paths']['extIncPath'] . "/build/classic/theme-$dzzTheme/theme-$dzzTheme.js";
 $glob['paths']['extAllJS'] = $glob['paths']['extIncPath'] . "/build/ext-all.js";
+$glob['paths']['extAllJS'] = $glob['paths']['extIncPath'] . "/build/ext-all-debug.js";
 $glob['paths']['extLocaleJS'] = $glob['paths']['extIncPath'] . "/build/classic/locale/locale-$dzzLang.js";
 
 

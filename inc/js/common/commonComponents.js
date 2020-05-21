@@ -38,21 +38,20 @@ Ext.onReady(function () {
                 }
             }
         },
-        bind:{
-            hidden: '{!showExifData.checked}'
-        },
+
+        // showExifData: true,
+        // slideExifData: null, //will hold the EXIF data for the currently active slide if available
+        // bind: {
+        //     showExifData: '{showExifData.checked}'
+        // },
 
         initComponent: function () {
             var me = this;
-            //me.setViewModel(me.up('window').getViewModel()),
             me.prepareTpl();
             me.callParent(arguments);
             me.getStore().getProxy().setExtraParam('path', me.confData.node.path);
             me.getStore().getProxy().setExtraParam('photosSort', me.confData.photosSort);
             me.on({
-                render: function (view) {
-                    view.setViewModel(me.up('window').getViewModel());
-                },
                 itemcontextmenu: me.showContextMenu,
                 itemdblclick: function (view, rec, item, index) {
 
@@ -88,7 +87,6 @@ Ext.onReady(function () {
                         ],
                         x_transitionEffect: "tube",
                         afterShow: function (instance, slide) {
-                            //console.info(slide);
                             me.checkSlideMeta(slide);
                         }
                     }, index);
@@ -234,8 +232,13 @@ Ext.onReady(function () {
         //2020-05-20: check for and try to extract the image meta data / exif
         checkSlideMeta: function (slide) {
             var me = this;
+            var vm = me.lookupViewModel();
 
-            if (!me.showSlideMeta) {
+            vm.set({
+                slideExifData: null
+            });
+
+            if (!vm.get('showExifData')) {
                 return;
             }
 
@@ -247,13 +250,31 @@ Ext.onReady(function () {
                 }
             );
 
+            //How does this work:
+            //For metadata processing we use the Mattias Wallander's exifReader library - https://github.com/mattiasw/ExifReader
+            //It uses JS ArrayBuffer objects to extract the data, so we need to represent our file in this form.
+            //However, it's not that easy.
+            //In order to bulid the ArrayBuffer, we need the image to be converted to a Blob object.
+            //This Blob is sent as an argument to the FileReader.readAsArrayBuffer() method which returns the ArrayBuffer
+            //So, how to get the Blob object from the image url?
+            //First - we need to convert the url of the image to a base64 encoded dataURL - imgToDataURL() function
+            //Second - the resulting string is converted to a Blob - imgDataUrlToBlob()
+            //Finally - the Blob is sent to the imgBlobToExifData() which creates the ArrayBuffer, extracts the data,
+            //writes it to the me.slideExifData property and fires our custom 'exifdatachecked' event
+            //The important point is that all these calls should be made within the imgToDataURL() callback.
+            //See commonFunctions.js for more details on these functions. They are somehow universal and that is why
+            //live within the common-file
+
             dzz.func.imgToDataURL(imgSrc, function (result) {
                 imgDataUrl = result;
                 imgBlob = dzz.func.imgDataUrlToBlob(imgDataUrl);
 
                 dzz.func.imgBlobToExifData(imgBlob, me, function (cmp, exifData) {
                     var me = cmp;
-                    me.slideExifData = exifData;
+                    vm.set({
+                            slideExifData: exifData
+                        }
+                    );
                     me.fireEvent('exifdatachecked');
                 });
 
@@ -264,7 +285,30 @@ Ext.onReady(function () {
 
         getSlideMeta: function () {
             var me = this;
-            console.log(me.slideExifData);
+            var vm = me.lookupViewModel();
+
+            var data = vm.get('slideExifData');
+
+            if (!data.success) {
+                return false;
+            }
+
+            var exif = data.data;
+            if (!exif.exif && !exif.gps) { //normally the exif object will contain Thumbnail and file properties and we do not want to use them for now
+                return false;
+            }
+
+            var retObj = {};
+            if (exif.exif) {
+                retObj['exif'] = exif.exif;
+            }
+            if (exif.gps) {
+                retObj['gps'] = exif.gps;
+            }
+
+            //console.log(retObj);
+
+            return retObj;
         }
 
     });
@@ -657,6 +701,48 @@ Ext.onReady(function () {
 
 
         }
+    });
+
+    //container for exif data icons
+    Ext.define('dzz.COMPONENTS.exifManager', {
+        extend: 'Ext.container.Container',
+        alias: 'widget.exifManager',
+
+        //width: window.innerWidth * .3, height: window.innerHeight * .1,
+        layout: {
+            type: 'hbox'
+        },
+        floating: true,
+        shadow: false,
+        defaults: {
+            margin: 20
+        },
+        items: [
+            {xtype: 'box', html: '<i style="color: #03408C" class="fas fa-8x fa-info-circle"></i>'},
+            {xtype: 'box', html: '<i style="color: #E94335" class="fas fa-8x fa-map-marker-alt"></i>'}
+        ],
+
+        //singleton: true,
+        //hidden: true,
+        bind: {
+            hidden: '{!showExifData}'
+        },
+        id: 'tester',
+        initComponent: function () {
+            var me = this;
+            me.callParent(arguments);
+
+            me.on({
+                show: function () {
+                    console.log('called show method');
+                    console.log(me);
+                    me.getEl().setZIndex(99999);
+                    me.setY(window.innerHeight - me.getHeight() - 20, true);
+                }
+            });
+
+
+        },
     });
 
 });

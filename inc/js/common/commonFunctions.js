@@ -73,7 +73,12 @@ Ext.onReady(function () {
 
             },
 
-            //2020-05-20: uses XHR to convert an image URL to a dataURL
+            //2020-05-20: uses XHR to convert an image URL to a dataURL - https://stackoverflow.com/questions/6150289/how-can-i-convert-an-image-into-base64-string-using-javascript
+            //Seems that there are 2 methods available for getting a base64-encoded string for a given image (from its real url)
+            //One of them involves using a canvas element, which does not make an additional server request, but does not preserve the image meta data, so it is useless in ou case
+            //The second approach (which we use), performs an Ajax call and FileReader's onloadend event to produce the dataUrl
+            //The disadvantage is the additionl server call for the image, but for now this is our solution
+            //The result is handled via the callback function which we supply via the dzz.func.imgToDataURL() call within commonComonents.js
             imgToDataURL: function (url, callback) {
                 var xhr = new XMLHttpRequest();
                 xhr.onload = function () {
@@ -88,25 +93,25 @@ Ext.onReady(function () {
                 xhr.send();
             },
 
-            //2020-05-20: converts dataURL to an Blob Javascript object
-            imgDataUrlToBlob: function(dataurl) {
+            //2020-05-20: converts a base64/dataURL string to an Blob Javascript object - https://stackoverflow.com/questions/23150333/html5-javascript-dataurl-to-blob-blob-to-dataurl
+            imgDataUrlToBlob: function (dataurl) {
                 var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
                     bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-                while(n--){
+                while (n--) {
                     u8arr[n] = bstr.charCodeAt(n);
                 }
-                return new Blob([u8arr], {type:mime});
+                return new Blob([u8arr], {type: mime});
             },
 
             //2020-05-20: uses the Blob object to create an ArrayBuffer, which is used by the exifReader library
             //to extract the metadata
-            imgBlobToExifData: function(blob, cmp, callback){
+            imgBlobToExifData: function (blob, cmp, callback) {
 
                 var reader = new FileReader();
 
                 reader.onload = function (readerEvent) {
                     try {
-                        var tags = ExifReader.load(readerEvent.target.result, {expanded: true});
+                        var tags = ExifReader.load(readerEvent.target.result, {expanded: true}); //expanded property produces separate properties in the output (file, Thumbnail, gps, exif)
                         //    window.exifReaderListTags(tags);
                         //console.log(tags);
                         callback(cmp, {success: true, data: tags});
@@ -123,10 +128,9 @@ Ext.onReady(function () {
             }
 
 
-
         }
-    )
-    ;
+    );
+
 
 });
 

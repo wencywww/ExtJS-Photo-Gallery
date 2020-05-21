@@ -36,6 +36,7 @@
       "navTreeTitle": "CHRONOLOGY",
       "rootNodeText": "ALL",
       "settings": "Settings",
+      "showExif": "Show EXIF data",
       "sortASC": "Sort by date, ascending",
       "sortDESC": "Sort by date, descending"
     },

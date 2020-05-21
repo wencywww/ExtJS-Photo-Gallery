@@ -4,10 +4,13 @@ Ext.onReady(function () {
 
     var LOC = dzz.i18n.txt[2];
 
-    Ext.define('MyApp.view.TestViewModel', {
+    Ext.define('dzz.Ext.app.ViewModel', {
         extend: 'Ext.app.ViewModel',
-
-        alias: 'viewmodel.gallery'
+        alias: 'viewmodel.gallery',
+        data: {
+            showExifData: true, //determine if we want to show EXIF data
+            slideExifData: null //keeps the EXIF data for the current slide
+        }
     });
 
     var adminWindow = Ext.create('Ext.window.Window',
@@ -54,6 +57,10 @@ Ext.onReady(function () {
             ]
         }
     ).show();
+
+    Ext.widget('exifManager', {
+        viewModel: adminWindow.getViewModel()
+    }).show();
 
 
 })
