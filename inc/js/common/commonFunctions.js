@@ -114,8 +114,23 @@ Ext.onReady(function () {
                         var tags = ExifReader.load(readerEvent.target.result, {expanded: true}); //expanded property produces separate properties in the output (file, Thumbnail, gps, exif)
                         //    window.exifReaderListTags(tags);
                         //console.log(tags);
-                        callback(cmp, {success: true, data: tags});
 
+                        //normally the exif object will contain Thumbnail and file properties (and a pngFile property for pngs) and we do not want to use them for now
+                        //we want only exif/gps properties to be returned
+                        if (!tags.exif && !tags.gps) {
+                            callback(cmp, {success: false, msg: 'No EXIF/GPS meta data found.'});
+                        } else {
+                            var retObj = {};
+                            if (tags.exif) {
+                                retObj['exif'] = tags.exif;
+                            }
+                            if (tags.gps) {
+                                retObj['gps'] = tags.gps;
+                            }else{
+                                retObj['gps'] = false; //required to be present as property for the bindings to work
+                            }
+                            callback(cmp, {success: true, data: retObj});
+                        }
 
                     } catch (error) {
                         //      window.exifReaderError(error.toString());

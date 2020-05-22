@@ -9,7 +9,23 @@ Ext.onReady(function () {
         alias: 'viewmodel.gallery',
         data: {
             showExifData: true, //determine if we want to show EXIF data
-            slideExifData: null //keeps the EXIF data for the current slide
+            slideExifData: null, //keeps the EXIF data for the current slide
+            exifManagerInstantiated: false,
+            exifVisualiserInstantiated: false,
+            exifVisualiserVisible: false
+        },
+        formulas: {
+            exifDataFiltered: function (get) {
+                var exif = get('slideExifData.data.exif');
+                //console.log(exif);
+                var retObj = {};
+                Ext.Object.each(exif, function (key, val) {
+                    if (val.description) {
+                        retObj[key] = val.description;
+                    }
+                });
+                return retObj;
+            }
         }
     });
 
@@ -58,11 +74,9 @@ Ext.onReady(function () {
         }
     ).show();
 
-    Ext.widget('exifManager', {
-        viewModel: adminWindow.getViewModel()
-    }).show();
-
-
+    /*Ext.widget('exifManager', {
+     viewModel: adminWindow.getViewModel()
+     }).getEl().setZIndex(0).show();*/
 })
 
 

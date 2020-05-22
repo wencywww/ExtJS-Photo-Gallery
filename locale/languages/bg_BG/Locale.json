@@ -56,6 +56,10 @@
         "menuDeleteConfirmTitle": "ИЗТРИВАНЕ НА ФАЙЛОВЕ",
         "menuDeleteConfirmText": " файла ще бъдат изтрити"
       },
+      "exifVisualiser":{
+        "exifTitle": "EXIF данни",
+        "mapTitle": "GPS данни"
+      },
       "indexerButton": {
         "processingPhotos": "ОБРАБОТКА СНИМКИ",
         "noPhotos": "Няма снимки за качване",

@@ -56,6 +56,10 @@
         "menuDeleteConfirmTitle": "FILE DELETION",
         "menuDeleteConfirmText": " files to be deleted"
       },
+      "exifVisualiser":{
+        "exifTitle": "EXIF data",
+        "mapTitle": "GPS data"
+      },
       "indexerButton": {
         "processingPhotos": "PROCESSING FILES",
         "noPhotos": "No photos to add",

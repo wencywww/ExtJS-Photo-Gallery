@@ -88,7 +88,17 @@ Ext.onReady(function () {
                         x_transitionEffect: "tube",
                         afterShow: function (instance, slide) {
                             me.checkSlideMeta(slide);
+                        },
+                        afterClose: function (instance, slide) {
+                            //console.log('close');
+                            me.lookupViewModel().set(
+                                {
+                                    slideExifData: null,
+                                    exifVisualiserVisible: false
+                                }
+                            );
                         }
+
                     }, index);
                 }
             });
@@ -234,21 +244,38 @@ Ext.onReady(function () {
             var me = this;
             var vm = me.lookupViewModel();
 
-            vm.set({
-                slideExifData: null
-            });
-
             if (!vm.get('showExifData')) {
                 return;
             }
 
+            if (slide.type == 'video') { //no need to continue on videos
+                vm.set({
+                    slideExifData: null
+                });
+                return;
+            }
+
+
             var imgSrc = slide.src;
             var imgDataUrl, imgBlob;
 
-            me.on({
-                    'exifdatachecked': me.getSlideMeta
+            me.on(
+                {
+                    //'exifdatachecked': me.getSlideMeta
+                    exifdatachecked: function () {
+                        var meta = me.getSlideMeta();
+                        if (meta && !vm.get('exifManagerInstantiated')) {
+                            Ext.widget('exifManager', {
+                                viewModel: vm
+                            }).show();
+                            vm.set({
+                                exifManagerInstantiated: true
+                            });
+                        }
+                    }
                 }
             );
+
 
             //How does this work:
             //For metadata processing we use the Mattias Wallander's exifReader library - https://github.com/mattiasw/ExifReader
@@ -271,6 +298,7 @@ Ext.onReady(function () {
 
                 dzz.func.imgBlobToExifData(imgBlob, me, function (cmp, exifData) {
                     var me = cmp;
+
                     vm.set({
                             slideExifData: exifData
                         }
@@ -292,23 +320,7 @@ Ext.onReady(function () {
             if (!data.success) {
                 return false;
             }
-
-            var exif = data.data;
-            if (!exif.exif && !exif.gps) { //normally the exif object will contain Thumbnail and file properties and we do not want to use them for now
-                return false;
-            }
-
-            var retObj = {};
-            if (exif.exif) {
-                retObj['exif'] = exif.exif;
-            }
-            if (exif.gps) {
-                retObj['gps'] = exif.gps;
-            }
-
-            //console.log(retObj);
-
-            return retObj;
+            return data.data;
         }
 
     });
@@ -717,27 +729,125 @@ Ext.onReady(function () {
         defaults: {
             margin: 20
         },
+        style:{
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',//'#000000'
+            borderRadius: '10px'
+        },
         items: [
-            {xtype: 'box', html: '<i style="color: #03408C" class="fas fa-8x fa-info-circle"></i>'},
-            {xtype: 'box', html: '<i style="color: #E94335" class="fas fa-8x fa-map-marker-alt"></i>'}
+            {
+                xtype: 'box',
+                dzzRole: 'exif',
+                html: '<i style="color: #03408C; cursor: pointer;" class="fas fa-8x fa-info-circle"></i>'
+            },
+            {
+                xtype: 'box',
+                dzzRole: 'map',
+                html: '<i style="color: #E94335" class="fas fa-8x fa-map-marker-alt"></i>',
+                bind: {
+                    hidden: '{!slideExifData.data.gps}'
+                }
+            }
         ],
 
-        //singleton: true,
-        //hidden: true,
         bind: {
-            hidden: '{!showExifData}'
+            hidden: '{!showExifData || !slideExifData.success}'
         },
-        id: 'tester',
+
+        id: 'manager',
+        toFrontOnShow: false,
         initComponent: function () {
             var me = this;
             me.callParent(arguments);
 
             me.on({
                 show: function () {
-                    console.log('called show method');
-                    console.log(me);
+                    //console.log('called show method');
+                    //console.log(me.getViewModel().getData());
                     me.getEl().setZIndex(99999);
+                    //me.setZIndex(99999);
                     me.setY(window.innerHeight - me.getHeight() - 20, true);
+                    /*me.setBind({
+                     hidden: '{!showExifData || !slideExifData.success}'
+                     }
+                     );*/
+
+                    if (me.down('[dzzRole=exif]').getEl().hasListener('click')) { //otherwise the click listener will be executed n+1 times everytime the show() is called
+                        return;
+                    }
+                    me.down('[dzzRole=exif]').getEl().on(
+                        {
+                            click: function (e, t, opts) {
+                                var vm = me.getViewModel();
+                                if (!vm.get('exifVisualiserInstantiated')) {
+                                    Ext.widget('exifVisualiser', {
+                                        viewModel: vm
+                                    }).show();
+                                    vm.set({exifVisualiserInstantiated: true});
+                                }
+                                vm.set({
+                                    exifVisualiserVisible: !vm.get('exifVisualiserVisible') //to perform exifVisualiser toggling
+                                });
+                            }
+                        }
+                    );
+                },
+                hide: function () {
+                    var vm = me.getViewModel();
+                    vm.set({
+                        exifVisualiserVisible: false
+                    });
+                }
+            });
+
+
+        },
+    });
+
+    //container for displaying Exif data
+    Ext.define('dzz.COMPONENTS.exifVisualiser', {
+        extend: 'Ext.container.Container',
+        alias: 'widget.exifVisualiser',
+
+        width: 300,
+        height: window.innerHeight * .66,
+
+        layout: {
+            type: 'vbox', align: 'stretch'
+        },
+        floating: true,
+        draggable: true, resizable: true,
+        //shadow: false,
+        defaults: {
+            //margin: 20
+            flex: 1
+        },
+        items: [
+            {
+                title: 'EXIF data',
+                title: LOC.exifVisualiser.exifTitle,
+                xtype: 'propertygrid',
+                source: {},
+                bind: {
+                    source: '{exifDataFiltered}'
+                }
+            }
+        ],
+
+        id: 'visualiser',
+        toFrontOnShow: false,
+
+        bind: {
+            hidden: '{!exifVisualiserVisible}'
+        },
+
+        initComponent: function () {
+            var me = this;
+            me.callParent(arguments);
+
+            me.on({
+                show: function () {
+                    me.getEl().setZIndex(99999);
+                    me.setX(window.innerWidth - me.getWidth() - 50, true);
                 }
             });
 
