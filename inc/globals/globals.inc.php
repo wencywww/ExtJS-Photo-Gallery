@@ -17,6 +17,8 @@ require $glob['paths']['appRootPathAbsolute'] . "/locale/php/getPhpStrings.php";
 $glob['usr'] = "admin";
 $glob['pass'] = "admin";
 
+//place your own GMaps API key here
+$glob['gmapsApiKey'] = "AIzaSyDkHNTWjBPZsEpLrKBwImEd7Yx44nlLz3Y";
 
 $eRep = E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE & ~E_WARNING;
 error_reporting($eRep);

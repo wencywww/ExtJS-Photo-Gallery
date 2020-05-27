@@ -40,5 +40,7 @@ $glob['paths']['dropzonejs-js'] = $glob['paths']['appRootPrefix'] . "/libraries/
 
 $glob['paths']['exifreader-js'] = $glob['paths']['appRootPrefix'] . "/libraries/js/exifReader/exif-reader.js";
 
+$glob['paths']['googlemaps-js'] = "https://maps.google.com/maps/api/js";
+
 
 ?>

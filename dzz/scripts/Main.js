@@ -4,20 +4,23 @@ Ext.onReady(function () {
 
     var LOC = dzz.i18n.txt[2];
 
+    //our global app-wide ViewModel
     Ext.define('dzz.Ext.app.ViewModel', {
         extend: 'Ext.app.ViewModel',
         alias: 'viewmodel.gallery',
         data: {
             showExifData: true, //determine if we want to show EXIF data
             slideExifData: null, //keeps the EXIF data for the current slide
-            exifManagerInstantiated: false,
-            exifVisualiserInstantiated: false,
-            exifVisualiserVisible: false
+            exifManagerInstantiated: false, //tracks if the 2-icons container in the bottom center of the screen is already instantiated
+            exifVisualiserInstantiated: false, //tracks if the container holding the exif propertygrid and the gmap-panel is already instantiated
+            exifVisualiserVisible: false, //tracks if the container holding the exif propertygrid and the gmap-panel is visible
+            exifVisualiserExifVisible: false, //tracks if the exif-data property grid is visible
+            exifVisualiserMapVisible: false, //tracks if the gmap panel is visible
+            exifMapCenter: null //the data object for current slide's gps data
         },
         formulas: {
             exifDataFiltered: function (get) {
                 var exif = get('slideExifData.data.exif');
-                //console.log(exif);
                 var retObj = {};
                 Ext.Object.each(exif, function (key, val) {
                     if (val.description) {
@@ -25,6 +28,21 @@ Ext.onReady(function () {
                     }
                 });
                 return retObj;
+            },
+            exifVisualiserVisible: function (get) {
+                return get('exifVisualiserExifVisible') || get('exifVisualiserMapVisible');
+            },
+            exifMapCenter: function (get) {
+                var gps = get('slideExifData.data.gps');
+                if (!gps) {
+                    this.set({exifVisualiserMapVisible: false});
+                    return null;
+                }
+                return {
+                    lat: gps.Latitude,
+                    lng: gps.Longitude,
+                    marker: {title: Ext.util.Format.number(gps.Latitude, '0.00') + ' / ' + Ext.util.Format.number(gps.Longitude, '0.00') + ' / Altitude: ' + gps.Altitude + ' m'}
+                };
             }
         }
     });
@@ -57,7 +75,6 @@ Ext.onReady(function () {
                         },
                         {
                             xtype: 'button',
-                            //text: 'Upload files...',
                             text: LOC.btnStartUploader,
                             scale: 'medium',
                             iconAlign: 'top',
@@ -74,9 +91,6 @@ Ext.onReady(function () {
         }
     ).show();
 
-    /*Ext.widget('exifManager', {
-     viewModel: adminWindow.getViewModel()
-     }).getEl().setZIndex(0).show();*/
 })
 
 

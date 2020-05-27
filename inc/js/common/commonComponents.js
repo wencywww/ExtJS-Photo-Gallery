@@ -39,12 +39,6 @@ Ext.onReady(function () {
             }
         },
 
-        // showExifData: true,
-        // slideExifData: null, //will hold the EXIF data for the currently active slide if available
-        // bind: {
-        //     showExifData: '{showExifData.checked}'
-        // },
-
         initComponent: function () {
             var me = this;
             me.prepareTpl();
@@ -261,7 +255,6 @@ Ext.onReady(function () {
 
             me.on(
                 {
-                    //'exifdatachecked': me.getSlideMeta
                     exifdatachecked: function () {
                         var meta = me.getSlideMeta();
                         if (meta && !vm.get('exifManagerInstantiated')) {
@@ -720,31 +713,42 @@ Ext.onReady(function () {
         extend: 'Ext.container.Container',
         alias: 'widget.exifManager',
 
-        //width: window.innerWidth * .3, height: window.innerHeight * .1,
         layout: {
             type: 'hbox'
         },
         floating: true,
+        draggable: true,
         shadow: false,
         defaults: {
             margin: 20
         },
-        style:{
-            backgroundColor: 'rgba(0, 0, 0, 0.2)',//'#000000'
+        style: {
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
             borderRadius: '10px'
         },
         items: [
             {
                 xtype: 'box',
                 dzzRole: 'exif',
-                html: '<i style="color: #03408C; cursor: pointer;" class="fas fa-8x fa-info-circle"></i>'
+                html: '<i style="color: #03408C; cursor: pointer;" class="fas fa-5x fa-info-circle"></i>',
+                listeners: {
+                    hide: function (cmp) {
+                        cmp.getEl().down('i').toggleCls('dzz-fa-background-active', false);
+                    }
+                }
+
             },
             {
                 xtype: 'box',
                 dzzRole: 'map',
-                html: '<i style="color: #E94335" class="fas fa-8x fa-map-marker-alt"></i>',
+                html: '<i style="color: #E94335; cursor: pointer;" class="fas fa-5x fa-map-marker-alt"></i>',
                 bind: {
                     hidden: '{!slideExifData.data.gps}'
+                },
+                listeners: {
+                    hide: function (cmp) {
+                        cmp.getEl().down('i').toggleCls('dzz-fa-background-active', false);
+                    }
                 }
             }
         ],
@@ -753,48 +757,74 @@ Ext.onReady(function () {
             hidden: '{!showExifData || !slideExifData.success}'
         },
 
-        id: 'manager',
         toFrontOnShow: false,
         initComponent: function () {
             var me = this;
             me.callParent(arguments);
 
+            Ext.util.CSS.createStyleSheet( //adds a white background when an icon is toggled on
+                '.dzz-fa-background-active {background-color: rgba(255, 255, 255, 0.3); border-radius: 5px}'
+            );
+
             me.on({
                 show: function () {
-                    //console.log('called show method');
-                    //console.log(me.getViewModel().getData());
                     me.getEl().setZIndex(99999);
-                    //me.setZIndex(99999);
                     me.setY(window.innerHeight - me.getHeight() - 20, true);
-                    /*me.setBind({
-                     hidden: '{!showExifData || !slideExifData.success}'
-                     }
-                     );*/
 
-                    if (me.down('[dzzRole=exif]').getEl().hasListener('click')) { //otherwise the click listener will be executed n+1 times everytime the show() is called
-                        return;
-                    }
-                    me.down('[dzzRole=exif]').getEl().on(
-                        {
-                            click: function (e, t, opts) {
-                                var vm = me.getViewModel();
-                                if (!vm.get('exifVisualiserInstantiated')) {
-                                    Ext.widget('exifVisualiser', {
-                                        viewModel: vm
-                                    }).show();
-                                    vm.set({exifVisualiserInstantiated: true});
+                    var elementExif = me.down('[dzzRole=exif]').getEl();
+                    elementExif.down('i').toggleCls('dzz-fa-background-active', false);
+                    if (!elementExif.hasListener('click')) { //otherwise the click listener will be executed n+1 times everytime the show() is called
+                        elementExif.on(
+                            {
+                                click: function (e, t, opts) {
+                                    var vm = me.getViewModel();
+                                    if (!vm.get('exifVisualiserInstantiated')) {
+                                        Ext.widget('exifVisualiser', {
+                                            viewModel: vm
+                                        }).show();
+                                        vm.set({exifVisualiserInstantiated: true});
+                                    }
+                                    vm.set({
+                                        exifVisualiserExifVisible: !vm.get('exifVisualiserExifVisible') //to perform exif propertygrid toggling
+                                    });
+                                    elementExif.down('i').toggleCls('dzz-fa-background-active');
                                 }
-                                vm.set({
-                                    exifVisualiserVisible: !vm.get('exifVisualiserVisible') //to perform exifVisualiser toggling
-                                });
                             }
-                        }
-                    );
+                        );
+                    }
+
+
+                    var elementMap = me.down('[dzzRole=map]').getEl();
+                    elementMap.down('i').toggleCls('dzz-fa-background', false);
+
+                    if (!elementMap.hasListener('click')) { //otherwise the click listener will be executed n+1 times everytime the show() is called
+                        elementMap.on(
+                            {
+                                click: function (e, t, opts) {
+                                    var vm = me.getViewModel();
+                                    if (!vm.get('exifVisualiserInstantiated')) {
+                                        Ext.widget('exifVisualiser', {
+                                            viewModel: vm
+                                        }).show();
+                                        vm.set({exifVisualiserInstantiated: true});
+                                    }
+                                    vm.set({
+                                        exifVisualiserMapVisible: !vm.get('exifVisualiserMapVisible') //to perform gps gmap panel toggling
+                                    });
+                                    elementMap.down('i').toggleCls('dzz-fa-background-active');
+                                }
+                            }
+                        );
+                    }
+
+
                 },
                 hide: function () {
                     var vm = me.getViewModel();
                     vm.set({
-                        exifVisualiserVisible: false
+                        exifVisualiserVisible: false,
+                        exifVisualiserExifVisible: false,
+                        exifVisualiserMapVisible: false
                     });
                 }
             });
@@ -823,17 +853,40 @@ Ext.onReady(function () {
         },
         items: [
             {
-                title: 'EXIF data',
                 title: LOC.exifVisualiser.exifTitle,
                 xtype: 'propertygrid',
                 source: {},
                 bind: {
-                    source: '{exifDataFiltered}'
+                    source: '{exifDataFiltered}',
+                    hidden: '{!exifVisualiserExifVisible}'
+                }
+            },
+            {
+                title: LOC.exifVisualiser.mapTitle,
+                xtype: 'gmappanel',
+                gmapType: 'map',
+                center: {
+                    lat: 0,
+                    lng: 0,
+                    marker: {title: ''}
+                },
+                mapOptions: {
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                },
+                bind: {
+                    center: '{exifMapCenter}',
+                    title: LOC.exifVisualiser.mapTitle + ': {exifMapCenter.marker.title}',
+                    hidden: '{!exifVisualiserMapVisible}'
+                },
+                setCenter: function (center) { //handles the 'center' binding
+                    var newCenter = center ? center : this.center;
+                    this.gmap.setCenter(newCenter);
+                    this.gMapMarker.setPosition(newCenter);
+                    this.gMapMarker.setTitle(newCenter.marker.title);
                 }
             }
         ],
 
-        id: 'visualiser',
         toFrontOnShow: false,
 
         bind: {
@@ -853,6 +906,123 @@ Ext.onReady(function () {
 
 
         },
+    });
+
+    //Simple Google Maps panel, see: https://docs.sencha.com/extjs/7.2.0/classic/src/GMapPanel.js.html
+    //little modifications added
+    Ext.define('Ext.ux.GMapPanel', {
+        extend: 'Ext.panel.Panel',
+
+        alias: 'widget.gmappanel',
+
+        requires: ['Ext.window.MessageBox'],
+
+        initComponent: function () {
+            Ext.applyIf(this, {
+                plain: true,
+                gmapType: 'map',
+                border: false
+            });
+
+            this.callParent();
+        },
+
+        onBoxReady: function () {
+            var center = this.center;
+
+            this.callParent(arguments);
+
+            if (center) {
+                if (center.geoCodeAddr) {
+                    this.lookupCode(center.geoCodeAddr, center.marker);
+                }
+                else {
+                    this.createMap(center);
+                }
+            }
+            else {
+                Ext.raise('center is required');
+            }
+
+        },
+
+        createMap: function (center, marker) {
+            var options = Ext.apply({}, this.mapOptions);
+
+            /* global google */
+            options = Ext.applyIf(options, {
+                zoom: 14,
+                center: center,
+                mapTypeId: google.maps.MapTypeId.HYBRID
+            });
+            this.gmap = new google.maps.Map(this.body.dom, options);
+
+            if (!marker && center.marker) { //dzz addition
+                marker = center.marker;
+            }
+
+            if (marker) {
+                this.addMarker(Ext.applyIf(marker, {
+                    position: center
+                }));
+            }
+
+            Ext.each(this.markers, this.addMarker, this);
+            this.fireEvent('mapready', this, this.gmap);
+        },
+
+        addMarker: function (marker) {
+            var o;
+
+            marker = Ext.apply({
+                map: this.gmap
+            }, marker);
+
+            if (!marker.position) {
+                marker.position = new google.maps.LatLng(marker.lat, marker.lng);
+            }
+
+            o = new google.maps.Marker(marker);
+
+            Ext.Object.each(marker.listeners, function (name, fn) {
+                google.maps.event.addListener(o, name, fn);
+            });
+
+            this.gMapMarker = o; //dzz addition - we need the Marker instance for changing its position
+
+            return o;
+        },
+
+        lookupCode: function (addr, marker) {
+            this.geocoder = new google.maps.Geocoder();
+            this.geocoder.geocode({
+                address: addr
+            }, Ext.Function.bind(this.onLookupComplete, this, [marker], true));
+        },
+
+        onLookupComplete: function (data, response, marker) {
+            if (response !== 'OK') {
+                Ext.MessageBox.alert('Error', 'An error occured: "' + response + '"');
+
+                return;
+            }
+
+            this.createMap(data[0].geometry.location, marker);
+        },
+
+        afterComponentLayout: function (w, h) {
+            this.callParent(arguments);
+            this.redraw();
+        },
+
+        redraw: function () {
+            var map = this.gmap;
+
+            if (map) {
+                google.maps.event.trigger(map, 'resize');
+            }
+        }
+
     });
 
 });
