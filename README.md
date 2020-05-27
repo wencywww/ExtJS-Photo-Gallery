@@ -34,7 +34,8 @@ ExtJS Photo Gallery
   * **Requirements**
     * Linux/Windows-based PC (instructions below use Raspbian Buster and a Raspberry Pi board)
     * Apache webserver (nginx is also supported)
-    * PHP 7.x (instructions below use php 7.3) with the GD extension
+    * PHP => 7.1.3 (instructions below use php 7.3) with the GD extension
+    * A valid Google API Key with access to Maps JavaScript API, [get your own here](https://developers.google.com/maps/documentation/javascript/get-api-key)
   
   * **Sample steps on Raspbian**
   
@@ -84,7 +85,7 @@ ExtJS Photo Gallery
     $glob['usr'] = "admin";
     $glob['pass'] = "admin";
     //place your own GMaps API key here
-    $glob['gmapsApiKey'] = "AIzaSyDkHNTWjBPZsEpLrKBwImEd7Yx44nlLz3Y";
+    $glob['gmapsApiKey'] = "place-your-own-api-key-here";
     ````
 
 
@@ -108,6 +109,8 @@ ExtJS Photo Gallery
 
 **List of Changes**
 
+  * **2020-05-27**, Added requirement for php version, the minimum supported one is now 7.1.3, requirement for Symfony\Filesystem
+  * **2020-05-27**, Removed public Google API Key, the user should provide a new one
   * **2020-05-27**, The EXIF data is now preserved and can be visualised on the screen
   * **2020-04-14**, added support for autoplay for video files (audio muted) instead of the static thumbnail
   * **2020-04-02**, added uploader component via DropZone.js, and some styling via Font Awesome, updated symfony/http-foundation to v. 4.4.7
