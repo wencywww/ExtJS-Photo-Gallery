@@ -18,7 +18,7 @@ $glob['usr'] = "admin";
 $glob['pass'] = "admin";
 
 //place your own GMaps API key here
-$glob['gmapsApiKey'] = "place-your-own-api-key-here";
+$glob['gmapsApiKey'] = "AIzaSyDfEnARBVAHP3zCpYAh0n_ZznfSoXHLdXA";
 
 $eRep = E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE & ~E_WARNING;
 error_reporting($eRep);
