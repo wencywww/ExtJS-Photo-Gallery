@@ -76,11 +76,11 @@ ExtJS Photo Gallery
     $glob['paths']['appRootPrefix'] = "";
     ````
     
-    Set your timezone and change the default username/password. The Google Maps API key is required for the maps panel to function properly. The default one is generated specially for this application and can be changed with your own if needed (make sure the key is generated with the appropriate privileges):
+    Set your timezone and change the default username/password. Enter your Google Maps API key (see requirements section above) if you want to show the map panel with the position of the currently visible slide:
     ````
     nano /var/www/html/inc/globals/globals.inc.php
     
-    The settings are kept in the following 3 rows:
+    The settings are kept in the following rows:
     ini_set('date.timezone', 'Europe/Sofia');
     $glob['usr'] = "admin";
     $glob['pass'] = "admin";
