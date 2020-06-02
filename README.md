@@ -36,6 +36,24 @@ ExtJS Photo Gallery
     * Apache webserver (nginx is also supported)
     * PHP => 7.1.3 (instructions below use php 7.3) with the GD extension
     * A valid Google API Key with access to Maps JavaScript API, [get your own here](https://developers.google.com/maps/documentation/javascript/get-api-key)
+    * Recommended browser versions: Chrome/Edge Chromium => v.81; Firefox => v.77; Opera => v.68 
+    for proper image orientation (see Orientation issues section below)
+  
+  * **Image orientation issues**
+        
+      Image orientation issues can occur on certain browsers during the slideshow 
+      because we now preserve the EXIF information in the photos.
+      Chrome (81 and up), Firefox (77 and up) and Opera (68 and up) respect the Orientation EXIF tag 
+      (trough the `image-orientation: from-image` CSS rule applied by default) and render the files correctly rotated 
+      within the IMG elements. That was not the case with the older version of these browsers 
+      (the rule default was `image-orientation: none`), 
+      which can result in a 
+      situation where the thumbnail is fine, but the actual image is displayed incorrectly rotated 
+      if the Orientation tag is different from `top-left`. 
+      
+      The thumbs should be fine as they are auto-rotated by the Imagine library during the processing of the files.
+      
+      In short, use Chrome=>81 / FF=> 77 / Opera => 68 and you should be fine. 
   
   * **Sample steps on Raspbian**
   
