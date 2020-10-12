@@ -206,12 +206,23 @@ Ext.onReady(function () {
                 items: [
                     {
                         text: dzz.i18n.common.dateChange,
-                        iconCls: 'dzz-icon-calendar',
+                        iconCls: 'fas fa-calendar-alt', faIconColor: '#0077ff',
                         handler: function () {
                             Ext.widget({
                                     xtype: 'photoDateChange',
                                     recs: dataView.getStore().getRange(), //returns all store records
                                     currentDate: rec.get('path')
+                                }
+                            );
+                        }
+                    },
+                    {
+                        text: dzz.i18n.txt[4].homeGalleryDataView.gpsEdit,
+                        iconCls: 'fas fa-map-marked-alt', faIconColor: '#e94335',
+                        handler: function () {
+                            Ext.widget({
+                                    xtype: 'gpseditor',
+                                    recs: dataView.getStore().getRange() //returns all store records
                                 }
                             );
                         }

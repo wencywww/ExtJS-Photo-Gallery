@@ -54,7 +54,8 @@
         "menuRotate180": "180°",
         "menuDelete": "Erase selected...",
         "menuDeleteConfirmTitle": "FILE DELETION",
-        "menuDeleteConfirmText": " files to be deleted"
+        "menuDeleteConfirmText": " files to be deleted",
+        "gpsEdit": "GPS data..."
       },
       "exifVisualiser":{
         "exifTitle": "EXIF data",
@@ -72,6 +73,27 @@
         "btnWrite": "Save",
         "btnCancel": "Cancel",
         "winTitle": "FILE DATE CHANGE"
+      },
+      "gpsEditor": {
+        "winTitle": "GPS LOCATION EDITOR",
+        "latFieldLbl": "Latitude",
+        "latFieldTip": "Enter altitude [-90° to 90°] or drag the map marker on the left. The checkbox must be checked in order the altitude to be updated.",
+        "lngFieldLbl": "Longitude",
+        "lngFieldTip": "Enter longitude [-180° to 180°] or drag the map marker on the left. The checkbox must be checked in order the longitude to be updated.",
+        "altFieldLbl": "Altitude",
+        "altFieldTip": "Altitude in meters relative to the sea level. The checkbox must be checked in order the altitude to be updated.",
+        "elevationAPI": "Use elevation API (elevation-api.io)",
+        "elevationAPITip": "Will try to retrieve the altitude via the service provided by elevation-api.io. Note - in its free version, the service provides data with an accuracy of up to 5000 m",
+        "preserveExisting": "Preserve existing GPS data in files",
+        "preserveExistingTip": "If latitude/longitude/altitude data already exists in any of the selected files, it will NOT be updated. Un-check it for forced update.",
+        "locationsTitle": "Saved Locations",
+        "locationsComboLbl": "Locations",
+        "locationsBtnNew": "New",
+        "locationsBtnEdit": "Edit selected",
+        "locationsBtnDelete": "Delete selected...",
+        "locationsDeleteConfirm": "Delete location",
+        "locationsEditorLbl": "Location Name"
+
       },
       "photoUploader": {
         "winTitle": "FILE UPLOADER",

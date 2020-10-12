@@ -6,6 +6,7 @@ ExtJS Photo Gallery
 
 ![preview](gallery-screenshot.PNG)
 ![preview](gallery-screenshot-2.PNG)
+![preview](gallery-screenshot-3.PNG)
 
 **Source at GitHub**
 
@@ -20,6 +21,7 @@ ExtJS Photo Gallery
   * Items are automatically arranged by Year, Month and Day based on the EXIF information (if available)  
   * The data view can display items for particular day/month/year or all available items
   * Slideshow available via jquery/fancybox
+  * Photo geographical locations (latitude/longitude/altitude) can be fine-tuned if needed via intuitive Google Maps-based editor 
   * The EXIF data and location of the currently active slide can be visualised using a grid & Google Maps panel (using [ExifReader](https://github.com/mattiasw/ExifReader) JS library)
   * File uploading via the [DropZone.js](https://www.dropzonejs.com/)
   * Automatic thumbnail creation
@@ -120,13 +122,16 @@ ExtJS Photo Gallery
   * Both the launcher and the visualisation components can be dragged on the screen. The visualisation container can be resized.
   * Displaying the EXIF information can be switched off using the Settings menu on the top of the tree
   * Sort items asc/desc using the two arrow buttons on the top of the tree panel 
-  * To delete items - select them (using shift key), right click and choose "Erasing.."
-  * To change the date for items - select them, right click and choose "Change Date..". This can be done for an entire day also - just right click the tree node for the day on the left
+  * To delete items - select them (using shift key), right click and choose "Erase selected.."
+  * To change the date for items - select them, right click and choose "Change date..". This can be done for an entire day also - just right click the tree node for the day on the left
   * To rotate items - select them, right click and choose the desired rotation angle (this does not affect videos)
+  * To edit GPS location data for your photos, select them on the right (or entire day from the tree), right click and choose "GPS Data" from the menu. The GPS editor (on the third screenshot above) is a great way to add/edit location info for your old photos, which may lack it. 
   
 
 **List of Changes**
 
+  * **2020-10-21**, Implemented GPS Editor component for easy visual manipulation of the location data for your files. Location can be fine-tuned manually via form-fields for exact coordinates or automatically via Google Maps Marker. Altitude can also be set manually or automatically via the elevation-api.io service (precision is 5 km for the free version). The editor allows for **SEPARATE** manipulation of the altitude/longitude/altitude information (for example, you may only change the longitude of the selected photos), can be set to **preserve existing data** (updates only the files which do not have the appropriate info) or to forcibly update it. In additon, the component can save your **favorite locations** for later use via a combobox. That's convenient way to add location information for very old photos (when your camera did not have location services), or simply when your GPS device was turned off somehow      
+  * **2020-10-21**, Minor fixes. Get rid of silk-icons, replaced it with Font Awesome icons
   * **2020-05-27**, Added requirement for php version, the minimum supported one is now 7.1.3, requirement for Symfony\Filesystem
   * **2020-05-27**, Removed public Google API Key, the user should provide a new one
   * **2020-05-27**, The EXIF data is now preserved and can be visualised on the screen
