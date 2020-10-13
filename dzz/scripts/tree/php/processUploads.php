@@ -36,10 +36,16 @@ use Imagine\Image\Metadata;
 use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Filter\Basic;
 
+use lsolesen\pel\Pel;
+use lsolesen\pel\PelExif;
+use lsolesen\pel\PelDataWindow;
 use lsolesen\pel\PelJpeg;
 use lsolesen\pel\PelTiff;
 use lsolesen\pel\PelIfd;
-use lsolesen\pel\PelDataWindow;
+use lsolesen\pel\PelTag;
+use lsolesen\pel\PelEntryAscii;
+use lsolesen\pel\PelEntryRational;
+use lsolesen\pel\PelEntryByte;
 
 
 $imgPattern = '([^\s]+(\.(?i)(jpg|jpeg|png|gif|bmp|mp4|avi|mov|ogg|mkv))$)';
@@ -85,6 +91,13 @@ switch ($targetAction) {
         break;
     case 'rotatePhotos':
         rotatePhotos();
+        header("Content-type: application/json");
+        print json_encode(['success' => true]);
+        $fileSystem->remove($diskStatusFileName);
+        die();
+        break;
+    case 'setGpsData':
+        setGpsData();
         header("Content-type: application/json");
         print json_encode(['success' => true]);
         $fileSystem->remove($diskStatusFileName);
@@ -384,6 +397,7 @@ function changePhotoDates()
 
 }
 
+
 function rotatePhotos()
 {
     global $videoPattern;
@@ -425,6 +439,145 @@ function rotatePhotos()
         }
         touch($existingFileName, $existingFileNameMtime);
         touch($existingThumbFileName, $existingThumbFileNameMtime);
+    }
+}
+
+function setGpsData()
+{
+    global $videoPattern;
+
+    $files = json_decode($_REQUEST['photos']);
+
+    $latitudeUpdate = (bool)$_REQUEST['gps_lat_update'];
+    $latitude = (float)$_REQUEST['gps_lat'];
+    $longitudeUpdate = (bool)$_REQUEST['gps_lng_update'];
+    $longitude = (float)$_REQUEST['gps_lng'];
+    $altitudeUpdate = (bool)$_REQUEST['gps_alt_update'];
+    $altitude = (float)$_REQUEST['gps_alt'];
+
+    $preserveExistingData = (float)$_REQUEST['gps_preserve_existing'];
+
+    $latitude = 43.2507405;
+    $longitude = 24.7341142;
+    $altitude = 8848;
+
+    foreach ($files as $file) {
+        $fileName = pathinfo($file, PATHINFO_BASENAME);
+
+        //skip it if it is a video
+        if (preg_match($videoPattern, $fileName)) {
+            continue;
+        }
+
+        $targetFile = $_SERVER['DOCUMENT_ROOT'] . $file; //the full filesystem path
+
+        //the code below is using instructions found in the Pel examples directory,
+        //libraries/php/SymfonyComponents/vendor/lsolesen/pel/examples
+
+        // The input file is now read into a PelDataWindow object. At this point we do not know if the file stores JPEG or TIFF data, so
+        // instead of using one of the loadFile methods on PelJpeg or PelTiff we store the data in a PelDataWindow.
+        $data = new PelDataWindow(file_get_contents($targetFile));
+
+        // The static isValid methods in PelJpeg and PelTiff will tell us in an efficient manner which kind of data we are dealing with.
+        if (PelJpeg::isValid($data)) {
+            // The data was recognized as JPEG data, so we create a new empty PelJpeg object which will hold it. When we want to save the
+            // image again, we need to know which object to same (using the getBytes method), so we store $jpeg as $file too.
+            $img = new PelJpeg();
+        } elseif (PelTiff::isValid($data)) {
+            // The data was recognized as TIFF data. We prepare a PelTiff object to hold it, and record in $file that the PelTiff object is
+            // the top-most object (the one on which we will call getBytes).
+            $img = new PelTiff();
+        } else {
+            //neither JPEG or TIFF file, skipping it
+            continue;
+        }
+
+        // We then load the data from the PelDataWindow into our PelJpeg/Tiff object. No copying of data will be done, the PelJpeg object will
+        // simply remember that it is to ask the PelDataWindow for data when required.
+        $img->load($data);
+
+        //The PelJpeg object contains a number of sections, one of which might be our Exif data.
+        //The getExif() method is a convenient way of getting the right section with a minimum of fuzz.
+        $exif = $img->getExif();
+
+        if ($exif == null) {
+            //Ups, there is no APP1 section in the JPEG file. This is where the Exif data should be.
+            //In this case we simply create a new APP1 section (a PelExif object) and adds it to the PelJpeg object.
+            $exif = new PelExif();
+            $img->setExif($exif);
+
+            // We then create an empty TIFF structure in the APP1 section.
+            $tiff = new PelTiff();
+            $exif->setTiff($tiff);
+        } else {
+            // Surprice, surprice: Exif data is really just TIFF data! So we extract the PelTiff object for later use.
+            $tiff = $exif->getTiff();
+        }
+
+        // TIFF data has a tree structure much like a file system. There is a root IFD (Image File Directory) which contains a number of entries
+        // and maybe a link to the next IFD. The IFDs are chained together like this, but some of them can also contain what is known as
+        // sub-IFDs. For our purpose we only need the first IFD, for this is where the image description should be stored.
+        $ifd0 = $tiff->getIfd();
+
+        if ($ifd0 == null) {
+            // No IFD in the TIFF data? This probably means that the image didn't have any Exif information to start with, and so an empty
+            // PelTiff object was inserted by the code above. But this is no problem, we just create and insert an empty PelIfd object.
+            $ifd0 = new PelIfd(PelIfd::IFD0);
+            $tiff->setIfd($ifd0);
+        }
+
+        //this is a little confusing concept, but all other ifds are retrieved as a sub-ifds of ifd0
+        //So, we are searching for the GPS ifd and if it is missing - we are creating one
+        $gps_ifd = $ifd0->getSubIfd(PelIfd::GPS);
+
+        if ($gps_ifd == null) {
+            // Create a sub-IFD for holding GPS information. GPS data must be below the first IFD.
+            $gps_ifd = new PelIfd(PelIfd::GPS);
+            $ifd0->addSubIfd($gps_ifd);
+        }
+
+        $gps_ifd->addEntry(new PelEntryByte(PelTag::GPS_VERSION_ID, 2, 2, 0, 0));
+
+        //proceed with latitude information
+        if ($preserveExistingData && $latitudeUpdate && $gps_ifd->getEntry(PelTag::GPS_LATITUDE) !== null) {
+            //there is a latitude info within a file, and we don't want to update it
+        } else {
+            // We interpret a negative latitude as being south.
+            $latitude_ref = ($latitude < 0) ? 'S' : 'N';
+            $gps_ifd->addEntry(new PelEntryAscii(PelTag::GPS_LATITUDE_REF, $latitude_ref));
+
+            //Use the convertDecimalToDMS function to convert the latitude from something like 12.34° to 12° 20' 42"
+            list ($hours, $minutes, $seconds) = convertDecimalToDMS($latitude);
+            //addEntry REPLACES existing entries, so there is no way for duplicate entries
+            $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_LATITUDE, $hours, $minutes, $seconds));
+        }
+
+        //proceed with longitude information
+        if ($preserveExistingData && $longitudeUpdate && $gps_ifd->getEntry(PelTag::GPS_LONGITUDE) !== null) {
+            //there is a longitude info within a file, and we don't want to update it
+        } else {
+            // The longitude works like the latitude.
+            list ($hours, $minutes, $seconds) = convertDecimalToDMS($longitude);
+            $longitude_ref = ($longitude < 0) ? 'W' : 'E';
+            $gps_ifd->addEntry(new PelEntryAscii(PelTag::GPS_LONGITUDE_REF, $longitude_ref));
+
+            //addEntry REPLACES existing entries, so there is no way for duplicate entries
+            $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_LONGITUDE, $hours, $minutes, $seconds));
+        }
+
+
+        if ($preserveExistingData && $altitudeUpdate && $gps_ifd->getEntry(PelTag::GPS_ALTITUDE) !== null) {
+            //there is a altitude info within a file, and we don't want to update it
+        } else {
+            //Add the altitude. The absolute value is stored here, the sign is stored in the GPS_ALTITUDE_REF tag below.
+            $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_ALTITUDE, [abs($altitude), 1]));
+
+            // The reference is set to 1 (true) if the altitude is below sea level, or 0 (false) otherwise.
+            $gps_ifd->addEntry(new PelEntryByte(PelTag::GPS_ALTITUDE_REF, (int)($altitude < 0)));
+        }
+
+        /* Finally we store the data in the output file. */
+        file_put_contents($targetFile, $img->getBytes());
     }
 }
 
@@ -662,6 +815,57 @@ function setExifData($fileName, $exifData)
 
     }
 
+}
+
+/**
+ * Convert a decimal degree into degrees, minutes, and seconds.
+ *
+ * @param
+ *            int the degree in the form 123.456. Must be in the interval
+ *            [-180, 180].
+ *
+ * @return array a triple with the degrees, minutes, and seconds. Each
+ *         value is an array itself, suitable for passing to a
+ *         PelEntryRational. If the degree is outside the allowed interval,
+ *         null is returned instead.
+ */
+function convertDecimalToDMS($degree)
+{
+    if ($degree > 180 || $degree < -180) {
+        return null;
+    }
+
+    $degree = abs($degree); // make sure number is positive
+    // (no distinction here for N/S
+    // or W/E).
+
+    $seconds = $degree * 3600; // Total number of seconds.
+
+    $degrees = floor($degree); // Number of whole degrees.
+    $seconds -= $degrees * 3600; // Subtract the number of seconds
+    // taken by the degrees.
+
+    $minutes = floor($seconds / 60); // Number of whole minutes.
+    $seconds -= $minutes * 60; // Subtract the number of seconds
+    // taken by the minutes.
+
+    $seconds = round($seconds * 100, 0); // Round seconds with a 1/100th
+    // second precision.
+
+    return [
+        [
+            $degrees,
+            1
+        ],
+        [
+            $minutes,
+            1
+        ],
+        [
+            $seconds,
+            100
+        ]
+    ];
 }
 
 ?>

@@ -54,7 +54,8 @@
         "menuRotate180": "180°",
         "menuDelete": "Erase selected...",
         "menuDeleteConfirmTitle": "FILE DELETION",
-        "menuDeleteConfirmText": " files to be deleted"
+        "menuDeleteConfirmText": " files to be deleted",
+        "gpsEdit": "GPS data..."
       },
       "exifVisualiser":{
         "exifTitle": "EXIF data",
@@ -72,6 +73,12 @@
         "btnWrite": "Save",
         "btnCancel": "Cancel",
         "winTitle": "FILE DATE CHANGE"
+      },
+      "gpsEditor": {
+        "latFieldLbl": "Latitude",
+        "lngFieldLbl": "Longitude",
+        "altFieldLbl": "Altitude",
+        "winTitle": "GPS LOCATION EDITOR"
       },
       "photoUploader": {
         "winTitle": "FILE UPLOADER",

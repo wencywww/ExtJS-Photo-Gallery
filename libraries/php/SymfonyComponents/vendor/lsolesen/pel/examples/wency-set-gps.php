@@ -31,6 +31,7 @@ setlocale(LC_ALL, '');
 require_once dirname(__FILE__) . '/../autoload.php';
 
 use lsolesen\pel\Pel;
+use lsolesen\pel\PelExif;
 use lsolesen\pel\PelDataWindow;
 use lsolesen\pel\PelJpeg;
 use lsolesen\pel\PelTiff;
@@ -149,6 +150,9 @@ $gps_ifd->addEntry(new PelEntryByte(PelTag::GPS_VERSION_ID, 2, 2, 0, 0));
 $latitude = 43.2507405;
 $longitude = 24.7341142;
 $altitude = 8848;
+$latitude = 88.88;
+$longitude = 44.44;
+$altitude = 8888;
 /* We interpret a negative latitude as being south. */
 $latitude_ref = ($latitude < 0) ? 'S' : 'N';
 
@@ -169,19 +173,17 @@ $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_LONGITUDE, $hours, $minutes,
      * Add the altitude. The absolute value is stored here, the sign is
      * stored in the GPS_ALTITUDE_REF tag below.
      */
-$gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_ALTITUDE, [
-    abs($altitude),
-    1
-]));
+//$gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_ALTITUDE, [abs($altitude), 1]));
 /*
  * The reference is set to 1 (true) if the altitude is below sea
  * level, or 0 (false) otherwise.
  */
-$gps_ifd->addEntry(new PelEntryByte(PelTag::GPS_ALTITUDE_REF, (int)($altitude < 0)));
+//$gps_ifd->addEntry(new PelEntryByte(PelTag::GPS_ALTITUDE_REF, (int)($altitude < 0)));
 
 
 /* Finally we store the data in the output file. */
-file_put_contents('topchi_gps.jpg', $img->getBytes()); die();
+file_put_contents('topchi_gps.jpg', $img->getBytes());
+die();
 
 
 var_dump($ifd_gps);

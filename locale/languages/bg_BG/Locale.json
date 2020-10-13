@@ -54,7 +54,8 @@
         "menuRotate180": "180°",
         "menuDelete": "Изтриване...",
         "menuDeleteConfirmTitle": "ИЗТРИВАНЕ НА ФАЙЛОВЕ",
-        "menuDeleteConfirmText": " файла ще бъдат изтрити"
+        "menuDeleteConfirmText": " файла ще бъдат изтрити",
+        "gpsEdit": "GPS данни..."
       },
       "exifVisualiser":{
         "exifTitle": "EXIF данни",
@@ -72,6 +73,12 @@
         "btnWrite": "Запис",
         "btnCancel": "Отказ",
         "winTitle": "СМЯНА НА ДАТА НА СНИМКИ"
+      },
+      "gpsEditor": {
+        "latFieldLbl": "Геогр. ширина",
+        "lngFieldLbl": "Геогр. дължина",
+        "altFieldLbl": "Надм. височина",
+        "winTitle": "СМЯНА НА ГЕОГРАФСКИ КООРДИНАТИ НА СНИМКИ"
       },
       "photoUploader": {
         "winTitle": "КАЧВАНЕ НА СНИМКИ",

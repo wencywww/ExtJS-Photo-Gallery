@@ -188,6 +188,17 @@ Ext.onReady(function () {
                         }
                     },
                     {
+                        text: LOC.homeGalleryDataView.gpsEdit,
+                        iconCls: 'dzz-icon-calendar',
+                        handler: function (menuitem) {
+                            Ext.widget({
+                                    xtype: 'gpseditor',
+                                    recs: view.getSelection()
+                                }
+                            );
+                        }
+                    },
+                    {
                         //text: 'Delete...',
                         text: LOC.homeGalleryDataView.menuDelete,
                         iconCls: 'dzz-icon-delete',
@@ -1023,6 +1034,99 @@ Ext.onReady(function () {
             }
         }
 
+    });
+
+    //panel for changing the GPS information of the photos
+    Ext.define('dzz.COMPONENTS.gpsEditor', {
+        extend: 'Ext.form.Panel',
+        alias: 'widget.gpseditor',
+        bodyPadding: 3,
+        url: 'scripts/tree/php/processUploads.php',
+        layout: {type: 'hbox'},
+        items: [
+            {xtype: 'hiddenfield', name: 'targetAction', value: 'setGpsData'},
+            {xtype: 'hiddenfield', name: 'photos', value: ''},
+            {xtype: 'displayfield', width: 500, height: 500, value: 'Gmap panel goes here...'},
+            {xtype: 'container',
+                layout: {type: 'vbox'},
+                items:[
+                    {xtype: 'container',
+                        layout: {type: 'hbox'},
+                        items:[
+                            {xtype: 'checkbox'},
+                            {
+                                xtype: 'numberfield',
+                                name: 'gps_latitude',
+                                allowEponential: false,
+                                autoStripChars: true,
+                                decimalPrecision: 8,
+                                decimalSeparator: '.',
+                                minValue: -90, maxValue: 90,
+                                allowBlank: false,
+                                submitLocaleSeparator: false,
+                                fieldLabel: LOC.gpsEditor.latFieldLbl
+                            }
+                        ]
+                    }
+                ]
+            }
+
+        ],
+        buttons: [
+            {
+                text: LOC.photoDateChange.btnWrite,
+                //iconCls: 'dzz-icon-ok',
+                iconCls: 'fas fa-check', faIconColor: '#008000', scale: 'medium',
+                formBind: true,
+                handler: function (btn) {
+                    btn.up('form').submit();
+                }
+            },
+            {
+                text: LOC.photoDateChange.btnCancel,
+                //iconCls: 'dzz-icon-delete',
+                iconCls: 'fas fa-times', faIconColor: '#ff0000', scale: 'medium',
+                handler: function (btn) {
+                    btn.up('window').close();
+                }
+            }
+        ],
+
+        initComponent: function () {
+            var me = this;
+            me.callParent(arguments);
+            me.extractData();
+            me.showForm();
+            me.getForm().on(
+                {
+                    actioncomplete: function (frm, action) {
+                        frm.owner.up('window').close();
+                        Ext.getCmp('dzzAppWindow').down('treepanel').getStore().reload();
+
+                        var view = Ext.getCmp('dzzAppWindow').down('homeGalleryDataView');
+                        if (view) {
+                            view.getStore().reload();
+                            view.refresh();
+                        }
+                    }
+                }
+            );
+        },
+        showForm: function () {
+            var me = this;
+            Ext.widget({
+                xtype: 'window',
+                modal: true,
+                title: LOC.gpsEditor.winTitle,
+                items: [me]
+            }).show();
+        },
+        extractData: function () {
+            var me = this;
+            var data = Ext.Array.pluck(me.recs, 'data');
+            var photos = Ext.Array.pluck(data, 'realUri');
+            me.down('hiddenfield[name=photos]').setValue(Ext.encode(photos));
+        }
     });
 
 });
