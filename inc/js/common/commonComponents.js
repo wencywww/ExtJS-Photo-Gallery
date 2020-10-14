@@ -1042,29 +1042,50 @@ Ext.onReady(function () {
         alias: 'widget.gpseditor',
         bodyPadding: 3,
         url: 'scripts/tree/php/processUploads.php',
-        layout: {type: 'hbox'},
+        layout: {type: 'hbox', align: 'stretch'},
+        //width: 800, height: 800,
         items: [
             {xtype: 'hiddenfield', name: 'targetAction', value: 'setGpsData'},
             {xtype: 'hiddenfield', name: 'photos', value: ''},
-            {xtype: 'displayfield', width: 500, height: 500, value: 'Gmap panel goes here...'},
-            {xtype: 'container',
-                layout: {type: 'vbox'},
-                items:[
-                    {xtype: 'container',
-                        layout: {type: 'hbox'},
-                        items:[
-                            {xtype: 'checkbox'},
+            {
+                flex: .70,
+                xtype: 'gmappanel',
+                gmapType: 'map',
+                center: {
+                    lat: 0,
+                    lng: 0,
+                    marker: {title: ''}
+                },
+                mapOptions: {
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                }
+            },
+            {
+                flex: .30,
+                xtype: 'container',
+                layout: {type: 'vbox', align: 'stretch'},
+                items: [
+                    {
+                        xtype: 'container', style: {backgroundColor: '#ffcc99'},
+                        layout: {type: 'hbox', pack: 'end', padding: 20},
+                        items: [
+                            {
+                                xtype: 'checkbox', name: 'gps_lat_update', inputValue: true,
+                                uncheckedValue: 'false'
+                            },
                             {
                                 xtype: 'numberfield',
                                 name: 'gps_latitude',
-                                allowEponential: false,
+                                allowExponential: false,
                                 autoStripChars: true,
                                 decimalPrecision: 8,
                                 decimalSeparator: '.',
-                                minValue: -90, maxValue: 90,
+                                minValue: -90,
+                                maxValue: 90,
                                 allowBlank: false,
                                 submitLocaleSeparator: false,
-                                fieldLabel: LOC.gpsEditor.latFieldLbl
+                                fieldLabel: LOC.gpsEditor.latFieldLbl,
+                                //flex: 1
                             }
                         ]
                     }
@@ -1118,7 +1139,10 @@ Ext.onReady(function () {
                 xtype: 'window',
                 modal: true,
                 title: LOC.gpsEditor.winTitle,
-                items: [me]
+                items: [me],
+                layout: {type: 'fit'},
+                width: window.innerWidth * .5,
+                height: window.innerHeight * .5,
             }).show();
         },
         extractData: function () {

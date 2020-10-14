@@ -215,6 +215,17 @@ Ext.onReady(function () {
                                 }
                             );
                         }
+                    },
+                    {
+                        text: dzz.i18n.txt[4].homeGalleryDataView.gpsEdit,
+                        iconCls: 'dzz-icon-calendar',
+                        handler: function () {
+                            Ext.widget({
+                                    xtype: 'gpseditor',
+                                    recs: dataView.getStore().getRange() //returns all store records
+                                }
+                            );
+                        }
                     }
                 ]
             }).showAt(e.getXY(), true);

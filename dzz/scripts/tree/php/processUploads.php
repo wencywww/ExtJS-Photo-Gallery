@@ -97,6 +97,7 @@ switch ($targetAction) {
         die();
         break;
     case 'setGpsData':
+        die();
         setGpsData();
         header("Content-type: application/json");
         print json_encode(['success' => true]);
