@@ -1044,6 +1044,19 @@ Ext.onReady(function () {
         url: 'scripts/tree/php/processUploads.php',
         layout: {type: 'hbox', align: 'stretch'},
         //width: 800, height: 800,
+        viewModel: {
+            data: {
+                lat: 43.25,
+                lng: 24.73,
+                alt: 30,
+                centerMap: true
+            },
+            formulas: {
+                LatLng: function (get) {
+                    return {'lat': get('lat'), 'lng': get('lng')};
+                }
+            }
+        },
         items: [
             {xtype: 'hiddenfield', name: 'targetAction', value: 'setGpsData'},
             {xtype: 'hiddenfield', name: 'photos', value: ''},
@@ -1054,7 +1067,7 @@ Ext.onReady(function () {
                 center: {
                     lat: 0,
                     lng: 0,
-                    marker: {title: ''}
+                    marker: {title: '', animation: google.maps.Animation.DROP}
                 },
                 mapOptions: {
                     mapTypeId: google.maps.MapTypeId.ROADMAP
@@ -1067,27 +1080,81 @@ Ext.onReady(function () {
                 items: [
                     {
                         xtype: 'container', style: {backgroundColor: '#ffcc99'},
-                        layout: {type: 'hbox', pack: 'end', padding: 20},
+                        layout: {type: 'hbox', pack: 'end', padding: 10},
+                        defaults: {
+                            allowExponential: false, autoStripChars: true, decimalPrecision: 8,
+                            decimalSeparator: '.', allowBlank: false, submitLocaleSeparator: false,
+                            minWidth: 255
+                        },
                         items: [
                             {
                                 xtype: 'checkbox', name: 'gps_lat_update', inputValue: true,
-                                uncheckedValue: 'false'
+                                uncheckedValue: 'false', value: true,
+                                padding: '0 20 0 0', minWidth: undefined
                             },
                             {
                                 xtype: 'numberfield',
                                 name: 'gps_latitude',
-                                allowExponential: false,
-                                autoStripChars: true,
-                                decimalPrecision: 8,
-                                decimalSeparator: '.',
                                 minValue: -90,
                                 maxValue: 90,
-                                allowBlank: false,
-                                submitLocaleSeparator: false,
                                 fieldLabel: LOC.gpsEditor.latFieldLbl,
-                                //flex: 1
+                                flex: 1,
+                                bind: '{lat}'
                             }
                         ]
+                    },
+                    {
+                        xtype: 'container', style: {backgroundColor: '#ffcc99'},
+                        layout: {type: 'hbox', pack: 'end', padding: 10},
+                        defaults: {
+                            allowExponential: false, autoStripChars: true, decimalPrecision: 8,
+                            decimalSeparator: '.', allowBlank: false, submitLocaleSeparator: false,
+                            minWidth: 255
+                        },
+                        items: [
+                            {
+                                xtype: 'checkbox', name: 'gps_lat_update', inputValue: true,
+                                uncheckedValue: 'false', value: true,
+                                padding: '0 20 0 0', minWidth: undefined
+                            },
+                            {
+                                xtype: 'numberfield',
+                                name: 'gps_longitude',
+                                minValue: -180,
+                                maxValue: 180,
+                                fieldLabel: LOC.gpsEditor.lngFieldLbl,
+                                flex: 1,
+                                bind: '{lng}'
+                            }
+                        ]
+                    },
+                    {
+                        xtype: 'container', style: {backgroundColor: '#ffcc99'},
+                        layout: {type: 'hbox', pack: 'end', padding: 10},
+                        defaults: {
+                            allowExponential: false, autoStripChars: true, decimalPrecision: 8,
+                            decimalSeparator: '.', allowBlank: false, submitLocaleSeparator: false,
+                            minWidth: 255
+                        },
+                        items: [
+                            {
+                                xtype: 'checkbox', name: 'gps_lat_update', inputValue: true,
+                                uncheckedValue: 'false',
+                                padding: '0 20 0 0', minWidth: undefined
+                            },
+                            {
+                                xtype: 'numberfield',
+                                name: 'gps_altitude',
+                                fieldLabel: LOC.gpsEditor.altFieldLbl,
+                                flex: 1,
+                                bind: '{alt}'
+                            }
+                        ]
+                    },
+                    {
+                        style: {backgroundColor: '#ffcc00'}, xtype: 'checkbox', name: 'gps_preserve_existing', inputValue: true,
+                        uncheckedValue: 'false', value: true, boxLabel: 'Запазване на наличните GPS данни',
+                        padding: '0 0 0 10'
                     }
                 ]
             }
@@ -1115,6 +1182,7 @@ Ext.onReady(function () {
 
         initComponent: function () {
             var me = this;
+
             me.callParent(arguments);
             me.extractData();
             me.showForm();
@@ -1132,6 +1200,7 @@ Ext.onReady(function () {
                     }
                 }
             );
+            me.adjustMapSettings();
         },
         showForm: function () {
             var me = this;
@@ -1150,7 +1219,57 @@ Ext.onReady(function () {
             var data = Ext.Array.pluck(me.recs, 'data');
             var photos = Ext.Array.pluck(data, 'realUri');
             me.down('hiddenfield[name=photos]').setValue(Ext.encode(photos));
+        },
+
+        //options to adjust for the Google Maps Panel:
+        //the idea is the desired coordinates to be editable via both draggable Maps Marker and ExtJS number fields
+        //The fields and map center are bound to a ViewModel
+        adjustMapSettings: function () {
+            var me = this;
+            var vm = me.getViewModel();
+
+            var map = me.down('gmappanel').gmap;
+            var marker = me.down('gmappanel').gMapMarker;
+
+            //We need to be able to drag the marker
+            marker.setDraggable(true);
+
+            //Centers the map and it's marker depending on the view model data
+            var centerMap = function () {
+                if (vm.get('centerMap')) {
+                    map.setCenter(vm.get('LatLng'));
+                    marker.setPosition(vm.get('LatLng'));
+                }
+            }
+
+            //This bind is listening for changes on the view model values
+            //and centers the map if needed.
+            var bind = vm.bind(['{lat}', '{lng}'], centerMap);
+
+            //When the drag is started (and not finished), we disable the map centering...
+            marker.addListener('dragstart', function () {
+                vm.set('centerMap', false);
+            });
+
+            //... but the numberfields in the form are updated
+            marker.addListener('drag', function () {
+                vm.set({
+                    lat: marker.getPosition().lat(),
+                    lng: marker.getPosition().lng()
+                });
+            });
+
+            //when the drag ends - we simply permit the centering
+            //and we need to call the centerMap function,
+            //because at this point the view model is already recalculated and the above bind will not execute it
+            marker.addListener('dragend', function () {
+                vm.set('centerMap', true);
+                centerMap();
+            });
+
+
         }
+
     });
 
 });

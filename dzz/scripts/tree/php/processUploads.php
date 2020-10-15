@@ -97,7 +97,6 @@ switch ($targetAction) {
         die();
         break;
     case 'setGpsData':
-        die();
         setGpsData();
         header("Content-type: application/json");
         print json_encode(['success' => true]);
@@ -450,17 +449,13 @@ function setGpsData()
     $files = json_decode($_REQUEST['photos']);
 
     $latitudeUpdate = (bool)$_REQUEST['gps_lat_update'];
-    $latitude = (float)$_REQUEST['gps_lat'];
+    $latitude = (float)$_REQUEST['gps_latitude'];
     $longitudeUpdate = (bool)$_REQUEST['gps_lng_update'];
-    $longitude = (float)$_REQUEST['gps_lng'];
+    $longitude = (float)$_REQUEST['gps_longitude'];
     $altitudeUpdate = (bool)$_REQUEST['gps_alt_update'];
-    $altitude = (float)$_REQUEST['gps_alt'];
+    $altitude = (float)$_REQUEST['gps_altitude'];
 
     $preserveExistingData = (float)$_REQUEST['gps_preserve_existing'];
-
-    $latitude = 43.2507405;
-    $longitude = 24.7341142;
-    $altitude = 8848;
 
     foreach ($files as $file) {
         $fileName = pathinfo($file, PATHINFO_BASENAME);
