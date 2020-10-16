@@ -15,6 +15,7 @@ $glob['paths']['uploadDir'] = $glob['paths']['appRootPrefix'] . "/data/upload";
 $glob['paths']['photosDir'] = $glob['paths']['appRootPrefix'] . "/data/photos";
 $glob['paths']['thumbTemplateDir'] = $glob['paths']['appRootPrefix'] . "/data/thumb-template";
 $glob['paths']['diskStatusFileName'] = $glob['paths']['photosDir'] . "/diskStatus.json";
+$glob['paths']['savedLocationsFileName'] = $glob['paths']['photosDir'] . "/savedLocations.json";
 
 
 $dzzTheme = (isset($_COOKIE['dzz_UITheme'])) ? ($_COOKIE['dzz_UITheme']) : ("classic");

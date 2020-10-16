@@ -629,7 +629,7 @@ Ext.onReady(function () {
             dz.on('queuecomplete', function () {
                 dz.options.autoProcessQueue = false;
                 //this event is strangely fired by the destroy() call when you open the uploader, drop some files and click the Close button WITHOUT uploading them
-                //seems to be the view model is already destroyed at this moment
+                //seems to be the ViewModel is already destroyed at this moment
                 if (!vm.isDestroyed) {
                     vm.set('progressVisible', false);
                     vm.set('dzQueuedFiles', dz.getQueuedFiles().length);
@@ -1046,9 +1046,9 @@ Ext.onReady(function () {
         //width: 800, height: 800,
         viewModel: {
             data: {
-                lat: 43.25,
-                lng: 24.73,
-                alt: 30,
+                lat: 0,
+                lng: 0,
+                alt: 0,
                 centerMap: true
             },
             formulas: {
@@ -1088,8 +1088,8 @@ Ext.onReady(function () {
                         },
                         items: [
                             {
-                                xtype: 'checkbox', name: 'gps_lat_update', inputValue: true,
-                                uncheckedValue: 'false', value: true,
+                                xtype: 'checkbox', name: 'gps_lat_update', inputValue: 1,
+                                uncheckedValue: 0, value: true,
                                 padding: '0 20 0 0', minWidth: undefined
                             },
                             {
@@ -1113,8 +1113,8 @@ Ext.onReady(function () {
                         },
                         items: [
                             {
-                                xtype: 'checkbox', name: 'gps_lat_update', inputValue: true,
-                                uncheckedValue: 'false', value: true,
+                                xtype: 'checkbox', name: 'gps_lng_update', inputValue: 1,
+                                uncheckedValue: 0, value: true,
                                 padding: '0 20 0 0', minWidth: undefined
                             },
                             {
@@ -1138,8 +1138,8 @@ Ext.onReady(function () {
                         },
                         items: [
                             {
-                                xtype: 'checkbox', name: 'gps_lat_update', inputValue: true,
-                                uncheckedValue: 'false',
+                                xtype: 'checkbox', name: 'gps_alt_update', inputValue: 1,
+                                uncheckedValue: 0,
                                 padding: '0 20 0 0', minWidth: undefined
                             },
                             {
@@ -1152,9 +1152,28 @@ Ext.onReady(function () {
                         ]
                     },
                     {
-                        style: {backgroundColor: '#ffcc00'}, xtype: 'checkbox', name: 'gps_preserve_existing', inputValue: true,
-                        uncheckedValue: 'false', value: true, boxLabel: 'Запазване на наличните GPS данни',
+                        style: {backgroundColor: '#ffcc00'},
+                        xtype: 'checkbox',
+                        name: 'gps_elevation_api',
+                        inputValue: 1,
+                        uncheckedValue: 0,
+                        value: true,
+                        boxLabel: 'Use elevation API (elevation-api.io)',
                         padding: '0 0 0 10'
+                    },
+                    {
+                        style: {backgroundColor: '#ffcc00'},
+                        xtype: 'checkbox',
+                        name: 'gps_preserve_existing',
+                        inputValue: 1,
+                        uncheckedValue: 0,
+                        value: true,
+                        boxLabel: 'Запазване на наличните GPS данни',
+                        padding: '0 0 0 10'
+                    }, {
+                        xtype: 'combobox', fieldLabel: 'My Locations', labelAlign: 'top',
+                        padding: '0 0 0 10', displayField: 'name', valueField: 'id', queryMode: 'local',
+                        forceSelection: true, anyMatch: true
                     }
                 ]
             }
@@ -1201,6 +1220,7 @@ Ext.onReady(function () {
                 }
             );
             me.adjustMapSettings();
+            me.getSavedLocations();
         },
         showForm: function () {
             var me = this;
@@ -1222,7 +1242,7 @@ Ext.onReady(function () {
         },
 
         //options to adjust for the Google Maps Panel:
-        //the idea is the desired coordinates to be editable via both draggable Maps Marker and ExtJS number fields
+        //The idea is the desired coordinates to be editable via both draggable Maps Marker and ExtJS number fields
         //The fields and map center are bound to a ViewModel
         adjustMapSettings: function () {
             var me = this;
@@ -1234,7 +1254,7 @@ Ext.onReady(function () {
             //We need to be able to drag the marker
             marker.setDraggable(true);
 
-            //Centers the map and it's marker depending on the view model data
+            //Centers the map and it's marker depending on the ViewModel data
             var centerMap = function () {
                 if (vm.get('centerMap')) {
                     map.setCenter(vm.get('LatLng'));
@@ -1242,11 +1262,13 @@ Ext.onReady(function () {
                 }
             }
 
-            //This bind is listening for changes on the view model values
-            //and centers the map if needed.
+            //This bind is listening for changes on the ViewModel values
+            //and centers the map if needed. This is the way to listen to the ViewModel changes
+            //as the class itself don't have events
             var bind = vm.bind(['{lat}', '{lng}'], centerMap);
 
-            //When the drag is started (and not finished), we disable the map centering...
+            //When the drag is started (and not finished), we disable the map centering,
+            //otherwise it will try to center itself many times which is confusing...
             marker.addListener('dragstart', function () {
                 vm.set('centerMap', false);
             });
@@ -1261,10 +1283,97 @@ Ext.onReady(function () {
 
             //when the drag ends - we simply permit the centering
             //and we need to call the centerMap function,
-            //because at this point the view model is already recalculated and the above bind will not execute it
+            //because at this point the ViewModel is already recalculated and the above bind will not execute it
             marker.addListener('dragend', function () {
                 vm.set('centerMap', true);
                 centerMap();
+                me.setElevation();
+            });
+
+
+        },
+
+        //attempts to get the elevation based on a latitude/longitude
+        //currently uses the https://elevation-api.io service
+        setElevation: function () {
+            var me = this;
+            var vm = me.getViewModel();
+
+            if (!me.down('checkbox[name=gps_elevation_api]').checked) {
+                return;
+            }
+
+            var apiUrl = 'https://elevation-api.io/api/elevation?points=(' + vm.get('lat') + ',' + vm.get('lng') + ')';
+
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) { //request successful
+                    var resp = JSON.parse(this.responseText);
+                    var altitude = resp.elevations[0].elevation;
+                    if (altitude !== false) {
+                        vm.set('alt', altitude);
+                    }
+                    console.log(altitude);
+                }
+
+            }
+            xhttp.timeout = 3000; //wait 3 seconds for response
+            xhttp.open('GET', apiUrl, true);
+            xhttp.send();
+        },
+
+        //creates a store for the My Locations combobox
+        getSavedLocations: function () {
+            var me = this;
+            var vm = me.getViewModel();
+
+            var combo = me.down('combobox');
+
+
+            var store = Ext.create('Ext.data.JsonStore', {
+                    fields: [
+                        {name: 'id', type: 'int'},
+                        'name',
+                        {name: 'lat', type: 'float'},
+                        {name: 'lng', type: 'float'},
+                        {name: 'alt', type: 'float'}
+                    ],
+                    proxy: {
+                        type: 'ajax',
+                        url: 'scripts/tree/php/processUploads.php',
+                        actionMethods: {read: 'POST'},
+                        extraParams: {targetAction: 'manageSavedLocations', actionType: 'get'},
+                        reader: {
+                            type: 'json',
+                            rootProperty: 'RECORDS'
+                        }
+                    },
+                    autoLoad: true
+                }
+            );
+
+            vm.setStores({locations: store});
+
+            combo.setBind({store: '{locations}'});
+            combo.on({
+                select: function (combo, rec) {
+                    //console.log('combo selection');
+                    //console.log(rec);
+                    vm.set({
+                        lat: rec.get('lat'), lng: rec.get('lng'), alt: rec.get('alt'),
+                        locationID: rec.get('id'), locationName: rec.get('name')
+                    });
+                }
+            });
+
+            //auto-select the most-recent location within the store (they are sorted server-side)
+            store.on({
+                load: function (store, recs) {
+                    if (recs.length > 0) {
+                        combo.select(0);
+                        combo.fireEvent('select', combo, recs[0]);
+                    }
+                }
             });
 
 

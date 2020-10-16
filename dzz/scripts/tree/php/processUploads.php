@@ -7,7 +7,7 @@ $uploadsDir = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['uploadDir'];
 $photosDir = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['photosDir'];
 $thumbTemplatesDir = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['thumbTemplateDir'];
 $diskStatusFileName = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['diskStatusFileName'];
-
+$savedLocationsFileName = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['savedLocationsFileName'];
 
 //require symfony (and not only) stuff
 //require($_SERVER['DOCUMENT_ROOT'] . "/libraries/php/SymfonyComponents/vendor/autoload.php");
@@ -100,7 +100,12 @@ switch ($targetAction) {
         setGpsData();
         header("Content-type: application/json");
         print json_encode(['success' => true]);
-        $fileSystem->remove($diskStatusFileName);
+        die();
+        break;
+    case 'manageSavedLocations':
+        $locations = manageSavedLocations();
+        header("Content-type: application/json");
+        print json_encode(['success' => true, 'RECORDS' => $locations]);
         die();
         break;
     case 'deletePhotos':
@@ -397,7 +402,6 @@ function changePhotoDates()
 
 }
 
-
 function rotatePhotos()
 {
     global $videoPattern;
@@ -455,7 +459,7 @@ function setGpsData()
     $altitudeUpdate = (bool)$_REQUEST['gps_alt_update'];
     $altitude = (float)$_REQUEST['gps_altitude'];
 
-    $preserveExistingData = (float)$_REQUEST['gps_preserve_existing'];
+    $preserveExistingData = (bool)$_REQUEST['gps_preserve_existing'];
 
     foreach ($files as $file) {
         $fileName = pathinfo($file, PATHINFO_BASENAME);
@@ -534,47 +538,82 @@ function setGpsData()
 
         $gps_ifd->addEntry(new PelEntryByte(PelTag::GPS_VERSION_ID, 2, 2, 0, 0));
 
-        //proceed with latitude information
-        if ($preserveExistingData && $latitudeUpdate && $gps_ifd->getEntry(PelTag::GPS_LATITUDE) !== null) {
-            //there is a latitude info within a file, and we don't want to update it
-        } else {
-            // We interpret a negative latitude as being south.
-            $latitude_ref = ($latitude < 0) ? 'S' : 'N';
-            $gps_ifd->addEntry(new PelEntryAscii(PelTag::GPS_LATITUDE_REF, $latitude_ref));
 
-            //Use the convertDecimalToDMS function to convert the latitude from something like 12.34° to 12° 20' 42"
-            list ($hours, $minutes, $seconds) = convertDecimalToDMS($latitude);
-            //addEntry REPLACES existing entries, so there is no way for duplicate entries
-            $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_LATITUDE, $hours, $minutes, $seconds));
+        //for all 3 parameters, the logic is as is:
+        //1. We check if the appropriate checkbox is checked in the frontend (lat/lng/alt)
+        //2. If true, the next step is to check if the appropriate tag is already in the file and if the user want to preserve it
+        //3. If the tag is not here or preserve existing data checkbox is not checked - we update the value
+
+        //proceed with latitude information
+        if ($latitudeUpdate) {
+            if (!$preserveExistingData || $gps_ifd->getEntry(PelTag::GPS_LATITUDE) == null) {
+                // We interpret a negative latitude as being south.
+                $latitude_ref = ($latitude < 0) ? 'S' : 'N';
+                $gps_ifd->addEntry(new PelEntryAscii(PelTag::GPS_LATITUDE_REF, $latitude_ref));
+
+                //Use the convertDecimalToDMS function to convert the latitude from something like 12.34° to 12° 20' 42"
+                list ($hours, $minutes, $seconds) = convertDecimalToDMS($latitude);
+                //addEntry REPLACES existing entries, so there is no way for duplicate entries
+                $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_LATITUDE, $hours, $minutes, $seconds));
+            }
         }
 
         //proceed with longitude information
-        if ($preserveExistingData && $longitudeUpdate && $gps_ifd->getEntry(PelTag::GPS_LONGITUDE) !== null) {
-            //there is a longitude info within a file, and we don't want to update it
-        } else {
-            // The longitude works like the latitude.
-            list ($hours, $minutes, $seconds) = convertDecimalToDMS($longitude);
-            $longitude_ref = ($longitude < 0) ? 'W' : 'E';
-            $gps_ifd->addEntry(new PelEntryAscii(PelTag::GPS_LONGITUDE_REF, $longitude_ref));
+        if ($longitudeUpdate) {
+            if (!$preserveExistingData || $gps_ifd->getEntry(PelTag::GPS_LONGITUDE) == null) {
+                // The longitude works like the latitude.
+                list ($hours, $minutes, $seconds) = convertDecimalToDMS($longitude);
+                $longitude_ref = ($longitude < 0) ? 'W' : 'E';
+                $gps_ifd->addEntry(new PelEntryAscii(PelTag::GPS_LONGITUDE_REF, $longitude_ref));
 
-            //addEntry REPLACES existing entries, so there is no way for duplicate entries
-            $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_LONGITUDE, $hours, $minutes, $seconds));
+                //addEntry REPLACES existing entries, so there is no way for duplicate entries
+                $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_LONGITUDE, $hours, $minutes, $seconds));
+            }
         }
 
+        //proceed with altitude information
+        if ($altitudeUpdate) {
+            if (!$preserveExistingData || $gps_ifd->getEntry(PelTag::GPS_ALTITUDE) == null) {
+                //Add the altitude. The absolute value is stored here, the sign is stored in the GPS_ALTITUDE_REF tag below.
+                $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_ALTITUDE, [abs($altitude), 1]));
 
-        if ($preserveExistingData && $altitudeUpdate && $gps_ifd->getEntry(PelTag::GPS_ALTITUDE) !== null) {
-            //there is a altitude info within a file, and we don't want to update it
-        } else {
-            //Add the altitude. The absolute value is stored here, the sign is stored in the GPS_ALTITUDE_REF tag below.
-            $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_ALTITUDE, [abs($altitude), 1]));
-
-            // The reference is set to 1 (true) if the altitude is below sea level, or 0 (false) otherwise.
-            $gps_ifd->addEntry(new PelEntryByte(PelTag::GPS_ALTITUDE_REF, (int)($altitude < 0)));
+                // The reference is set to 1 (true) if the altitude is below sea level, or 0 (false) otherwise.
+                $gps_ifd->addEntry(new PelEntryByte(PelTag::GPS_ALTITUDE_REF, (int)($altitude < 0)));
+            }
         }
+
 
         /* Finally we store the data in the output file. */
         file_put_contents($targetFile, $img->getBytes());
     }
+}
+
+function manageSavedLocations()
+{
+
+    global $fileSystem, $savedLocationsFileName;
+
+    if (!$fileSystem->exists($savedLocationsFileName)) {
+        $fileSystem->touch($savedLocationsFileName);
+    }
+
+    $locations = json_decode(file_get_contents($savedLocationsFileName), true);
+
+    $actionType = $_REQUEST['actionType'];
+
+    if ($actionType == 'get') {
+        $arr = [];
+        foreach ($locations as $key => $location) {
+            $arr[] = ['id' => $key, 'name' => $location['name'], 'lat' => (float)$location['lat'], 'lng' => (float)$location['lng'], 'alt' => (float)$location['alt']];
+        }
+        //return $arr;
+        return array_reverse($arr, false);
+    }
+
+
+    //    file_put_contents($diskStatusFileName, json_encode($arr['diskStatus']));
+
+
 }
 
 function deletePhotos()
