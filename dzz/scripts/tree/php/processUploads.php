@@ -601,7 +601,7 @@ function manageSavedLocations()
 
     $actionType = $_REQUEST['actionType'];
 
-    if ($actionType == 'get') {
+    if ($actionType == 'read') {
         $arr = [];
         foreach ($locations as $key => $location) {
             $arr[] = ['id' => $key, 'name' => $location['name'], 'lat' => (float)$location['lat'], 'lng' => (float)$location['lng'], 'alt' => (float)$location['alt']];

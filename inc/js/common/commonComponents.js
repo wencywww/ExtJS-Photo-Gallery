@@ -1049,7 +1049,8 @@ Ext.onReady(function () {
                 lat: 0,
                 lng: 0,
                 alt: 0,
-                centerMap: true
+                centerMap: true,
+                editLocationMode: false
             },
             formulas: {
                 LatLng: function (get) {
@@ -1170,11 +1171,56 @@ Ext.onReady(function () {
                         value: true,
                         boxLabel: 'Запазване на наличните GPS данни',
                         padding: '0 0 0 10'
-                    }, {
-                        xtype: 'combobox', fieldLabel: 'My Locations', labelAlign: 'top',
-                        padding: '0 0 0 10', displayField: 'name', valueField: 'id', queryMode: 'local',
-                        forceSelection: true, anyMatch: true
+                    },
+                    {
+                        xtype: 'fieldset', title: 'My Locations',
+                        layout: {type: 'vbox', align: 'stretch'},
+                        padding: 10,
+                        items: [
+                            {
+                                xtype: 'combobox', fieldLabel: 'Saved Locations', labelAlign: 'top',
+                                displayField: 'name', valueField: 'id', //queryMode: 'local',
+                                forceSelection: true, anyMatch: true,
+                                reference: 'locationsCombo',
+                                publishes: 'selection'
+                            },
+                            {
+                                xtype: 'container',
+                                layout: {type: 'hbox', align: 'stretch', pack: 'end'},
+                                defaults: {xtype: 'button'},
+                                items: [
+                                    {
+                                        text: 'Add New', handler: function (btn) {
+                                        var mode = btn.lookupViewModel().get('editLocationMode');
+                                        btn.lookupViewModel().set('editLocationMode', !mode);
+                                    }
+                                    },
+                                    {
+                                        text: 'Edit Current', bind: {hidden: '{locationsCombo.selection == null}'}
+                                    },
+                                    {text: 'Delete Current', bind: {hidden: '{locationsCombo.selection == null}'}}
+                                ]
+                            },
+                            {
+                                xtype: 'fieldcontainer', fieldLabel: 'Location Name', labelAlign: 'top',
+                                layout: {type: 'hbox'},
+                                items: [
+                                    {
+                                        xtype: 'textfield',
+                                        flex: 1,
+                                        bind: '{locationName}',
+                                        reference: 'editLocationName',
+                                        publishes: 'value',
+                                        allowBlank: false
+                                    },
+                                    {xtype: 'button', text: 'Save', bind: {hidden: '{!editLocationName.value}'}}
+                                ],
+                                bind: {hidden: '{!editLocationMode}'}
+                            }
+                        ]
                     }
+
+
                 ]
             }
 
@@ -1330,7 +1376,9 @@ Ext.onReady(function () {
             var combo = me.down('combobox');
 
 
-            var store = Ext.create('Ext.data.JsonStore', {
+            if (!dzz.Models || !dzz.Models.Locations) {
+                Ext.define('dzz.Models.Locations', {
+                    extend: 'Ext.data.Model',
                     fields: [
                         {name: 'id', type: 'int'},
                         'name',
@@ -1340,14 +1388,29 @@ Ext.onReady(function () {
                     ],
                     proxy: {
                         type: 'ajax',
-                        url: 'scripts/tree/php/processUploads.php',
                         actionMethods: {read: 'POST'},
-                        extraParams: {targetAction: 'manageSavedLocations', actionType: 'get'},
+                        extraParams: {targetAction: 'manageSavedLocations'},
+                        api: {
+                            create: 'scripts/tree/php/processUploads.php?actionType=create',
+                            read: 'scripts/tree/php/processUploads.php?actionType=read',
+                            update: 'scripts/tree/php/processUploads.php?actionType=update',
+                            destroy: 'scripts/tree/php/processUploads.php?actionType=destroy'
+                        },
                         reader: {
                             type: 'json',
                             rootProperty: 'RECORDS'
+                        },
+                        writer: {
+                            type: 'json',
+                            rootProperty: 'data',
+                            encode: true
                         }
-                    },
+                    }
+                });
+            }
+
+            var store = Ext.create('Ext.data.Store', {
+                    model: 'dzz.Models.Locations',
                     autoLoad: true
                 }
             );
@@ -1369,9 +1432,11 @@ Ext.onReady(function () {
             //auto-select the most-recent location within the store (they are sorted server-side)
             store.on({
                 load: function (store, recs) {
+                    //console.log('combo loading');
                     if (recs.length > 0) {
                         combo.select(0);
                         combo.fireEvent('select', combo, recs[0]);
+                        combo.queryMode = 'local'; //to search the store without going to the server
                     }
                 }
             });
