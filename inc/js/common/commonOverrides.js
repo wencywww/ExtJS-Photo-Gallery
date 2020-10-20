@@ -47,4 +47,35 @@ Ext.onReady(function () {
         });
 
 
+    //an override that allows for tooltips to be added to any form-fields
+    //via the toolTipText configuration
+    Ext.define('override.Ext.form.field.Base',
+        {
+            override: 'Ext.Component',
+            initComponent: function () {
+                var me = this;
+                if (!Ext.isEmpty(me.toolTipText)) {
+                    me.on({
+                        render: function () {
+                            me.createTooltip();
+                        }
+                    });
+                }
+                me.callParent(arguments);
+            },
+            createTooltip: function () {
+                var me = this;
+                var tip = Ext.create('Ext.tip.ToolTip', {
+                    target: me.getEl(),
+                    html: me.toolTipText,
+                    trackMouse: true,
+                    defaultAlign: me.toolTipAlign || 'bl-bl',
+                    anchor: me.toolTipAnchor || 'top'
+                });
+            }
+
+
+        });
+
+
 });

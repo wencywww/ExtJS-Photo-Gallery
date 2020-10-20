@@ -148,6 +148,7 @@ Ext.onReady(function () {
                     {
                         text: dzz.i18n.common.dateChange,
                         iconCls: 'dzz-icon-calendar',
+                        iconCls: 'fas fa-check', faIconColor: '#008000', //scale: 'medium',
                         handler: function (menuitem) {
                             Ext.widget({
                                     xtype: 'photoDateChange',
@@ -1043,20 +1044,21 @@ Ext.onReady(function () {
         bodyPadding: 3,
         url: 'scripts/tree/php/processUploads.php',
         layout: {type: 'hbox', align: 'stretch'},
-        //width: 800, height: 800,
         viewModel: {
             data: {
                 lat: 0,
                 lng: 0,
                 alt: 0,
+                zoom: 0,
                 centerMap: true,
-                editLocationMode: false
+                loc_editorActive: false
             },
             formulas: {
                 LatLng: function (get) {
                     return {'lat': get('lat'), 'lng': get('lng')};
                 }
-            }
+            },
+            stores: {}
         },
         items: [
             {xtype: 'hiddenfield', name: 'targetAction', value: 'setGpsData'},
@@ -1080,7 +1082,7 @@ Ext.onReady(function () {
                 layout: {type: 'vbox', align: 'stretch'},
                 items: [
                     {
-                        xtype: 'container', style: {backgroundColor: '#ffcc99'},
+                        xtype: 'container',
                         layout: {type: 'hbox', pack: 'end', padding: 10},
                         defaults: {
                             allowExponential: false, autoStripChars: true, decimalPrecision: 8,
@@ -1099,13 +1101,14 @@ Ext.onReady(function () {
                                 minValue: -90,
                                 maxValue: 90,
                                 fieldLabel: LOC.gpsEditor.latFieldLbl,
+                                toolTipText: LOC.gpsEditor.latFieldTip,
                                 flex: 1,
                                 bind: '{lat}'
                             }
                         ]
                     },
                     {
-                        xtype: 'container', style: {backgroundColor: '#ffcc99'},
+                        xtype: 'container',
                         layout: {type: 'hbox', pack: 'end', padding: 10},
                         defaults: {
                             allowExponential: false, autoStripChars: true, decimalPrecision: 8,
@@ -1124,13 +1127,14 @@ Ext.onReady(function () {
                                 minValue: -180,
                                 maxValue: 180,
                                 fieldLabel: LOC.gpsEditor.lngFieldLbl,
+                                toolTipText: LOC.gpsEditor.lngFieldTip,
                                 flex: 1,
                                 bind: '{lng}'
                             }
                         ]
                     },
                     {
-                        xtype: 'container', style: {backgroundColor: '#ffcc99'},
+                        xtype: 'container',
                         layout: {type: 'hbox', pack: 'end', padding: 10},
                         defaults: {
                             allowExponential: false, autoStripChars: true, decimalPrecision: 8,
@@ -1140,49 +1144,59 @@ Ext.onReady(function () {
                         items: [
                             {
                                 xtype: 'checkbox', name: 'gps_alt_update', inputValue: 1,
-                                uncheckedValue: 0,
+                                uncheckedValue: 0, value: true,
                                 padding: '0 20 0 0', minWidth: undefined
                             },
                             {
                                 xtype: 'numberfield',
                                 name: 'gps_altitude',
                                 fieldLabel: LOC.gpsEditor.altFieldLbl,
+                                toolTipText: LOC.gpsEditor.altFieldTip,
                                 flex: 1,
                                 bind: '{alt}'
                             }
                         ]
                     },
                     {
-                        style: {backgroundColor: '#ffcc00'},
                         xtype: 'checkbox',
                         name: 'gps_elevation_api',
                         inputValue: 1,
                         uncheckedValue: 0,
                         value: true,
-                        boxLabel: 'Use elevation API (elevation-api.io)',
+                        //boxLabel: 'Use elevation API (elevation-api.io)',
+                        boxLabel: LOC.gpsEditor.elevationAPI,
+                        toolTipText: LOC.gpsEditor.elevationAPITip,
                         padding: '0 0 0 10'
                     },
                     {
-                        style: {backgroundColor: '#ffcc00'},
                         xtype: 'checkbox',
                         name: 'gps_preserve_existing',
                         inputValue: 1,
                         uncheckedValue: 0,
                         value: true,
-                        boxLabel: 'Запазване на наличните GPS данни',
+                        boxLabel: LOC.gpsEditor.preserveExisting,
+                        toolTipText: LOC.gpsEditor.preserveExistingTip,
                         padding: '0 0 0 10'
                     },
                     {
-                        xtype: 'fieldset', title: 'My Locations',
+                        xtype: 'fieldset', title: 'My Locations', title: LOC.gpsEditor.locationsTitle,
                         layout: {type: 'vbox', align: 'stretch'},
                         padding: 10,
                         items: [
                             {
-                                xtype: 'combobox', fieldLabel: 'Saved Locations', labelAlign: 'top',
-                                displayField: 'name', valueField: 'id', //queryMode: 'local',
-                                forceSelection: true, anyMatch: true,
-                                reference: 'locationsCombo',
-                                publishes: 'selection'
+                                xtype: 'combobox',
+                                fieldLabel: 'Saved Locations',
+                                fieldLabel: LOC.gpsEditor.locationsComboLbl,
+                                labelAlign: 'top',
+                                displayField: 'name',
+                                valueField: 'id', //queryMode: 'local',
+                                forceSelection: true,
+                                anyMatch: true,
+                                reference: 'loc_locationsCombo',
+                                publishes: 'selection',
+                                bind: {
+                                    disabled: '{loc_editorActive}'
+                                }
                             },
                             {
                                 xtype: 'container',
@@ -1190,32 +1204,119 @@ Ext.onReady(function () {
                                 defaults: {xtype: 'button'},
                                 items: [
                                     {
-                                        text: 'Add New', handler: function (btn) {
-                                        var mode = btn.lookupViewModel().get('editLocationMode');
-                                        btn.lookupViewModel().set('editLocationMode', !mode);
-                                    }
+                                        text: 'Add New', text: LOC.gpsEditor.locationsBtnNew,
+                                        iconCls: 'fas fa-plus', faIconColor: '#008000',
+                                        handler: function (btn) {
+                                            var mode = btn.lookupViewModel().get('loc_editorActive');
+                                            var vm = btn.lookupViewModel();
+                                            vm.set('loc_locationName', '');
+                                            vm.set('loc_editorActive', !mode);
+                                            vm.set('loc_editLocationMode', 'add');
+                                        }
                                     },
                                     {
-                                        text: 'Edit Current', bind: {hidden: '{locationsCombo.selection == null}'}
+                                        text: 'Edit Current', text: LOC.gpsEditor.locationsBtnEdit,
+                                        iconCls: 'fas fa-edit', faIconColor: '#ff6900',
+                                        handler: function (btn) {
+                                            var mode = btn.lookupViewModel().get('loc_editorActive');
+                                            var vm = btn.lookupViewModel();
+                                            //if clicked after Add New, this will be empty, so it need to be retrieved from the combo
+                                            vm.set('loc_locationName', vm.get('loc_locationsCombo.selection').get('name'));
+                                            vm.set('loc_editorActive', !mode);
+                                            vm.set('loc_editLocationMode', 'edit');
+                                        },
+                                        bind: {
+                                            hidden: '{loc_locationsCombo.selection == null}'
+                                        }
                                     },
-                                    {text: 'Delete Current', bind: {hidden: '{locationsCombo.selection == null}'}}
-                                ]
+                                    {
+                                        text: 'Delete Current', text: LOC.gpsEditor.locationsBtnDelete,
+                                        iconCls: 'fas fa-times', faIconColor: '#ff0000',
+                                        handler: function (btn) {
+                                            var vm = btn.lookupViewModel();
+                                            var rec = vm.get('loc_locationsCombo.selection');
+                                            Ext.Msg.confirm(
+                                                LOC.gpsEditor.locationsDeleteConfirm,
+                                                LOC.gpsEditor.locationsDeleteConfirm + ': "' + rec.get('name') + '"?',
+                                                function (btn) {
+                                                    if (btn == 'yes') {
+                                                        rec.erase({
+                                                            callback: function () {
+                                                                vm.getStore('locations').reload();
+                                                            }
+                                                        });
+                                                    }
+                                                },
+                                                btn
+                                            );
+                                        },
+                                        bind: {
+                                            hidden: '{loc_locationsCombo.selection == null}'
+                                        }
+                                    }
+                                ],
+                                bind: {
+                                    disabled: '{loc_editorActive}'
+                                }
                             },
                             {
-                                xtype: 'fieldcontainer', fieldLabel: 'Location Name', labelAlign: 'top',
+                                xtype: 'fieldcontainer',
+                                fieldLabel: 'Location Name',
+                                fieldLabel: LOC.gpsEditor.locationsEditorLbl,
+                                labelAlign: 'top',
                                 layout: {type: 'hbox'},
                                 items: [
                                     {
                                         xtype: 'textfield',
                                         flex: 1,
-                                        bind: '{locationName}',
-                                        reference: 'editLocationName',
-                                        publishes: 'value',
-                                        allowBlank: false
+                                        bind: '{loc_locationName}',
+                                        reference: 'loc_editLocationName',
+                                        publishes: 'value'
+                                        //allowBlank: false
                                     },
-                                    {xtype: 'button', text: 'Save', bind: {hidden: '{!editLocationName.value}'}}
+                                    {
+                                        xtype: 'button', //text: 'Save',
+                                        iconCls: 'fas fa-check', faIconColor: '#008000',
+                                        handler: function (btn) {
+                                            var vm = btn.lookupViewModel();
+                                            var mode = vm.get('loc_editLocationMode');
+
+                                            if (mode == 'add') {
+                                                var rec = new dzz.Models.Locations({
+                                                    'lat': vm.get('lat'), 'lng': vm.get('lng'),
+                                                    'alt': vm.get('alt'), 'zoom': vm.get('zoom'),
+                                                    'name': vm.get('loc_editLocationName.value')
+                                                });
+                                                rec.save();
+                                                vm.getStore('locations').reload();
+                                                vm.set('loc_editorActive', false);
+                                            }
+                                            if (mode == 'edit') {
+                                                var rec = vm.get('loc_locationsCombo.selection');
+                                                rec.set({
+                                                    'lat': vm.get('lat'), 'lng': vm.get('lng'),
+                                                    'alt': vm.get('alt'), 'zoom': vm.get('zoom'),
+                                                    'name': vm.get('loc_editLocationName.value')
+                                                });
+                                                rec.save();
+                                                //vm.getStore('locations').reload();
+                                                vm.set('loc_editorActive', false);
+                                            }
+                                        },
+                                        bind: {
+                                            hidden: '{!loc_editLocationName.value}'
+                                        }
+                                    }, {
+                                        xtype: 'button', //text: 'Cancel',
+                                        iconCls: 'fas fa-times', faIconColor: '#ff0000',
+                                        handler: function (btn) {
+                                            btn.lookupViewModel().set('loc_editorActive', false);
+                                        }
+                                    }
                                 ],
-                                bind: {hidden: '{!editLocationMode}'}
+                                bind: {
+                                    hidden: '{!loc_editorActive}'
+                                }
                             }
                         ]
                     }
@@ -1233,6 +1334,9 @@ Ext.onReady(function () {
                 formBind: true,
                 handler: function (btn) {
                     btn.up('form').submit();
+                },
+                bind: {
+                    disabled: '{loc_editorActive}'
                 }
             },
             {
@@ -1268,6 +1372,7 @@ Ext.onReady(function () {
             me.adjustMapSettings();
             me.getSavedLocations();
         },
+
         showForm: function () {
             var me = this;
             Ext.widget({
@@ -1280,6 +1385,7 @@ Ext.onReady(function () {
                 height: window.innerHeight * .5,
             }).show();
         },
+
         extractData: function () {
             var me = this;
             var data = Ext.Array.pluck(me.recs, 'data');
@@ -1304,6 +1410,7 @@ Ext.onReady(function () {
             var centerMap = function () {
                 if (vm.get('centerMap')) {
                     map.setCenter(vm.get('LatLng'));
+                    map.setZoom(vm.get('zoom'));
                     marker.setPosition(vm.get('LatLng'));
                 }
             }
@@ -1336,6 +1443,10 @@ Ext.onReady(function () {
                 me.setElevation();
             });
 
+            map.addListener('zoom_changed', function () {
+                vm.set('zoom', map.getZoom());
+            });
+
 
         },
 
@@ -1359,7 +1470,7 @@ Ext.onReady(function () {
                     if (altitude !== false) {
                         vm.set('alt', altitude);
                     }
-                    console.log(altitude);
+                    //console.log(altitude);
                 }
 
             }
@@ -1375,7 +1486,6 @@ Ext.onReady(function () {
 
             var combo = me.down('combobox');
 
-
             if (!dzz.Models || !dzz.Models.Locations) {
                 Ext.define('dzz.Models.Locations', {
                     extend: 'Ext.data.Model',
@@ -1384,7 +1494,8 @@ Ext.onReady(function () {
                         'name',
                         {name: 'lat', type: 'float'},
                         {name: 'lng', type: 'float'},
-                        {name: 'alt', type: 'float'}
+                        {name: 'alt', type: 'float'},
+                        {name: 'zoom', type: 'int'}
                     ],
                     proxy: {
                         type: 'ajax',
@@ -1410,10 +1521,12 @@ Ext.onReady(function () {
             }
 
             var store = Ext.create('Ext.data.Store', {
-                    model: 'dzz.Models.Locations',
-                    autoLoad: true
-                }
-            );
+                model: 'dzz.Models.Locations',
+                autoLoad: true,
+                sorters: [
+                    {property: 'id', direction: 'DESC'} //last added location to the top
+                ]
+            });
 
             vm.setStores({locations: store});
 
@@ -1423,8 +1536,8 @@ Ext.onReady(function () {
                     //console.log('combo selection');
                     //console.log(rec);
                     vm.set({
-                        lat: rec.get('lat'), lng: rec.get('lng'), alt: rec.get('alt'),
-                        locationID: rec.get('id'), locationName: rec.get('name')
+                        lat: rec.get('lat'), lng: rec.get('lng'), alt: rec.get('alt'), zoom: rec.get('zoom'),
+                        loc_locationID: rec.get('id'), loc_locationName: rec.get('name')
                     });
                 }
             });
@@ -1434,8 +1547,8 @@ Ext.onReady(function () {
                 load: function (store, recs) {
                     //console.log('combo loading');
                     if (recs.length > 0) {
-                        combo.select(0);
-                        combo.fireEvent('select', combo, recs[0]);
+                        combo.select(recs.length - 1);
+                        combo.fireEvent('select', combo, recs[recs.length - 1]);
                         combo.queryMode = 'local'; //to search the store without going to the server
                     }
                 }

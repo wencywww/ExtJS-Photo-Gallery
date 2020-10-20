@@ -14,29 +14,12 @@ $savedLocationsFileName = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['savedLocat
 require($glob['paths']['appRootPathAbsolute'] . "/libraries/php/SymfonyComponents/vendor/autoload.php");
 
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
-
-$fileSystem = new Filesystem();
-
 use Symfony\Component\Finder\Finder;
-
-$finder = new Finder();
-
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Constraints\Image;
 
-$validator = Validation::createValidator();
-
-//exif reader from https://packagist.org/packages/miljar/php-exif
-$exifReader = \PHPExif\Reader\Reader::factory(\PHPExif\Reader\Reader::TYPE_NATIVE);
-
-use Imagine\Image\Box;
-use Imagine\Image\Point;
-use Imagine\Image\Metadata;
-use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Filter\Basic;
 
-use lsolesen\pel\Pel;
 use lsolesen\pel\PelExif;
 use lsolesen\pel\PelDataWindow;
 use lsolesen\pel\PelJpeg;
@@ -46,6 +29,15 @@ use lsolesen\pel\PelTag;
 use lsolesen\pel\PelEntryAscii;
 use lsolesen\pel\PelEntryRational;
 use lsolesen\pel\PelEntryByte;
+
+
+$fileSystem = new Filesystem();
+$finder = new Finder();
+
+$validator = Validation::createValidator();
+
+//exif reader from https://packagist.org/packages/miljar/php-exif
+$exifReader = \PHPExif\Reader\Reader::factory(\PHPExif\Reader\Reader::TYPE_NATIVE);
 
 
 $imgPattern = '([^\s]+(\.(?i)(jpg|jpeg|png|gif|bmp|mp4|avi|mov|ogg|mkv))$)';
@@ -103,10 +95,8 @@ switch ($targetAction) {
         die();
         break;
     case 'manageSavedLocations':
-        $locations = manageSavedLocations();
         header("Content-type: application/json");
-        print json_encode(['success' => true, 'RECORDS' => $locations]);
-        die();
+        manageSavedLocations();
         break;
     case 'deletePhotos':
         deletePhotos();
@@ -470,6 +460,7 @@ function setGpsData()
         }
 
         $targetFile = $_SERVER['DOCUMENT_ROOT'] . $file; //the full filesystem path
+        $targetFileMtime = filemtime($targetFile);
 
         //the code below is using instructions found in the Pel examples directory,
         //libraries/php/SymfonyComponents/vendor/lsolesen/pel/examples
@@ -585,6 +576,9 @@ function setGpsData()
 
         /* Finally we store the data in the output file. */
         file_put_contents($targetFile, $img->getBytes());
+
+        //and restore its mtime
+        touch($targetFile, $targetFileMtime);
     }
 }
 
@@ -604,10 +598,60 @@ function manageSavedLocations()
     if ($actionType == 'read') {
         $arr = [];
         foreach ($locations as $key => $location) {
-            $arr[] = ['id' => $key, 'name' => $location['name'], 'lat' => (float)$location['lat'], 'lng' => (float)$location['lng'], 'alt' => (float)$location['alt']];
+            $arr[] = ['id' => $key, 'name' => $location['name'], 'lat' => (float)$location['lat'], 'lng' => (float)$location['lng'], 'alt' => (float)$location['alt'], 'zoom' => (int)$location['zoom']];
         }
-        //return $arr;
-        return array_reverse($arr, false);
+        print json_encode(['success' => true, 'RECORDS' => $arr]);
+        die();
+        //return array_reverse($arr, false);
+    }
+
+    if ($actionType == 'create') {
+        $data = json_decode($_REQUEST['data'], true);
+        $locations[] = ['name' => $data['name'], 'lat' => (float)$data['lat'], 'lng' => (float)$data['lng'], 'alt' => (float)$data['alt'], 'zoom' => (int)$data['zoom']];
+        file_put_contents($savedLocationsFileName, json_encode($locations, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        print json_encode(['success' => true]);
+        die();
+    }
+
+    if ($actionType == 'update') {
+        $data = json_decode($_REQUEST['data'], true);
+
+        //the update action from ExtJS sends only te modified values, so we need to check this out
+        $updateExists = false;
+        if (isset($data['name'])) {
+            $locations[$data['id']]['name'] = $data['name'];
+            $updateExists = true;
+        }
+        if (isset($data['lat'])) {
+            $locations[$data['id']]['lat'] = (float)$data['lat'];
+            $updateExists = true;
+        }
+        if (isset($data['lng'])) {
+            $locations[$data['id']]['lng'] = (float)$data['lng'];
+            $updateExists = true;
+        }
+        if (isset($data['alt'])) {
+            $locations[$data['id']]['alt'] = (float)$data['alt'];
+            $updateExists = true;
+        }
+        if (isset($data['zoom'])) {
+            $locations[$data['id']]['zoom'] = (float)$data['zoom'];
+            $updateExists = true;
+        }
+        if ($updateExists) {
+            file_put_contents($savedLocationsFileName, json_encode($locations, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        }
+        print json_encode(['success' => true]);
+        die();
+    }
+
+    if ($actionType == 'destroy') {
+        $data = json_decode($_REQUEST['data'], true);
+        unset($locations[$data['id']]);
+        $locations = array_values($locations);
+        file_put_contents($savedLocationsFileName, json_encode($locations, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        print json_encode(['success' => true]);
+        die();
     }
 
 
