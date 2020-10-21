@@ -140,6 +140,7 @@ Ext.onReady(function () {
         {
             id: 'loginWindow',
             title: captions['loginWinTitle'],
+            iconCls: 'fas fa-unlock',
             modal: true,
             maximized: false,
             closable: false,

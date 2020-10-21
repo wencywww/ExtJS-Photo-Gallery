@@ -20,34 +20,6 @@
     background-color: #ffffff;
 }
 
-.dzz-icon-calendar {
-    background: url("pictures/silk-icons/icons/date_next.png") no-repeat scroll 0 0 transparent !important;
-}
-
-.dzz-icon-rotate {
-    background: url("pictures/silk-icons/icons/arrow_refresh.png") no-repeat scroll 0 0 transparent !important;
-}
-
-.dzz-icon-rotate-right {
-    background: url("pictures/silk-icons/icons/arrow_rotate_clockwise.png") no-repeat scroll 0 0 transparent !important;
-}
-
-.dzz-icon-rotate-left {
-    background: url("pictures/silk-icons/icons/arrow_rotate_anticlockwise.png") no-repeat scroll 0 0 transparent !important;
-}
-
-.dzz-icon-rotate-flip {
-    background: url("pictures/silk-icons/icons/arrow_refresh_small.png") no-repeat scroll 0 0 transparent !important;
-}
-
-.dzz-icon-yes, .dzz-icon-ok {
-    background: url("pictures/silk-icons/icons/tick.png") no-repeat scroll 0 0 transparent !important;
-}
-
-.dzz-icon-no, .dzz-icon-delete {
-    background: url("pictures/silk-icons/icons/cross.png") no-repeat scroll 0 0 transparent !important;
-}
-
 .dzz-cursor-pointer {
     cursor: pointer;
 }

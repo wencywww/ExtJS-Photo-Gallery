@@ -147,8 +147,7 @@ Ext.onReady(function () {
                 items: [
                     {
                         text: dzz.i18n.common.dateChange,
-                        iconCls: 'dzz-icon-calendar',
-                        iconCls: 'fas fa-check', faIconColor: '#008000', //scale: 'medium',
+                        iconCls: 'fas fa-calendar-alt', faIconColor: '#0077ff',
                         handler: function (menuitem) {
                             Ext.widget({
                                     xtype: 'photoDateChange',
@@ -160,27 +159,30 @@ Ext.onReady(function () {
                     },
                     {
                         text: LOC.homeGalleryDataView.menuRotate,
-                        iconCls: 'dzz-icon-rotate',
+                        iconCls: 'fas fa-sync-alt', faIconColor: '#008000',
                         menu: {
                             items: [
                                 {
                                     //text: 'Rotate 90 deg',
                                     text: LOC.homeGalleryDataView.menuRotate90,
-                                    iconCls: 'dzz-icon-rotate-right',
+                                    //iconCls: 'dzz-icon-rotate-right',
+                                    iconCls: 'fas fa-redo-alt', faIconColor: '#008000',
                                     handler: function () {
                                         me.sendRequest({action: 'rotatePhotos', value: 90, recs: view.getSelection()})
                                     }
                                 }, {
                                     //text: 'Rotate -90 deg',
                                     text: LOC.homeGalleryDataView.menuRotateMinus90,
-                                    iconCls: 'dzz-icon-rotate-left',
+                                    //iconCls: 'dzz-icon-rotate-left',
+                                    iconCls: 'fas fa-undo-alt', faIconColor: '#008000',
                                     handler: function () {
                                         me.sendRequest({action: 'rotatePhotos', value: -90, recs: view.getSelection()})
                                     }
                                 }, {
                                     //text: 'Rotate 180 deg',
                                     text: LOC.homeGalleryDataView.menuRotate180,
-                                    iconCls: 'dzz-icon-rotate-flip',
+                                    //iconCls: 'dzz-icon-rotate-flip',
+                                    iconCls: 'fas fa-retweet', faIconColor: '#008000',
                                     handler: function () {
                                         me.sendRequest({action: 'rotatePhotos', value: 180, recs: view.getSelection()})
                                     }
@@ -190,7 +192,8 @@ Ext.onReady(function () {
                     },
                     {
                         text: LOC.homeGalleryDataView.gpsEdit,
-                        iconCls: 'dzz-icon-calendar',
+                        //iconCls: 'dzz-icon-calendar',
+                        iconCls: 'fas fa-map-marked-alt', faIconColor: '#e94335',
                         handler: function (menuitem) {
                             Ext.widget({
                                     xtype: 'gpseditor',
@@ -202,7 +205,8 @@ Ext.onReady(function () {
                     {
                         //text: 'Delete...',
                         text: LOC.homeGalleryDataView.menuDelete,
-                        iconCls: 'dzz-icon-delete',
+                        //iconCls: 'dzz-icon-delete',
+                        iconCls: 'fas fa-trash', faIconColor: '#ff0000',
                         handler: function () {
                             Ext.Msg.confirm(LOC.homeGalleryDataView.menuDeleteConfirmTitle,
                                 view.getSelection().length + LOC.homeGalleryDataView.menuDeleteConfirmText,
@@ -476,6 +480,7 @@ Ext.onReady(function () {
             var me = this;
             Ext.widget({
                 xtype: 'window',
+                iconCls: 'fas fa-calendar-alt',
                 modal: true,
                 title: LOC.photoDateChange.winTitle,
                 items: [me]
@@ -866,6 +871,7 @@ Ext.onReady(function () {
         items: [
             {
                 title: LOC.exifVisualiser.exifTitle,
+                iconCls: 'fas fa-camera',
                 xtype: 'propertygrid',
                 source: {},
                 bind: {
@@ -875,6 +881,7 @@ Ext.onReady(function () {
             },
             {
                 title: LOC.exifVisualiser.mapTitle,
+                iconCls: 'fas fa-map-marker-alt',
                 xtype: 'gmappanel',
                 gmapType: 'map',
                 center: {
@@ -1383,6 +1390,7 @@ Ext.onReady(function () {
                 layout: {type: 'fit'},
                 width: window.innerWidth * .5,
                 height: window.innerHeight * .5,
+                iconCls: 'fas fa-map-marker-alt'//, faIconColor: '#e94335',
             }).show();
         },
 

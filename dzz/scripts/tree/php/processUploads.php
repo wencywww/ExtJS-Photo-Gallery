@@ -529,11 +529,10 @@ function setGpsData()
 
         $gps_ifd->addEntry(new PelEntryByte(PelTag::GPS_VERSION_ID, 2, 2, 0, 0));
 
-
         //for all 3 parameters, the logic is as is:
         //1. We check if the appropriate checkbox is checked in the frontend (lat/lng/alt)
-        //2. If true, the next step is to check if the appropriate tag is already in the file and if the user want to preserve it
-        //3. If the tag is not here or preserve existing data checkbox is not checked - we update the value
+        //2. If true, the next step is to check if the appropriate tag is already in the file and if the user wants to preserve it
+        //3. If the tag is not here or 'preserve existing data' checkbox is not checked - we update the value
 
         //proceed with latitude information
         if ($latitudeUpdate) {
@@ -732,15 +731,18 @@ function adjustTree($arr)
 {
     global $photosDir;
 
+    //print_r($arr); die();
+
     foreach ($arr as $key => &$val) {
         if (is_array($val)) {
             $path = $val['__base_val'];
             unset($val['__base_val']);
-            $val = ['leaf' => false, 'expanded' => true, 'text' => (string)$key, 'path' => $path, 'RECORDS' => $val, 'cls' => 'dzz-cursor-pointer'];
+            $iconCls = (substr_count($path, "/") == 0) ? ('fas fa-calendar') : ('fas fa-calendar-alt'); // year/month node type
+            $val = ['leaf' => false, 'expanded' => true, 'text' => (string)$key, 'path' => $path, 'RECORDS' => $val, 'iconCls' => $iconCls];
             $val['RECORDS'] = adjustTree($val['RECORDS']);
             $val['RECORDS'] = array_values($val['RECORDS']);
         } else {
-            $val = ['leaf' => true, 'text' => (string)$key, 'path' => $val, 'nodeType' => 'Day', 'cls' => 'dzz-cursor-pointer', 'items' => countDirFiles("$photosDir/$val", "*thumb*")];
+            $val = ['leaf' => true, 'text' => (string)$key, 'path' => $val, 'nodeType' => 'Day', 'iconCls' => 'fas fa-calendar-check', 'items' => countDirFiles("$photosDir/$val", "*thumb*")];
         }
     }
 
@@ -881,8 +883,17 @@ function setExifData($fileName, $exifData)
         //file is recognized as jpeg
         $jpeg = new PelJpeg();
         $jpeg->load($data);
-        $jpeg->setExif($exifData);
-        $jpeg->saveFile($fileName);
+
+        //2020-10-21: a special case.
+        //When rotating an image without any meta/exif data within, the rotation itself is OK (done by Imagine),
+        //however the setExif() method below will throw an exeption because $exifData will be null.
+        //It is null, because it is retrieved via getExifData() function which uses lsolesen/PEL.
+        //And it is retrieved, because the exif presence is checked with hasExif() function by miljar/php-exif
+        //which returns true incorrectly. See rotatePhotos() above to get the idea.
+        if (!is_null($exifData)) {
+            $jpeg->setExif($exifData);
+            $jpeg->saveFile($fileName);
+        }
 
     } elseif (PelTiff::isValid($data)) {
         //file is recognized as tiff

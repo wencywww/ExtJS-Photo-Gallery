@@ -77,9 +77,9 @@
       "gpsEditor": {
         "winTitle": "GPS LOCATION EDITOR",
         "latFieldLbl": "Latitude",
-        "latFieldTip": "Enter altitude within the range -90° to 90° or drag the map marker on the left. The checkbox must be checked in order the altitude to be updated.",
+        "latFieldTip": "Enter altitude [-90° to 90°] or drag the map marker on the left. The checkbox must be checked in order the altitude to be updated.",
         "lngFieldLbl": "Longitude",
-        "lngFieldTip": "Enter longitude within the range -90° to 90° or drag the map marker on the left. The checkbox must be checked in order the longitude to be updated.",
+        "lngFieldTip": "Enter longitude [-180° to 180°] or drag the map marker on the left. The checkbox must be checked in order the longitude to be updated.",
         "altFieldLbl": "Altitude",
         "altFieldTip": "Altitude in meters relative to the sea level. The checkbox must be checked in order the altitude to be updated.",
         "elevationAPI": "Use elevation API (elevation-api.io)",
