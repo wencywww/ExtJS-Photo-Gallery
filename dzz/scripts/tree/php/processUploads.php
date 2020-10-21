@@ -1,7 +1,7 @@
 <?php
 
 //require($_SERVER['DOCUMENT_ROOT'] . "/inc/globals/globals.inc.php");
-require("../../../../inc/globals/globals.inc.php");
+require "../../../../inc/globals/globals.inc.php";
 
 $uploadsDir = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['uploadDir'];
 $photosDir = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['photosDir'];
@@ -11,25 +11,22 @@ $savedLocationsFileName = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['savedLocat
 
 //require symfony (and not only) stuff
 //require($_SERVER['DOCUMENT_ROOT'] . "/libraries/php/SymfonyComponents/vendor/autoload.php");
-require($glob['paths']['appRootPathAbsolute'] . "/libraries/php/SymfonyComponents/vendor/autoload.php");
-
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Validator\Validation;
-use Symfony\Component\Validator\Constraints\Image;
+require $glob['paths']['appRootPathAbsolute'] . "/libraries/php/SymfonyComponents/vendor/autoload.php";
 
 use Imagine\Filter\Basic;
-
-use lsolesen\pel\PelExif;
 use lsolesen\pel\PelDataWindow;
-use lsolesen\pel\PelJpeg;
-use lsolesen\pel\PelTiff;
-use lsolesen\pel\PelIfd;
-use lsolesen\pel\PelTag;
 use lsolesen\pel\PelEntryAscii;
-use lsolesen\pel\PelEntryRational;
 use lsolesen\pel\PelEntryByte;
-
+use lsolesen\pel\PelEntryRational;
+use lsolesen\pel\PelExif;
+use lsolesen\pel\PelIfd;
+use lsolesen\pel\PelJpeg;
+use lsolesen\pel\PelTag;
+use lsolesen\pel\PelTiff;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Validator\Constraints\Image;
+use Symfony\Component\Validator\Validation;
 
 $fileSystem = new Filesystem();
 $finder = new Finder();
@@ -38,7 +35,6 @@ $validator = Validation::createValidator();
 
 //exif reader from https://packagist.org/packages/miljar/php-exif
 $exifReader = \PHPExif\Reader\Reader::factory(\PHPExif\Reader\Reader::TYPE_NATIVE);
-
 
 $imgPattern = '([^\s]+(\.(?i)(jpg|jpeg|png|gif|bmp|mp4|avi|mov|ogg|mkv))$)';
 $videoPattern = '([^\s]+(\.(?i)(mp4|avi|mov|ogg))$)';
@@ -109,7 +105,6 @@ switch ($targetAction) {
         break;
 }
 
-
 function respondToPing()
 {
     global $fileSystem, $finder, $uploadsDir, $photosDir, $imgPattern, $diskStatusFileName;
@@ -141,13 +136,12 @@ function respondToPing()
         $diskFreeSpacePercent = number_format($diskFreeSpacePercent, 2, '.', '') . '%';
         $photosDirSize = FileSizeConvert(getDirectorySize($photosDir));
 
-        $arr['diskStatus'] = (object)['filesCount' => $res->count() / 2, 'totalSize' => $photosDirSize, 'diskFreeSpace' => $diskFreeSpace, 'diskTotalSpace' => $diskTotalSpace, 'freePercent' => $diskFreeSpacePercent];
+        $arr['diskStatus'] = (object) ['filesCount' => $res->count() / 2, 'totalSize' => $photosDirSize, 'diskFreeSpace' => $diskFreeSpace, 'diskTotalSpace' => $diskTotalSpace, 'freePercent' => $diskFreeSpacePercent];
         //print $diskStatusFileName;
         file_put_contents($diskStatusFileName, json_encode($arr['diskStatus']));
     }
 
     return $arr;
-
 
 }
 
@@ -246,10 +240,9 @@ function processUploads()
                         $fileSystem->copy($fileName, $newFileName);
                     }
                 } catch (Imagine\Exception\Exception $exc) {
-                    die (var_dump($exc));
+                    die(var_dump($exc));
                 }
             }
-
 
             //3. Create the thumb
             if (!$isVideo) {
@@ -286,7 +279,6 @@ function processUploads()
             $fileSystem->remove($fileName);
         }
     }
-
 
 }
 
@@ -370,7 +362,6 @@ function changePhotoDates()
             $thumbName = "$fileName.thumb.$fileExtension";
         }
 
-
         $existingFileName = $_SERVER['DOCUMENT_ROOT'] . $file; //the full filesystem path
         $existingThumbFileName = $_SERVER['DOCUMENT_ROOT'] . $filePath . "/" . $thumbName;
 
@@ -397,7 +388,7 @@ function rotatePhotos()
     global $videoPattern;
 
     $files = json_decode($_REQUEST['photos']);
-    $angle = (int)($_REQUEST['rotateAngle']);
+    $angle = (int) ($_REQUEST['rotateAngle']);
 
     $imagine = new Imagine\Gd\Imagine();
     $rotate = new Basic\Rotate($angle);
@@ -442,14 +433,14 @@ function setGpsData()
 
     $files = json_decode($_REQUEST['photos']);
 
-    $latitudeUpdate = (bool)$_REQUEST['gps_lat_update'];
-    $latitude = (float)$_REQUEST['gps_latitude'];
-    $longitudeUpdate = (bool)$_REQUEST['gps_lng_update'];
-    $longitude = (float)$_REQUEST['gps_longitude'];
-    $altitudeUpdate = (bool)$_REQUEST['gps_alt_update'];
-    $altitude = (float)$_REQUEST['gps_altitude'];
+    $latitudeUpdate = (bool) $_REQUEST['gps_lat_update'];
+    $latitude = (float) $_REQUEST['gps_latitude'];
+    $longitudeUpdate = (bool) $_REQUEST['gps_lng_update'];
+    $longitude = (float) $_REQUEST['gps_longitude'];
+    $altitudeUpdate = (bool) $_REQUEST['gps_alt_update'];
+    $altitude = (float) $_REQUEST['gps_altitude'];
 
-    $preserveExistingData = (bool)$_REQUEST['gps_preserve_existing'];
+    $preserveExistingData = (bool) $_REQUEST['gps_preserve_existing'];
 
     foreach ($files as $file) {
         $fileName = pathinfo($file, PATHINFO_BASENAME);
@@ -542,7 +533,7 @@ function setGpsData()
                 $gps_ifd->addEntry(new PelEntryAscii(PelTag::GPS_LATITUDE_REF, $latitude_ref));
 
                 //Use the convertDecimalToDMS function to convert the latitude from something like 12.34° to 12° 20' 42"
-                list ($hours, $minutes, $seconds) = convertDecimalToDMS($latitude);
+                list($hours, $minutes, $seconds) = convertDecimalToDMS($latitude);
                 //addEntry REPLACES existing entries, so there is no way for duplicate entries
                 $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_LATITUDE, $hours, $minutes, $seconds));
             }
@@ -552,7 +543,7 @@ function setGpsData()
         if ($longitudeUpdate) {
             if (!$preserveExistingData || $gps_ifd->getEntry(PelTag::GPS_LONGITUDE) == null) {
                 // The longitude works like the latitude.
-                list ($hours, $minutes, $seconds) = convertDecimalToDMS($longitude);
+                list($hours, $minutes, $seconds) = convertDecimalToDMS($longitude);
                 $longitude_ref = ($longitude < 0) ? 'W' : 'E';
                 $gps_ifd->addEntry(new PelEntryAscii(PelTag::GPS_LONGITUDE_REF, $longitude_ref));
 
@@ -568,10 +559,9 @@ function setGpsData()
                 $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_ALTITUDE, [abs($altitude), 1]));
 
                 // The reference is set to 1 (true) if the altitude is below sea level, or 0 (false) otherwise.
-                $gps_ifd->addEntry(new PelEntryByte(PelTag::GPS_ALTITUDE_REF, (int)($altitude < 0)));
+                $gps_ifd->addEntry(new PelEntryByte(PelTag::GPS_ALTITUDE_REF, (int) ($altitude < 0)));
             }
         }
-
 
         /* Finally we store the data in the output file. */
         file_put_contents($targetFile, $img->getBytes());
@@ -597,7 +587,7 @@ function manageSavedLocations()
     if ($actionType == 'read') {
         $arr = [];
         foreach ($locations as $key => $location) {
-            $arr[] = ['id' => $key, 'name' => $location['name'], 'lat' => (float)$location['lat'], 'lng' => (float)$location['lng'], 'alt' => (float)$location['alt'], 'zoom' => (int)$location['zoom']];
+            $arr[] = ['id' => $key, 'name' => $location['name'], 'lat' => (float) $location['lat'], 'lng' => (float) $location['lng'], 'alt' => (float) $location['alt'], 'zoom' => (int) $location['zoom']];
         }
         print json_encode(['success' => true, 'RECORDS' => $arr]);
         die();
@@ -606,7 +596,7 @@ function manageSavedLocations()
 
     if ($actionType == 'create') {
         $data = json_decode($_REQUEST['data'], true);
-        $locations[] = ['name' => $data['name'], 'lat' => (float)$data['lat'], 'lng' => (float)$data['lng'], 'alt' => (float)$data['alt'], 'zoom' => (int)$data['zoom']];
+        $locations[] = ['name' => $data['name'], 'lat' => (float) $data['lat'], 'lng' => (float) $data['lng'], 'alt' => (float) $data['alt'], 'zoom' => (int) $data['zoom']];
         file_put_contents($savedLocationsFileName, json_encode($locations, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         print json_encode(['success' => true]);
         die();
@@ -622,19 +612,19 @@ function manageSavedLocations()
             $updateExists = true;
         }
         if (isset($data['lat'])) {
-            $locations[$data['id']]['lat'] = (float)$data['lat'];
+            $locations[$data['id']]['lat'] = (float) $data['lat'];
             $updateExists = true;
         }
         if (isset($data['lng'])) {
-            $locations[$data['id']]['lng'] = (float)$data['lng'];
+            $locations[$data['id']]['lng'] = (float) $data['lng'];
             $updateExists = true;
         }
         if (isset($data['alt'])) {
-            $locations[$data['id']]['alt'] = (float)$data['alt'];
+            $locations[$data['id']]['alt'] = (float) $data['alt'];
             $updateExists = true;
         }
         if (isset($data['zoom'])) {
-            $locations[$data['id']]['zoom'] = (float)$data['zoom'];
+            $locations[$data['id']]['zoom'] = (float) $data['zoom'];
             $updateExists = true;
         }
         if ($updateExists) {
@@ -653,9 +643,7 @@ function manageSavedLocations()
         die();
     }
 
-
     //    file_put_contents($diskStatusFileName, json_encode($arr['diskStatus']));
-
 
 }
 
@@ -693,7 +681,10 @@ function deletePhotos()
 
 function explodeTree($array, $delimiter = '_', $baseval = false)
 {
-    if (!is_array($array)) return false;
+    if (!is_array($array)) {
+        return false;
+    }
+
     $splitRE = '/' . preg_quote($delimiter, '/') . '/';
     $returnArr = array();
     foreach ($array as $key => $val) {
@@ -738,11 +729,11 @@ function adjustTree($arr)
             $path = $val['__base_val'];
             unset($val['__base_val']);
             $iconCls = (substr_count($path, "/") == 0) ? ('fas fa-calendar') : ('fas fa-calendar-alt'); // year/month node type
-            $val = ['leaf' => false, 'expanded' => true, 'text' => (string)$key, 'path' => $path, 'RECORDS' => $val, 'iconCls' => $iconCls];
+            $val = ['leaf' => false, 'expanded' => true, 'text' => (string) $key, 'path' => $path, 'RECORDS' => $val, 'iconCls' => $iconCls];
             $val['RECORDS'] = adjustTree($val['RECORDS']);
             $val['RECORDS'] = array_values($val['RECORDS']);
         } else {
-            $val = ['leaf' => true, 'text' => (string)$key, 'path' => $val, 'nodeType' => 'Day', 'iconCls' => 'fas fa-calendar-check', 'items' => countDirFiles("$photosDir/$val", "*thumb*")];
+            $val = ['leaf' => true, 'text' => (string) $key, 'path' => $val, 'nodeType' => 'Day', 'iconCls' => 'fas fa-calendar-check', 'items' => countDirFiles("$photosDir/$val", "*thumb*")];
         }
     }
 
@@ -806,23 +797,23 @@ function FileSizeConvert($bytes)
     $arBytes = array(
         0 => array(
             "UNIT" => "TB",
-            "VALUE" => pow(1024, 4)
+            "VALUE" => pow(1024, 4),
         ),
         1 => array(
             "UNIT" => "GB",
-            "VALUE" => pow(1024, 3)
+            "VALUE" => pow(1024, 3),
         ),
         2 => array(
             "UNIT" => "MB",
-            "VALUE" => pow(1024, 2)
+            "VALUE" => pow(1024, 2),
         ),
         3 => array(
             "UNIT" => "KB",
-            "VALUE" => 1024
+            "VALUE" => 1024,
         ),
         4 => array(
             "UNIT" => "B",
-            "VALUE" => 1
+            "VALUE" => 1,
         ),
     );
 
@@ -842,7 +833,7 @@ function hasExif($fileName)
 {
     global $exifReader;
 
-    return (bool)$exifReader->read($fileName);
+    return (bool) $exifReader->read($fileName);
 }
 
 //get EXIF data using miljar/php-exif
@@ -945,17 +936,15 @@ function convertDecimalToDMS($degree)
     return [
         [
             $degrees,
-            1
+            1,
         ],
         [
             $minutes,
-            1
+            1,
         ],
         [
             $seconds,
-            100
-        ]
+            100,
+        ],
     ];
 }
-
-?>
