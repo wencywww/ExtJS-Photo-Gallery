@@ -553,9 +553,15 @@ function setGpsData()
         }
 
         //proceed with altitude information
+        //2021-01-05: 
+        //There is a bug in the library, which causes the decimal point in the altitude
+        //to be stripped from the float value, so 817.5 meters will be written as 8175; 817.55 - as 81755
+        //so, for now we will be round the value
+        //https://github.com/pel/pel/issues/181
         if ($altitudeUpdate) {
             if (!$preserveExistingData || $gps_ifd->getEntry(PelTag::GPS_ALTITUDE) == null) {
                 //Add the altitude. The absolute value is stored here, the sign is stored in the GPS_ALTITUDE_REF tag below.
+                $altitude = round($altitude);
                 $gps_ifd->addEntry(new PelEntryRational(PelTag::GPS_ALTITUDE, [abs($altitude), 1]));
 
                 // The reference is set to 1 (true) if the altitude is below sea level, or 0 (false) otherwise.
