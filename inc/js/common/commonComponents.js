@@ -1390,6 +1390,8 @@ Ext.onReady(function () {
                 layout: {type: 'fit'},
                 width: window.innerWidth * .5,
                 height: window.innerHeight * .5,
+                minWidth: 1025,
+                minHeight: 470,
                 iconCls: 'fas fa-map-marker-alt'//, faIconColor: '#e94335',
             }).show();
         },
