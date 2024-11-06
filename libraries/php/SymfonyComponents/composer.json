@@ -3,7 +3,7 @@
         "symfony/filesystem": "^4.1",
         "symfony/finder": "^4.1",
         "miljar/php-exif": "^0.6.4",
-        "symfony/validator": "^4.1",
+        "symfony/validator": "^5.4",
         "symfony/http-foundation": "^4.4.7",
         "imagine/imagine": "^1.2",
         "lsolesen/pel": "^0.9.8"
