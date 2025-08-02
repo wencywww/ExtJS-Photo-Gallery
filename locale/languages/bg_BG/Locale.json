@@ -37,6 +37,11 @@
       "rootNodeText": "ВСИЧКО",
       "settings": "Настройки",
       "showExif": "Показване на EXIF данни",
+      "indicateGpsLocation": "GPS индикация в thumbs",
+      "showPhotos": "Показване на снимки",
+      "showVideos": "Показване на видео клипове",
+      "autoPlayVideos": "Autoplay на видео клипове",
+      "paginateDataView": "Страниране на галерията",
       "sortASC": "Сортиране по дата, най-ранни най-отгоре",
       "sortDESC": "Сортиране по дата, най-скорошните най-отгоре"
     },
@@ -122,6 +127,14 @@
           "dictRemoveFileConfirmation": null,
           "dictMaxFilesExceeded": "Не може да качвате повече файлове."
         }
+      }
+    },
+    "**5": "**--** files - inc/js/ux/*",
+    "5": {
+      "**gridPager": "**--** file - inc/js/ux/GridPager.js",
+      "gridPager": {
+          "pageSize": "Снимки на страница",
+          "pageSizeTip": "Натиснете Enter за опресняване"
       }
     }
   },

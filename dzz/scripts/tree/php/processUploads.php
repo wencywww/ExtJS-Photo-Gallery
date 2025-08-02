@@ -39,7 +39,19 @@ $exifReader = \PHPExif\Reader\Reader::factory(\PHPExif\Reader\Reader::TYPE_NATIV
 $imgPattern = '([^\s]+(\.(?i)(jpg|jpeg|png|gif|bmp|mp4|avi|mov|ogg|mkv))$)';
 $videoPattern = '([^\s]+(\.(?i)(mp4|avi|mov|ogg))$)';
 
+$photos_extensions = ['*jpg.thumb*', '*jpeg.thumb*', '*png.thumb*', '*gif.thumb*', '*bmp.thumb*', '*webp.thumb*'];
+$videos_extensions = ['*mp4.thumb*', '*avi.thumb*', '*mov.thumb*', '*ogg.thumb*', '*mkv.thumb*'];
+
 $targetAction = $_REQUEST['targetAction'];
+
+//2025-08-01:
+$showPhotos = isset($_REQUEST['showPhotos']) ? ('false' == $_REQUEST['showPhotos'] ? false : true) : true;
+$showVideos = isset($_REQUEST['showVideos']) ? ('false' == $_REQUEST['showVideos'] ? false : true) : true;
+if (false === $showPhotos && false === $showVideos) {
+    $showPhotos = true; $showVideos = true; //at least one of them must be true
+}
+
+$paginateData = isset($_REQUEST['paginateData']) ? ('false' == $_REQUEST['paginateData'] ? false : true) : false;
 
 switch ($targetAction) {
 
@@ -60,14 +72,17 @@ switch ($targetAction) {
         break;
     case 'generateDirStruct':
         $navTree = generateDirStruct();
+        cleanEmptyNodes($navTree);
         header("Content-type: application/json");
         print json_encode(['success' => true, 'RECORDS' => $navTree]);
         die();
         break;
     case 'getPhotos':
-        $photos = getPhotos($_REQUEST);
+        $results = getPhotos($_REQUEST);
+        $photos = $results['data'];
+        $photos_count = $results['total'];
         header("Content-type: application/json");
-        print json_encode(['success' => true, 'RECORDS' => $photos]);
+        print json_encode(['success' => true, 'RECORDS' => $photos, 'total' => $photos_count]);
         die();
         break;
     case 'changePhotoDates':
@@ -305,7 +320,9 @@ function generateDirStruct()
 
 function getPhotos($req)
 {
-    global $finder, $photosDir, $imgPattern, $videoPattern, $glob;
+    global $finder, $photosDir, $imgPattern, $videoPattern, $glob; 
+    global $showPhotos, $showVideos, $photos_extensions, $videos_extensions;
+    global $paginateData;
 
     $path = $req['path'];
 
@@ -313,7 +330,14 @@ function getPhotos($req)
         return [];
     }
 
-    $finder->files()->name("*.thumb.*")->in("$photosDir/$path");
+    //2025-08-01:
+    if ($showPhotos && $showVideos) {
+        $finder->files()->name("*.thumb.*")->in("$photosDir/$path");
+    }elseif ($showPhotos) { //only photos
+        $finder->files()->name($photos_extensions)->in("$photosDir/$path");
+    }else { //only videos
+        $finder->files()->name($videos_extensions)->in("$photosDir/$path");
+    }
 
     $arr = [];
     if ($finder->hasResults()) {
@@ -336,8 +360,16 @@ function getPhotos($req)
     $namesArr = array_column($arr, 'caption');
     $sortDirection = ($req['photosSort'] == 'ASC') ? SORT_ASC : SORT_DESC;
     array_multisort($datesArr, $sortDirection, $namesArr, $sortDirection, $arr);
+    
+    //2025-08-01: pagination
+    if ($paginateData) {
+        $total = count($arr);
+        $arr = array_slice($arr, $req['start'], $req['limit']);
+    }
 
-    return $arr;
+    $arr = gpsDataExists($arr);
+
+    return ['data'=>$arr, 'total'=>isset($total) ? $total : count($arr)];
 
 }
 
@@ -577,6 +609,18 @@ function setGpsData()
     }
 }
 
+function gpsDataExists($arr){
+    foreach ($arr as &$item) {
+        if ('photo' == $item['fileType']) {
+            $exif = exif_read_data($_SERVER['DOCUMENT_ROOT'] . $item['realUri']);
+            if ( isset($exif['GPSLatitude']) && isset($exif['GPSLongitude']) ){
+                $item['gpsData'] = 1;
+            }
+        }
+    }
+    return $arr;
+}
+
 function manageSavedLocations()
 {
 
@@ -748,8 +792,17 @@ function adjustTree($arr)
 
 function countDirFiles($dir, $pattern)
 {
+    global $showPhotos, $showVideos, $photos_extensions, $videos_extensions;
+    
     $finder = new Finder();
-    $res = $finder->files()->name($pattern)->in($dir)->count();
+    if ($showPhotos && $showVideos) {
+        $res = $finder->files()->name($pattern)->in($dir)->count();
+    } elseif ($showPhotos) { //only photos
+        $res = $finder->files()->name($photos_extensions)->in($dir)->count();
+    } else { //only videos
+        $res = $finder->files()->name($videos_extensions)->in($dir)->count();
+    }
+    
     unset($finder);
     return $res;
 }
@@ -786,6 +839,48 @@ function removeEmptyDirs($root)
         }
     }
 }
+
+function cleanEmptyNodes(&$years) {
+    $cleanNode = function (&$node) use (&$cleanNode) {
+        if (!isset($node['RECORDS'])) {
+            return;
+        }
+
+        foreach ($node['RECORDS'] as $i => &$child) {
+            $cleanNode($child);
+
+            // Премахни ден с items == 0
+            if (($child['nodeType'] ?? '') === 'Day' && ($child['items'] ?? 0) == 0) {
+                unset($node['RECORDS'][$i]);
+            }
+
+            // Премахни месец без RECORDS след почистване
+            if (!isset($child['nodeType']) && empty($child['RECORDS'])) {
+                unset($node['RECORDS'][$i]);
+            }
+        }
+
+        // Преиндексирай
+        $node['RECORDS'] = array_values($node['RECORDS']);
+
+        // Ако няма нищо в RECORDS, изтрий ключа
+        if (empty($node['RECORDS'])) {
+            unset($node['RECORDS']);
+        }
+    };
+
+    foreach ($years as $i => &$yearNode) {
+        $cleanNode($yearNode);
+
+        // Ако година е останала без месеци
+        if (!isset($yearNode['RECORDS'])) {
+            unset($years[$i]);
+        }
+    }
+
+    $years = array_values($years);
+}
+
 
 function getDirectorySize($dir)
 {

@@ -7,43 +7,6 @@ Ext.onReady(function () {
         alias: 'widget.dzzAppNavTree',
         title: captions['navTreeTitle'],
         iconCls: 'fas fa-file-alt',
-        store: {
-            storeId: 'treeStore',
-            fields: [
-                {
-                    name: 'text',
-                    convert: function (v, rec) {
-                        if (rec.get('nodeType') == 'Day') {
-                            return Ext.Date.format(Ext.Date.parse(rec.get('path'), 'Y/m/d'), 'd.m.Y, D') + ' (' + rec.get('items') + ')';
-                        } else if (rec.get('path') && rec.get('path').indexOf('/') != -1) {
-                            return Ext.Date.format(Ext.Date.parse(rec.get('path'), 'Y/m'), 'F, Y');
-                        } else {
-                            return v;
-                        }
-
-                    }
-                }
-            ],
-            proxy: {
-                type: 'ajax',
-                url: 'scripts/tree/php/processUploads.php',
-                extraParams: {targetAction: 'generateDirStruct'},
-                actionMethods: {read: 'POST'},
-                reader: {
-                    type: 'json',
-                    rootProperty: 'RECORDS'
-                }
-            },
-            root: {
-                text: captions['rootNodeText'],
-                id: 'rootNode',
-                path: '',
-                expanded: true,
-                expandable: true
-            },
-            sorters: 'path'
-
-        },
 
         width: 250,
         minSize: 100,
@@ -85,17 +48,18 @@ Ext.onReady(function () {
 
         initComponent: function () {
             var me = this;
+
             me.callParent(arguments);
-            me.on(
-                {
-                    itemclick: me.loadObject, scope: me
-                }
-            );
-            me.getView().on(
-                {
-                    itemcontextmenu: me.showContextMenu
-                }
-            );
+            me.createTreeStore();
+
+            me.on({
+                itemclick: me.loadObject, scope: me
+            });
+
+            me.getView().on({
+                itemcontextmenu: me.showContextMenu
+            });
+
             me.photosSort = 'ASC';
 
             me.settingsMenu = Ext.widget('menu', {
@@ -108,12 +72,125 @@ Ext.onReady(function () {
                         bind: {
                             checked: '{showExifData}'
                         }
+                    },
+                    {
+                        xtype: 'menucheckitem',
+                        checked: true,
+                        text: captions['indicateGpsLocation'],
+                        bind: {
+                            hidden: '{!showExifData}',
+                            checked: '{indicateGpsLocation}'
+                        }
+                    },
+                    {
+                        xtype: 'menucheckitem',
+                        checked: true,
+                        text: captions['showPhotos'],
+                        bind: {
+                            checked: '{showPhotos}'
+                        },
+                        checkHandler: function (item, checked) {
+                            me.getStore().reload();
+                            if (Ext.ComponentQuery.query('homeGalleryDataView').length > 0) {
+                                Ext.ComponentQuery.query('homeGalleryDataView')[0].getStore().reload();
+                            }
+                        }
+                    },
+                    {
+                        xtype: 'menucheckitem',
+                        checked: true,
+                        text: captions['showVideos'],
+                        bind: {
+                            checked: '{showVideos}'
+                        },
+                        checkHandler: function (item, checked) {
+                            me.getStore().reload();
+                            if (Ext.ComponentQuery.query('homeGalleryDataView').length > 0) {
+                                Ext.ComponentQuery.query('homeGalleryDataView')[0].getStore().reload();
+                            }
+                        }
+                    },
+                    {
+                        xtype: 'menucheckitem',
+                        checked: false,
+                        text: captions['autoPlayVideos'],
+                        bind: {
+                            checked: '{autoPlayVideos}'
+                        },
+                        checkHandler: function (item, checked) {
+                            if (Ext.ComponentQuery.query('homeGalleryDataView').length > 0) {
+                                Ext.ComponentQuery.query('homeGalleryDataView')[0].getStore().reload();
+                            }
+                        }
+                    },
+                    {
+                        xtype: 'menucheckitem',
+                        checked: false,
+                        text: captions['paginateDataView'],
+                        bind: {
+                            checked: '{paginateDataView}'
+                        },
+                        checkHandler: function (item, checked) {
+                            if (Ext.ComponentQuery.query('ux-gridpager[dzz_role=galleryPager]').length > 0) {
+                                Ext.ComponentQuery.query('ux-gridpager[dzz_role=galleryPager]')[0].setHidden(!checked);
+                            }
+                        }
                     }
                 ]
             });
 
         },
 
+        createTreeStore: function () {
+            var me = this;
+            var config = {
+                storeId: 'treeStore',
+                fields: [
+                    {
+                        name: 'text',
+                        convert: function (v, rec) {
+                            if (rec.get('nodeType') == 'Day') {
+                                return Ext.Date.format(Ext.Date.parse(rec.get('path'), 'Y/m/d'), 'd.m.Y, D') + ' (' + rec.get('items') + ')';
+                            } else if (rec.get('path') && rec.get('path').indexOf('/') != -1) {
+                                return Ext.Date.format(Ext.Date.parse(rec.get('path'), 'Y/m'), 'F, Y');
+                            } else {
+                                return v;
+                            }
+
+                        }
+                    }
+                ],
+                proxy: {
+                    type: 'ajax',
+                    url: 'scripts/tree/php/processUploads.php',
+                    extraParams: { targetAction: 'generateDirStruct' },
+                    actionMethods: { read: 'POST' },
+                    reader: {
+                        type: 'json',
+                        rootProperty: 'RECORDS'
+                    }
+                },
+                root: {
+                    text: captions['rootNodeText'],
+                    id: 'rootNode',
+                    path: '',
+                    expanded: false,
+                    expandable: true
+                },
+                sorters: 'path',
+            };
+
+            var store = Ext.create('Ext.data.TreeStore', config);
+            store.on({
+                beforeload: function (store, operation, eOpts) {
+                    store.getProxy().setExtraParam('showPhotos', me.lookupViewModel().get('showPhotos'));
+                    store.getProxy().setExtraParam('showVideos', me.lookupViewModel().get('showVideos'));
+                }
+            });
+
+            me.setStore(store);
+            me.getRootNode().expand();
+        },
 
         //loads the center region content
         loadObject: function (view, record) {
@@ -129,8 +206,9 @@ Ext.onReady(function () {
             var metaData = me.getObjectMetaData(record.data.id);
             metaData.node = record.data;
             metaData.photosSort = me.photosSort;
+            metaData.vm = me.lookupViewModel();
 
-            var view = Ext.widget('homeGalleryDataView', {confData: metaData});
+            var view = Ext.widget('homeGalleryDataView', { confData: metaData });
 
             appWindow.add({
                 xtype: 'panel', scrollable: 'y', region: 'center',
@@ -143,7 +221,7 @@ Ext.onReady(function () {
                         dzzRole: 'statusbar',
                         dock: 'bottom',
                         items: [
-                            {xtype: 'tbfill'},
+                            { xtype: 'tbfill' },
                             {
                                 xtype: 'tbtext',
                                 dzzRole: 'diskStatusLabel',
@@ -160,7 +238,7 @@ Ext.onReady(function () {
 
         getObjectMetaData: function (targetObj) {
             var me = this;
-            var params = Ext.Object.merge({'targetObject': targetObj});
+            var params = Ext.Object.merge({ 'targetObject': targetObj });
 
             var requestResult, requestResponseText;
 
@@ -209,10 +287,10 @@ Ext.onReady(function () {
                         iconCls: 'fas fa-calendar-alt', faIconColor: '#0077ff',
                         handler: function () {
                             Ext.widget({
-                                    xtype: 'photoDateChange',
-                                    recs: dataView.getStore().getRange(), //returns all store records
-                                    currentDate: rec.get('path')
-                                }
+                                xtype: 'photoDateChange',
+                                recs: dataView.getStore().getRange(), //returns all store records
+                                currentDate: rec.get('path')
+                            }
                             );
                         }
                     },
@@ -221,17 +299,16 @@ Ext.onReady(function () {
                         iconCls: 'fas fa-map-marked-alt', faIconColor: '#e94335',
                         handler: function () {
                             Ext.widget({
-                                    xtype: 'gpseditor',
-                                    recs: dataView.getStore().getRange() //returns all store records
-                                }
+                                xtype: 'gpseditor',
+                                recs: dataView.getStore().getRange() //returns all store records
+                            }
                             );
                         }
                     }
                 ]
             }).showAt(e.getXY(), true);
         }
-    })
-    ;
+    });
 
 
 });

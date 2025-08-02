@@ -16,37 +16,18 @@ Ext.onReady(function () {
         selectedItemCls: 'dzz-item-selected',
         itemSelector: 'div.dzz-thumb-wrapper',
         emptyText: LOC.homeGalleryDataView.emptyText,
-        selectionModel: {mode: 'MULTI'},
-
-        store: {
-            autoLoad: true,
-            type: 'json',
-            fields: [
-                {name: 'thumbUri'},
-                {name: 'realUri'},
-                {name: 'fileType'},
-                {name: 'caption'}
-            ],
-            proxy: {
-                type: 'ajax',
-                url: 'scripts/tree/php/processUploads.php',
-                actionMethods: {read: 'POST'},
-                extraParams: {targetAction: 'getPhotos'},
-                reader: {
-                    type: 'json',
-                    rootProperty: 'RECORDS'
-                }
-            }
-        },
+        selectionModel: { mode: 'MULTI' },
 
         initComponent: function () {
             var me = this;
+
             me.prepareTpl();
             me.callParent(arguments);
-            me.getStore().getProxy().setExtraParam('path', me.confData.node.path);
-            me.getStore().getProxy().setExtraParam('photosSort', me.confData.photosSort);
+
+            me.prepareStore();
             me.on({
                 itemcontextmenu: me.showContextMenu,
+
                 itemdblclick: function (view, rec, item, index) {
 
                     //Starting fancybox entirely programmatically (without data-attributes).
@@ -94,34 +75,91 @@ Ext.onReady(function () {
                         }
 
                     }, index);
+                },
+
+                //2025-08-02: paging toolbar
+                afterrender: function (view) {
+                    if (me.lookupViewModel().get('paginateDataView')) {
+                        view.up('panel').addDocked({
+                            xtype: 'ux-gridpager', dock: 'bottom',
+                            dzz_role: 'galleryPager',
+                            displayInfo: true,
+                            store: view.getStore()
+                        });
+                    }
                 }
             });
+        },
+
+        prepareStore: function () {
+            var me = this;
+            var config = {
+                autoLoad: false, //we will load the store manually
+                type: 'json',
+                fields: [
+                    { name: 'thumbUri' },
+                    { name: 'realUri' },
+                    { name: 'fileType' },
+                    { name: 'gpsData', type: 'int' },
+                    { name: 'caption' }
+                ],
+                proxy: {
+                    type: 'ajax',
+                    url: 'scripts/tree/php/processUploads.php',
+                    actionMethods: { read: 'POST' },
+                    extraParams: { targetAction: 'getPhotos' },
+                    reader: {
+                        type: 'json',
+                        rootProperty: 'RECORDS'
+                    }
+                }
+            };
+            var store = Ext.create('Ext.data.Store', config);
+
+            store.on({
+                beforeload: function (store, operation, eOpts) {
+                    store.getProxy().setExtraParam('path', me.confData.node.path);
+                    store.getProxy().setExtraParam('photosSort', me.confData.photosSort);
+                    store.getProxy().setExtraParam('showPhotos', me.lookupViewModel().get('showPhotos'));
+                    store.getProxy().setExtraParam('showVideos', me.lookupViewModel().get('showVideos'));
+                    store.getProxy().setExtraParam('paginateData', me.lookupViewModel().get('paginateDataView'));
+                }
+            });
+
+            store.load();
+            me.setStore(store);
         },
 
         prepareTpl: function () {
             var me = this;
 
             var dc = '?_dc=' + new Date().getTime(); //disable caching param - to ensure the actual picture is retrieved, for example, if it was rotated
+            var videoTagOpts = me.confData.vm.get('autoPlayVideos') ? ' autoplay ' : ' preload="none" '; //2025-08-01
+            var locationStyle = `position: absolute; bottom: 26px; right: 10px; font-size: 1.4em; color: #E94335;`;
+            var locationIndicator = me.confData.vm.get('indicateGpsLocation') ? `<i class="fas fa-3x fa-map-marker-alt" style="${locationStyle}"></i>` : '';
             var imageTpl = new Ext.XTemplate(
                 '<tpl for=".">',
-                '<div class="dzz-thumb-wrapper" id="{caption}">',
-                '   <a>',
-                '       <div class="dzz-thumb-inner-wrapper" title="{caption}">',
-                '           <tpl if="fileType == \'photo\'">',
-                '               <div class="dzz-thumb-container" style="background-image: url(\'{thumbUri}' + dc + '\');"></div>',
-                '           <tpl else>',
-                '               <div style="height: 100%; display: flex; align-items: center; justify-content: center;">',
-                '                   <video src="{realUri}" poster="{thumbUri}" autoplay muted width="100%"></video>',
-                '               </div>',
-                '           </tpl>',
-                '       </div>',
-                '       <div class="dzz-thumb-name">{caption}</div>',
-                '   </a>',
-                '</div>',
+                `   <div class="dzz-thumb-wrapper" id="{caption}" style="position: relative;">`,
+                '    <tpl if="gpsData == 1">',
+                `       ${locationIndicator}`,
+                '    </tpl>',
+                '       <a>',
+                '           <div class="dzz-thumb-inner-wrapper" title="{caption}">',
+                '               <tpl if="fileType == \'photo\'">',
+                '                   <div class="dzz-thumb-container" style="background-image: url(\'{thumbUri}' + dc + '\');"></div>',
+                '               <tpl else>',
+                '                   <div style="height: 100%; display: flex; align-items: center; justify-content: center;">',
+                `                       <video src="{realUri}" poster="{thumbUri}" ${videoTagOpts} muted width="100%"></video>`,
+                '                   </div>',
+                '               </tpl>',
+                '           </div>',
+                '           <div class="dzz-thumb-name">{caption}</div>',
+                '       </a>',
+                '    </div>',
                 '</tpl>'
             );
 
-            Ext.apply(me, {tpl: imageTpl});
+            Ext.apply(me, { tpl: imageTpl });
 
         },
 
@@ -150,10 +188,10 @@ Ext.onReady(function () {
                         iconCls: 'fas fa-calendar-alt', faIconColor: '#0077ff',
                         handler: function (menuitem) {
                             Ext.widget({
-                                    xtype: 'photoDateChange',
-                                    recs: view.getSelection(),
-                                    currentDate: view.getSelection()[0].get('date')
-                                }
+                                xtype: 'photoDateChange',
+                                recs: view.getSelection(),
+                                currentDate: view.getSelection()[0].get('date')
+                            }
                             );
                         }
                     },
@@ -168,7 +206,7 @@ Ext.onReady(function () {
                                     //iconCls: 'dzz-icon-rotate-right',
                                     iconCls: 'fas fa-redo-alt', faIconColor: '#008000',
                                     handler: function () {
-                                        me.sendRequest({action: 'rotatePhotos', value: 90, recs: view.getSelection()})
+                                        me.sendRequest({ action: 'rotatePhotos', value: 90, recs: view.getSelection() })
                                     }
                                 }, {
                                     //text: 'Rotate -90 deg',
@@ -176,7 +214,7 @@ Ext.onReady(function () {
                                     //iconCls: 'dzz-icon-rotate-left',
                                     iconCls: 'fas fa-undo-alt', faIconColor: '#008000',
                                     handler: function () {
-                                        me.sendRequest({action: 'rotatePhotos', value: -90, recs: view.getSelection()})
+                                        me.sendRequest({ action: 'rotatePhotos', value: -90, recs: view.getSelection() })
                                     }
                                 }, {
                                     //text: 'Rotate 180 deg',
@@ -184,7 +222,7 @@ Ext.onReady(function () {
                                     //iconCls: 'dzz-icon-rotate-flip',
                                     iconCls: 'fas fa-retweet', faIconColor: '#008000',
                                     handler: function () {
-                                        me.sendRequest({action: 'rotatePhotos', value: 180, recs: view.getSelection()})
+                                        me.sendRequest({ action: 'rotatePhotos', value: 180, recs: view.getSelection() })
                                     }
                                 }
                             ]
@@ -196,9 +234,9 @@ Ext.onReady(function () {
                         iconCls: 'fas fa-map-marked-alt', faIconColor: '#e94335',
                         handler: function (menuitem) {
                             Ext.widget({
-                                    xtype: 'gpseditor',
-                                    recs: view.getSelection()
-                                }
+                                xtype: 'gpseditor',
+                                recs: view.getSelection()
+                            }
                             );
                         }
                     },
@@ -213,7 +251,7 @@ Ext.onReady(function () {
                                 function (btnText) {
                                     if (btnText === "yes") {
                                         me.sendRequest(
-                                            {action: 'deletePhotos', recs: view.getSelection()}
+                                            { action: 'deletePhotos', recs: view.getSelection() }
                                         );
                                     }
                                 }, view);
@@ -237,7 +275,7 @@ Ext.onReady(function () {
             Ext.Ajax.request({
                 url: 'scripts/tree/php/processUploads.php',
                 method: 'POST',
-                params: Ext.Object.merge({targetAction: config.action, photos: Ext.encode(photos)}, extraParams),
+                params: Ext.Object.merge({ targetAction: config.action, photos: Ext.encode(photos) }, extraParams),
                 callback: function (opts, result, response) {
 
                     me.getStore().reload();
@@ -309,8 +347,8 @@ Ext.onReady(function () {
                     var me = cmp;
 
                     vm.set({
-                            slideExifData: exifData
-                        }
+                        slideExifData: exifData
+                    }
                     );
                     me.fireEvent('exifdatachecked');
                 });
@@ -376,7 +414,7 @@ Ext.onReady(function () {
             Ext.Ajax.request({
                 url: 'scripts/tree/php/processUploads.php',
                 method: 'POST',
-                params: {targetAction: actionType},
+                params: { targetAction: actionType },
                 callback: function (opts, result, response) {
 
                     if (actionType == 'processUploads') {
@@ -419,8 +457,8 @@ Ext.onReady(function () {
         bodyPadding: 3,
         url: 'scripts/tree/php/processUploads.php',
         items: [
-            {xtype: 'hiddenfield', name: 'targetAction', value: 'changePhotoDates'},
-            {xtype: 'hiddenfield', name: 'photos', value: ''},
+            { xtype: 'hiddenfield', name: 'targetAction', value: 'changePhotoDates' },
+            { xtype: 'hiddenfield', name: 'photos', value: '' },
             {
                 xtype: 'displayfield',
                 value: LOC.photoDateChange.displayField
@@ -539,8 +577,8 @@ Ext.onReady(function () {
                             }
                         },
                         tpl: LOC.photoUploader.tbLblEnqueued + ': {total}; <span style="color: blue">' +
-                        LOC.photoUploader.tbLblUploaded + ': {succ}</span>; <span style="color: red">' +
-                        LOC.photoUploader.tbLblFailed + ': {fail}</span>; <b>{size:fileSize()}</b>'
+                            LOC.photoUploader.tbLblUploaded + ': {succ}</span>; <span style="color: red">' +
+                            LOC.photoUploader.tbLblFailed + ': {fail}</span>; <b>{size:fileSize()}</b>'
                     },
                     {
                         xtype: 'progressbar', value: 0, width: 300,
@@ -688,7 +726,7 @@ Ext.onReady(function () {
                 title: LOC.photoUploader.winTitle,
                 width: window.innerWidth * .7,
                 height: window.innerHeight * .7,
-                layout: {type: 'fit'},
+                layout: { type: 'fit' },
                 modal: true,
                 iconCls: 'fas fa-upload',
                 items: [me]
@@ -799,7 +837,7 @@ Ext.onReady(function () {
                                         Ext.widget('exifVisualiser', {
                                             viewModel: vm
                                         }).show();
-                                        vm.set({exifVisualiserInstantiated: true});
+                                        vm.set({ exifVisualiserInstantiated: true });
                                     }
                                     vm.set({
                                         exifVisualiserExifVisible: !vm.get('exifVisualiserExifVisible') //to perform exif propertygrid toggling
@@ -823,7 +861,7 @@ Ext.onReady(function () {
                                         Ext.widget('exifVisualiser', {
                                             viewModel: vm
                                         }).show();
-                                        vm.set({exifVisualiserInstantiated: true});
+                                        vm.set({ exifVisualiserInstantiated: true });
                                     }
                                     vm.set({
                                         exifVisualiserMapVisible: !vm.get('exifVisualiserMapVisible') //to perform gps gmap panel toggling
@@ -887,7 +925,7 @@ Ext.onReady(function () {
                 center: {
                     lat: 0,
                     lng: 0,
-                    marker: {title: ''}
+                    marker: { title: '' }
                 },
                 mapOptions: {
                     mapTypeId: google.maps.MapTypeId.ROADMAP
@@ -1050,7 +1088,7 @@ Ext.onReady(function () {
         alias: 'widget.gpseditor',
         bodyPadding: 3,
         url: 'scripts/tree/php/processUploads.php',
-        layout: {type: 'hbox', align: 'stretch'},
+        layout: { type: 'hbox', align: 'stretch' },
         viewModel: {
             data: {
                 lat: 0,
@@ -1062,14 +1100,14 @@ Ext.onReady(function () {
             },
             formulas: {
                 LatLng: function (get) {
-                    return {'lat': get('lat'), 'lng': get('lng')};
+                    return { 'lat': get('lat'), 'lng': get('lng') };
                 }
             },
             stores: {}
         },
         items: [
-            {xtype: 'hiddenfield', name: 'targetAction', value: 'setGpsData'},
-            {xtype: 'hiddenfield', name: 'photos', value: ''},
+            { xtype: 'hiddenfield', name: 'targetAction', value: 'setGpsData' },
+            { xtype: 'hiddenfield', name: 'photos', value: '' },
             {
                 flex: .70,
                 xtype: 'gmappanel',
@@ -1077,7 +1115,7 @@ Ext.onReady(function () {
                 center: {
                     lat: 0,
                     lng: 0,
-                    marker: {title: '', animation: google.maps.Animation.DROP}
+                    marker: { title: '', animation: google.maps.Animation.DROP }
                 },
                 mapOptions: {
                     mapTypeId: google.maps.MapTypeId.ROADMAP
@@ -1086,11 +1124,11 @@ Ext.onReady(function () {
             {
                 flex: .30,
                 xtype: 'container',
-                layout: {type: 'vbox', align: 'stretch'},
+                layout: { type: 'vbox', align: 'stretch' },
                 items: [
                     {
                         xtype: 'container',
-                        layout: {type: 'hbox', pack: 'end', padding: 10},
+                        layout: { type: 'hbox', pack: 'end', padding: 10 },
                         defaults: {
                             allowExponential: false, autoStripChars: true, decimalPrecision: 8,
                             decimalSeparator: '.', allowBlank: false, submitLocaleSeparator: false,
@@ -1116,7 +1154,7 @@ Ext.onReady(function () {
                     },
                     {
                         xtype: 'container',
-                        layout: {type: 'hbox', pack: 'end', padding: 10},
+                        layout: { type: 'hbox', pack: 'end', padding: 10 },
                         defaults: {
                             allowExponential: false, autoStripChars: true, decimalPrecision: 8,
                             decimalSeparator: '.', allowBlank: false, submitLocaleSeparator: false,
@@ -1142,7 +1180,7 @@ Ext.onReady(function () {
                     },
                     {
                         xtype: 'container',
-                        layout: {type: 'hbox', pack: 'end', padding: 10},
+                        layout: { type: 'hbox', pack: 'end', padding: 10 },
                         defaults: {
                             allowExponential: false, autoStripChars: true, decimalPrecision: 8,
                             decimalSeparator: '.', allowBlank: false, submitLocaleSeparator: false,
@@ -1187,7 +1225,7 @@ Ext.onReady(function () {
                     },
                     {
                         xtype: 'fieldset', title: 'My Locations', title: LOC.gpsEditor.locationsTitle,
-                        layout: {type: 'vbox', align: 'stretch'},
+                        layout: { type: 'vbox', align: 'stretch' },
                         padding: 10,
                         items: [
                             {
@@ -1207,8 +1245,8 @@ Ext.onReady(function () {
                             },
                             {
                                 xtype: 'container',
-                                layout: {type: 'hbox', align: 'stretch', pack: 'end'},
-                                defaults: {xtype: 'button'},
+                                layout: { type: 'hbox', align: 'stretch', pack: 'end' },
+                                defaults: { xtype: 'button' },
                                 items: [
                                     {
                                         text: 'Add New', text: LOC.gpsEditor.locationsBtnNew,
@@ -1271,7 +1309,7 @@ Ext.onReady(function () {
                                 fieldLabel: 'Location Name',
                                 fieldLabel: LOC.gpsEditor.locationsEditorLbl,
                                 labelAlign: 'top',
-                                layout: {type: 'hbox'},
+                                layout: { type: 'hbox' },
                                 items: [
                                     {
                                         xtype: 'textfield',
@@ -1387,7 +1425,7 @@ Ext.onReady(function () {
                 modal: true,
                 title: LOC.gpsEditor.winTitle,
                 items: [me],
-                layout: {type: 'fit'},
+                layout: { type: 'fit' },
                 width: window.innerWidth * .5,
                 height: window.innerHeight * .5,
                 minWidth: 1025,
@@ -1500,17 +1538,17 @@ Ext.onReady(function () {
                 Ext.define('dzz.Models.Locations', {
                     extend: 'Ext.data.Model',
                     fields: [
-                        {name: 'id', type: 'int'},
+                        { name: 'id', type: 'int' },
                         'name',
-                        {name: 'lat', type: 'float'},
-                        {name: 'lng', type: 'float'},
-                        {name: 'alt', type: 'float'},
-                        {name: 'zoom', type: 'int'}
+                        { name: 'lat', type: 'float' },
+                        { name: 'lng', type: 'float' },
+                        { name: 'alt', type: 'float' },
+                        { name: 'zoom', type: 'int' }
                     ],
                     proxy: {
                         type: 'ajax',
-                        actionMethods: {read: 'POST'},
-                        extraParams: {targetAction: 'manageSavedLocations'},
+                        actionMethods: { read: 'POST' },
+                        extraParams: { targetAction: 'manageSavedLocations' },
                         api: {
                             create: 'scripts/tree/php/processUploads.php?actionType=create',
                             read: 'scripts/tree/php/processUploads.php?actionType=read',
@@ -1534,13 +1572,13 @@ Ext.onReady(function () {
                 model: 'dzz.Models.Locations',
                 autoLoad: true,
                 sorters: [
-                    {property: 'id', direction: 'DESC'} //last added location to the top
+                    { property: 'id', direction: 'DESC' } //last added location to the top
                 ]
             });
 
-            vm.setStores({locations: store});
+            vm.setStores({ locations: store });
 
-            combo.setBind({store: '{locations}'});
+            combo.setBind({ store: '{locations}' });
             combo.on({
                 select: function (combo, rec) {
                     //console.log('combo selection');

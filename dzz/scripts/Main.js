@@ -16,7 +16,13 @@ Ext.onReady(function () {
             exifVisualiserVisible: false, //tracks if the container holding the exif propertygrid and the gmap-panel is visible
             exifVisualiserExifVisible: false, //tracks if the exif-data property grid is visible
             exifVisualiserMapVisible: false, //tracks if the gmap panel is visible
-            exifMapCenter: null //the data object for current slide's gps data
+            exifMapCenter: null, //the data object for current slide's gps data
+            //2025-08-01:
+            indicateGpsLocation: true, //indicates if we want to show the location indicator on the thumbnails
+            showPhotos: true, //determines if we want to show the photos in the gallery
+            showVideos: true, //determines if we want to show the videos in the gallery
+            autoPlayVideos: false, //determines if we want to autoplay the videos in the gallery - may be very slow on some devices
+            paginateDataView: false, //determines if we want to paginate the data view
         },
         formulas: {
             exifDataFiltered: function (get) {
@@ -35,13 +41,13 @@ Ext.onReady(function () {
             exifMapCenter: function (get) {
                 var gps = get('slideExifData.data.gps');
                 if (!gps) {
-                    this.set({exifVisualiserMapVisible: false});
+                    this.set({ exifVisualiserMapVisible: false });
                     return null;
                 }
                 return {
                     lat: gps.Latitude,
                     lng: gps.Longitude,
-                    marker: {title: Ext.util.Format.number(gps.Latitude, '0.00') + ' / ' + Ext.util.Format.number(gps.Longitude, '0.00') + ' / Altitude: ' + gps.Altitude + ' m'}
+                    marker: { title: Ext.util.Format.number(gps.Latitude, '0.00') + ' / ' + Ext.util.Format.number(gps.Longitude, '0.00') + ' / Altitude: ' + gps.Altitude + ' m' }
                 };
             }
         }
@@ -57,7 +63,7 @@ Ext.onReady(function () {
             resizable: false,
             draggable: false,
             layout: 'border',
-            defaults: {split: true, useSplitTips: true},
+            defaults: { split: true, useSplitTips: true },
             minHeight: window.innerHeight,
             viewModel: {
                 type: 'gallery'
@@ -66,9 +72,9 @@ Ext.onReady(function () {
                 {
                     xtype: 'container',
                     region: 'west',
-                    layout: {type: 'vbox', align: 'stretch'},
+                    layout: { type: 'vbox', align: 'stretch' },
                     items: [
-                        {xtype: 'dzzAppNavTree', flex: 1},
+                        { xtype: 'dzzAppNavTree', flex: 1 },
                         {
                             xtype: 'indexerButton', anchor: '100%', iconAlign: 'top', scale: 'medium',
                             iconCls: 'fas fa-play-circle'//, faIconColor: '#ff6900'

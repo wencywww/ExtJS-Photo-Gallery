@@ -37,6 +37,11 @@
       "rootNodeText": "ALL",
       "settings": "Settings",
       "showExif": "Show EXIF data",
+      "indicateGpsLocation": "Indicate GPS location in thumbs",
+      "showPhotos": "Show Photos",
+      "showVideos": "Show Videos",
+      "autoPlayVideos": "Autoplay video thumbs",
+      "paginateDataView": "Paginate gallery",
       "sortASC": "Sort by date, ascending",
       "sortDESC": "Sort by date, descending"
     },
@@ -109,6 +114,14 @@
           "toastYes": "Processing uploaded files started",
           "toastNo": "Files uploaded, the processing have to be started manually"
         }
+      }
+    },
+    "**5": "**--** files - inc/js/ux/*",
+    "5": {
+      "**gridPager": "**--** file - inc/js/ux/GridPager.js",
+      "gridPager": {
+          "pageSize": "Photos per page",
+          "pageSizeTip": "Hit Enter to apply the new page size"
       }
     }
   },

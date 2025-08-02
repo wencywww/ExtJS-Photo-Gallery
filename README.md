@@ -27,6 +27,9 @@ ExtJS Photo Gallery
   * Automatic thumbnail creation
   * Ability to delete, rotate and change the date of the item/items manually
   * Ability to recursively traverse the uploads directory for photos/videos in subdirs 
+  * Ability to show only videos or only photos 
+  * Ability to paginate large dataviews
+  * Photos with GPS data can be indicated on the thumbnails
   * The GUI supports English and Bulgarian Language
   * **No database required!**
 
@@ -116,6 +119,7 @@ ExtJS Photo Gallery
   * The New Files button in the bottom left of the screen should indicate the number of the new items
   * Click the button. The system will process photos, will refresh the tree above and will delete the originals from the upload directory
   * Use the tree nodes to view the items
+  * If case of viewing many photos + videos on a single screen - use view pagination trough the gear icon
   * Double click an item to start the fancybox slideshow
   * When the fancybox slideshow is active, the EXIF data presence is auto-detected and can be displayed using the 2 icons from the launcher on the bottom center (it is automatically hidden/shown depending on the EXIF presence for the current slide). 
   * EXIF text data and GPS coordinates are displayed using a property grid and Google Maps panel on the right side of the screen. Both can be toggled on/off by clicking the launcher icons.
@@ -130,6 +134,10 @@ ExtJS Photo Gallery
 
 **List of Changes**
 
+  * **2025-08-02**, Added gallery pagination feature - allows the items to be viewed in a small sets in case of bad computer/browser performance is experienced with many files on the screen simultaneously (default - no pagination)
+  * **2025-08-02**, Photos and videos can be seen simultaneously or separately (default - both are shown)
+  * **2025-08-02**, Photos with GPS data within exif can be visually indicated using a red marker in the bottom-right on the thumbnail (default - on)
+  * **2025-08-02**, Autoplay of the videos can be turned on/off on the thumbs (default - off)
   * **2020-10-21**, Implemented GPS Editor component for easy visual manipulation of the location data for your files. Location can be fine-tuned manually via form-fields for exact coordinates or automatically via Google Maps Marker. Altitude can also be set manually or automatically via the elevation-api.io service (precision is 5 km for the free version). The editor allows for **SEPARATE** manipulation of the altitude/longitude/altitude information (for example, you may only change the longitude of the selected photos), can be set to **preserve existing data** (updates only the files which do not have the appropriate info) or to forcibly update it. In additon, the component can save your **favorite locations** for later use via a combobox. That's convenient way to add location information for very old photos (when your camera did not have location services), or simply when your GPS device was turned off somehow      
   * **2020-10-21**, Minor fixes. Get rid of silk-icons, replaced it with Font Awesome icons
   * **2020-05-27**, Added requirement for php version, the minimum supported one is now 7.1.3, requirement for Symfony\Filesystem
