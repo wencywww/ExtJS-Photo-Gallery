@@ -1,0 +1,131 @@
+{
+  "extjs-locale": "ext-lang-en.js",
+  "**COMMON": "**--** common stuff",
+  "COMMON": {
+    "js": {
+      "ERROR": "ERROR",
+      "noServerResponse": "Error occurred or server unreachable",
+      "unknownError": "An unknown error occurred.",
+      "loadingTxt": "Loading...",
+      "dateChange": "Change date...",
+      "GALLERY_TITLE": ".:: My Family Gallery ::.",
+      "filesCount": "Files",
+      "diskStatus": "Disk free space"
+    },
+    "php": {
+      "GALLERY-TITLE": ".:: My Family Gallery ::.",
+      "ERROR": "ERROR",
+      "INFO": "INFO",
+      "passwordInvalid": "Invalid username or password..."
+    }
+  },
+  "**JS": "**--** stuff for javascript files",
+  "JS": {
+    "**0": "**--** file - /login/js/Main.js",
+    "0": {
+      "loginWinTitle": "Gallery login",
+      "lblUser": "Username",
+      "lblPass": "Password",
+      "lblLanguage": "Language",
+      "lblUITheme": "Style",
+      "btnLogin": "Login",
+      "btnCancel": "Cancel"
+    },
+    "**1": "**--** file - /dzz/scripts/tree/Tree.js",
+    "1": {
+      "navTreeTitle": "CHRONOLOGY",
+      "rootNodeText": "ALL",
+      "settings": "Settings",
+      "showExif": "Show EXIF data",
+      "indicateGpsLocation": "Indicate GPS location presence in thumbs",
+      "showPhotos": "Show Photos",
+      "showVideos": "Show Videos",
+      "autoPlayVideos": "Autoplay video thumbs",
+      "paginateDataView": "Paginate gallery",
+      "sortASC": "Sort by date, ascending",
+      "sortDESC": "Sort by date, descending"
+    },
+    "**2": "**--** file - /dzz/scripts/Main.js",
+    "2": {
+      "btnStartUploader": "File Uploader..."
+    },
+    "**4": "**--** file - inc/js/common/commonComponents.js",
+    "4": {
+      "homeGalleryDataView": {
+        "emptyText": "No photos to show",
+        "menuRotate": "Rotation",
+        "menuRotate90": "90°",
+        "menuRotateMinus90": "-90°",
+        "menuRotate180": "180°",
+        "menuDelete": "Erase selected...",
+        "menuDeleteConfirmTitle": "FILE DELETION",
+        "menuDeleteConfirmText": " files to be deleted",
+        "gpsEdit": "GPS data..."
+      },
+      "exifVisualiser":{
+        "exifTitle": "EXIF data",
+        "mapTitle": "GPS data"
+      },
+      "indexerButton": {
+        "processingPhotos": "PROCESSING FILES",
+        "noPhotos": "No photos to add",
+        "remaining": "remaining",
+        "newPhotos": "NEW FILES"
+      },
+      "photoDateChange": {
+        "displayField": "Change date for the selected photos",
+        "dateFieldLbl": "New date",
+        "btnWrite": "Save",
+        "btnCancel": "Cancel",
+        "winTitle": "FILE DATE CHANGE"
+      },
+      "gpsEditor": {
+        "winTitle": "GPS LOCATION EDITOR",
+        "latFieldLbl": "Latitude",
+        "latFieldTip": "Enter altitude [-90° to 90°] or drag the map marker on the left. The checkbox must be checked in order the altitude to be updated.",
+        "lngFieldLbl": "Longitude",
+        "lngFieldTip": "Enter longitude [-180° to 180°] or drag the map marker on the left. The checkbox must be checked in order the longitude to be updated.",
+        "altFieldLbl": "Altitude",
+        "altFieldTip": "Altitude in meters relative to the sea level. The checkbox must be checked in order the altitude to be updated.",
+        "elevationAPI": "Use elevation API (elevation-api.io)",
+        "elevationAPITip": "Will try to retrieve the altitude via the service provided by elevation-api.io. Note - in its free version, the service provides data with an accuracy of up to 5000 m",
+        "preserveExisting": "Preserve existing GPS data in files",
+        "preserveExistingTip": "If latitude/longitude/altitude data already exists in any of the selected files, it will NOT be updated. Un-check it for forced update.",
+        "locationsTitle": "Saved Locations",
+        "locationsComboLbl": "Locations",
+        "locationsBtnNew": "New",
+        "locationsBtnEdit": "Edit selected",
+        "locationsBtnDelete": "Delete selected...",
+        "locationsDeleteConfirm": "Delete location",
+        "locationsEditorLbl": "Location Name"
+
+      },
+      "photoUploader": {
+        "winTitle": "FILE UPLOADER",
+        "tbBtnClose": "Close",
+        "tbBtnUpload": "Start upload",
+        "tbLblEnqueued": "Enqueued",
+        "tbLblUploaded": "Uploaded",
+        "tbLblFailed": "Failed",
+        "tbLblProgress": "Uploading progress",
+        "closeDialog": {
+          "title": "NEW FILES",
+          "text": "Files ready - should i start to process them?",
+          "toastYes": "Processing uploaded files started",
+          "toastNo": "Files uploaded, the processing have to be started manually"
+        }
+      }
+    },
+    "**5": "**--** files - inc/js/ux/*",
+    "5": {
+      "**gridPager": "**--** file - inc/js/ux/GridPager.js",
+      "gridPager": {
+          "pageSize": "Photos per page",
+          "pageSizeTip": "Hit Enter to apply the new page size"
+      }
+    }
+  },
+  "**PHP": "**--** stuff for PHP files",
+  "PHP": {
+  }
+}

@@ -1,0 +1,10 @@
+services:
+  gallery:
+    image: wencywwww/extjs-photo-gallery
+    container_name: gallery
+    ports:
+      - "8080:80"
+    volumes:
+      - ./gallery-config.php:/var/www/html/inc/globals/gallery-config.php:ro
+      - ./gallery_data:/var/www/html/data/photos
+    restart: unless-stopped

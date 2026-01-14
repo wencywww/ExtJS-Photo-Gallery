@@ -1,0 +1,9 @@
+.git
+.gitignore
+README.md
+screenshots/
+docker/docker-image-info.txt
+docker/docker-README.txt
+vendor
+app/data/photos/
+app/inc/globals/gallery-config.php

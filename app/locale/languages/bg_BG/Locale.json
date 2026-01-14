@@ -1,0 +1,144 @@
+{
+  "extjs-locale": "ext-lang-bg.js",
+  "**COMMON": "**--** common stuff",
+  "COMMON": {
+    "js": {
+      "ERROR": "ГРЕШКА",
+      "noServerResponse": "Възникна грешка или сървърът не отговаря",
+      "unknownError": "Възникна непозната грешка.",
+      "loadingTxt": "Зареждане...",
+      "dateChange": "Смяна на датата...",
+      "GALLERY_TITLE": ".:: Галерия ::.",
+      "filesCount": "Файлове",
+      "diskStatus": "Свободно място на диска"
+    },
+    "php": {
+      "GALLERY-TITLE": ".:: Галерия ::.",
+      "ERROR": "ГРЕШКА",
+      "INFO": "ИНФОРМАЦИЯ",
+      "passwordInvalid": "Невалидно име или парола..."
+    }
+  },
+  "**JS": "**--** stuff for javascript files",
+  "JS": {
+    "**0": "**--** file - /login/js/Main.js",
+    "0": {
+      "loginWinTitle": "Вход галерия",
+      "lblUser": "Потребител",
+      "lblPass": "Парола",
+      "lblLanguage": "Език",
+      "lblUITheme": "Стил",
+      "btnLogin": "Вход",
+      "btnCancel": "Отказ"
+    },
+    "**1": "**--** file - /dzz/scripts/tree/Tree.js",
+    "1": {
+      "navTreeTitle": "ХРОНОЛОГИЯ",
+      "rootNodeText": "ВСИЧКО",
+      "settings": "Настройки",
+      "showExif": "Показване на EXIF данни",
+      "indicateGpsLocation": "Индикация за GPS данни в thumbs",
+      "showPhotos": "Показване на снимки",
+      "showVideos": "Показване на видео клипове",
+      "autoPlayVideos": "Autoplay на видео клипове",
+      "paginateDataView": "Страниране на галерията",
+      "sortASC": "Сортиране по дата, най-ранни най-отгоре",
+      "sortDESC": "Сортиране по дата, най-скорошните най-отгоре"
+    },
+    "**2": "**--** file - /dzz/scripts/Main.js",
+    "2": {
+      "btnStartUploader": "Качване на файлове..."
+    },
+    "**4": "**--** file - inc/js/common/commonComponents.js",
+    "4": {
+      "homeGalleryDataView": {
+        "emptyText": "Няма снимки за показване",
+        "menuRotate": "Завъртане",
+        "menuRotate90": "90°",
+        "menuRotateMinus90": "-90°",
+        "menuRotate180": "180°",
+        "menuDelete": "Изтриване...",
+        "menuDeleteConfirmTitle": "ИЗТРИВАНЕ НА ФАЙЛОВЕ",
+        "menuDeleteConfirmText": " файла ще бъдат изтрити",
+        "gpsEdit": "GPS данни..."
+      },
+      "exifVisualiser":{
+        "exifTitle": "EXIF данни",
+        "mapTitle": "GPS данни"
+      },
+      "indexerButton": {
+        "processingPhotos": "ОБРАБОТКА СНИМКИ",
+        "noPhotos": "Няма снимки за качване",
+        "remaining": "оставащи",
+        "newPhotos": "НОВИ СНИМКИ"
+      },
+      "photoDateChange": {
+        "displayField": "Смяна на датата на избраните снимки",
+        "dateFieldLbl": "Нова дата",
+        "btnWrite": "Запис",
+        "btnCancel": "Отказ",
+        "winTitle": "СМЯНА НА ДАТА НА СНИМКИ"
+      },
+      "gpsEditor": {
+        "winTitle": "СМЯНА НА ГЕОГРАФСКИ КООРДИНАТИ НА СНИМКИ",
+        "latFieldLbl": "Геогр. ширина",
+        "latFieldTip": "Въведете ширина в диапазона -90° до 90° или използвайте маркера вляво на картата. Ще бъде отразена само ако е активна отметката",
+        "lngFieldLbl": "Геогр. дължина",
+        "lngFieldTip": "Въведете дължина в диапазона -180° до 180° или използвайте маркера вляво на картата. Ще бъде отразена само ако е активна отметката",
+        "altFieldLbl": "Надм. височина",
+        "altFieldTip": "Надморска височина в метри. Ще бъде отразена само ако е активна отметката.",
+        "elevationAPI": "Детекция на височина (от elevation-api.io)",
+        "elevationAPITip": "Опитва да установи надморската височина чрез услугата elevation-api.io. В безплатната си версия услугата предоставя данни с точност до 5000 м",
+        "preserveExisting": "Запазване на наличните GPS данни",
+        "preserveExistingTip": "При поставена отметка - ако в някой от избраните файлове вече съществуват данни за ширина/дължина/височина, те НЯМА да бъдат обновени. За принудително обновяване - махнете отметката",
+        "locationsTitle": "Съхранени локации",
+        "locationsComboLbl": "Локации",
+        "locationsBtnNew": "Нова",
+        "locationsBtnEdit": "Редакция",
+        "locationsBtnDelete": "Изтриване...",
+        "locationsDeleteConfirm": "Изтриване на локация",
+        "locationsEditorLbl": "Име на локацията"
+      },
+      "photoUploader": {
+        "winTitle": "КАЧВАНЕ НА СНИМКИ",
+        "tbBtnClose": "Затвори",
+        "tbBtnUpload": "Качване на файловете",
+        "tbLblEnqueued": "За качване",
+        "tbLblUploaded": "Качени",
+        "tbLblFailed": "Грешки",
+        "tbLblProgress": "Качване",
+        "closeDialog": {
+          "title": "НОВИ ФАЙЛОВЕ",
+          "text": "Файловете са качени, да започне ли обработката?",
+          "toastYes": "Обработката стартирана",
+          "toastNo": "Файловете са качени, обработката трябва да се стартира ръчно"
+        },
+        "dropZone": {
+          "dictDefaultMessage": "Дръпнете файловете тук или щракнете за избор...",
+          "dictFallbackMessage": "Браузърът не поддържа drag'n'drop качване на файлове.",
+          "dictFallbackText": "Изпозлвайте формата отдолу, за да качите файловете по стандартния начин.",
+          "dictFileTooBig": "Файлът е твърде голям ({{filesize}}MiB). Максималният размер е: {{maxFilesize}}MiB.",
+          "dictInvalidFileType": "Не са позволени файлове от този тип.",
+          "dictResponseError": "Сървърът върна код {{statusCode}}.",
+          "dictCancelUpload": "Отказ",
+          "dictUploadCanceled": "Качването отказано.",
+          "dictCancelUploadConfirmation": "Отказ от качване на файла?",
+          "dictRemoveFile": "Изтриване",
+          "dictRemoveFileConfirmation": null,
+          "dictMaxFilesExceeded": "Не може да качвате повече файлове."
+        }
+      }
+    },
+    "**5": "**--** files - inc/js/ux/*",
+    "5": {
+      "**gridPager": "**--** file - inc/js/ux/GridPager.js",
+      "gridPager": {
+          "pageSize": "Снимки на страница",
+          "pageSizeTip": "Натиснете Enter за опресняване"
+      }
+    }
+  },
+  "**PHP": "**--** stuff for PHP files",
+  "PHP": {
+  }
+}
