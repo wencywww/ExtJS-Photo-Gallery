@@ -44,6 +44,7 @@ ExtJS Photo Gallery
     * Linux/Windows-based PC (instructions below use Raspbian Trixie and a Raspberry Pi 4 board; also valid for standard 64-bit Debian Trixie)
     * Apache webserver
     * PHP => 8.0 (instructions below use 8.4.16) with the GD extension
+    * Composer installed
     * A valid Google API Key with access to Maps JavaScript API, [get your own here](https://developers.google.com/maps/documentation/javascript/get-api-key)
     * Recommended browser versions: Chrome/Edge Chromium => v.81; Firefox => v.77; Opera => v.68 
     for proper image orientation (see Orientation issues section below)
@@ -66,34 +67,40 @@ ExtJS Photo Gallery
   
   * **Sample steps on Raspbian**
   
-    ````
+    ```bash
     sudo apt update
     sudo apt upgrade
-    sudo apt install git apache2 php php-gd
-    ````
+    sudo apt install git apache2 php php-gd composer
+    ```
           
     And continue with:
-    ````
+    ```bash
     sudo apachectl restart
     sudo chown -R pi:pi /var/www/html
     cd /var/www/html
     git clone https://github.com/wencywww/ExtJS-Photo-Gallery.git .
     sudo chmod -R 777 /var/www/html/data/photos
     sudo chmod -R 777 /var/www/html/data/upload
-    ````
+    ```
+
+    Install composer dependancies:
+    ```bash
+    cd /var/www/html/libraries/php
+    composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+    ```
     
     By default, the gallery runs within the root directory of the virtual host. 
     If it should live in a subdirectory instead, for example /var/www/html/gallery, the variable **$glob['paths']['appRootPrefix']** should be adjusted this way:
-    ````
+    ```php
     nano /var/www/html/inc/globals/paths.inc.php
         
     //should be empty if the application is running on a separate virtual host, or string with a leading slash if it lives in a subdirectory, e.g. "/gallery"
     //$glob['paths']['appRootPrefix'] = "/gallery";
     $glob['paths']['appRootPrefix'] = "";
-    ````
+    ```
     
     Set your timezone and change the default username/password. Enter your Google Maps API key (see requirements section above) if you want to show the map panel with the position of the currently visible slide:
-    ````
+    ```php
     nano /var/www/html/inc/globals/globals.inc.php
     
     The settings are kept in the following rows:
@@ -102,7 +109,7 @@ ExtJS Photo Gallery
     $glob['pass'] = "admin";
     //place your own GMaps API key here
     $glob['gmapsApiKey'] = "place-your-own-api-key-here";
-    ````
+    ```
 
 
 **Usage**
