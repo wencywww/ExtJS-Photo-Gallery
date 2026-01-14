@@ -106,7 +106,7 @@ ExtJS Photo Gallery
     
     Set your timezone and change the default username/password. Enter your Google Maps API key (see requirements section above) if you want to show the map panel with the position of the currently visible slide:
     ```php
-    nano /var/www/html/inc/globals/globals.inc.php
+    nano /var/www/html/inc/globals/gallery-config.php
     
     The settings are kept in the following rows:
     ini_set('date.timezone', 'Europe/Sofia');
