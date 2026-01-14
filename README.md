@@ -77,9 +77,9 @@ ExtJS Photo Gallery
     ```bash
     sudo apachectl restart
     sudo chown -R pi:pi /var/www/html (raspberry pi only)
-    sudo cd
-    sudo mkdir gallery-tmp
-    sudo cd gallery-tmp
+    cd
+    mkdir gallery-tmp
+    cd gallery-tmp
     git clone https://github.com/wencywww/ExtJS-Photo-Gallery.git .
     sudo cp -a app/. /var/www/html/
     rm -rf ~/gallery-tmp
