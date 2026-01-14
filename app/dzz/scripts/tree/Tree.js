@@ -177,7 +177,10 @@ Ext.onReady(function () {
                     expanded: false,
                     expandable: true
                 },
-                sorters: 'path',
+                sorters: [{
+                    property: 'path',
+                    direction: 'DESC'
+                }]
             };
 
             var store = Ext.create('Ext.data.TreeStore', config);
