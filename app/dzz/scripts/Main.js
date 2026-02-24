@@ -23,6 +23,7 @@ Ext.onReady(function () {
             showVideos: true, //determines if we want to show the videos in the gallery
             autoPlayVideos: false, //determines if we want to autoplay the videos in the gallery - may be very slow on some devices
             paginateDataView: false, //determines if we want to paginate the data view
+            lazyLoad: true, //determines if the tree loads nodes level by level (lazy) or all at once
         },
         formulas: {
             exifDataFiltered: function (get) {

@@ -135,6 +135,21 @@ Ext.onReady(function () {
                                 Ext.ComponentQuery.query('ux-gridpager[dzz_role=galleryPager]')[0].setHidden(!checked);
                             }
                         }
+                    },
+                    {
+                        xtype: 'menucheckitem',
+                        checked: true,
+                        text: captions['lazyLoad'],
+                        bind: {
+                            checked: '{lazyLoad}'
+                        },
+                        checkHandler: function (item, checked) {
+                            var root = me.getRootNode();
+                            root.collapse();
+                            root.removeAll();
+                            root.set('loaded', false);
+                            root.expand();
+                        }
                     }
                 ]
             });
@@ -188,6 +203,14 @@ Ext.onReady(function () {
                 beforeload: function (store, operation, eOpts) {
                     store.getProxy().setExtraParam('showPhotos', me.lookupViewModel().get('showPhotos'));
                     store.getProxy().setExtraParam('showVideos', me.lookupViewModel().get('showVideos'));
+                    if (me.lookupViewModel().get('lazyLoad')) {
+                        var node = operation.node;
+                        var nodePath = (node.get('id') === 'rootNode') ? '' : (node.get('path') || '');
+                        store.getProxy().setExtraParam('targetAction', 'getTreeLevel');
+                        store.getProxy().setExtraParam('nodePath', nodePath);
+                    } else {
+                        store.getProxy().setExtraParam('targetAction', 'generateDirStruct');
+                    }
                 }
             });
 

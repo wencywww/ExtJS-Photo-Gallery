@@ -77,6 +77,13 @@ switch ($targetAction) {
         print json_encode(['success' => true, 'RECORDS' => $navTree]);
         die();
         break;
+    case 'getTreeLevel':
+        $nodePath = isset($_REQUEST['nodePath']) ? $_REQUEST['nodePath'] : '';
+        $nodes = getTreeLevel($nodePath);
+        header("Content-type: application/json");
+        print json_encode(['success' => true, 'RECORDS' => $nodes]);
+        die();
+        break;
     case 'getPhotos':
         $results = getPhotos($_REQUEST);
         $photos = $results['data'];
@@ -317,6 +324,50 @@ function generateDirStruct()
     $arr = array_values($arr);
     return $arr;
 
+}
+
+function getTreeLevel($nodePath)
+{
+    global $photosDir;
+
+    $baseDir = ($nodePath === '') ? $photosDir : "$photosDir/$nodePath";
+    $depth = ($nodePath === '') ? 0 : substr_count($nodePath, '/') + 1;
+
+    $finder = new Finder();
+    $finder->directories()->depth('== 0')->in($baseDir);
+
+    $nodes = [];
+    foreach ($finder as $dir) {
+        $name = $dir->getFilename();
+        $fullPath = ($nodePath === '') ? $name : "$nodePath/$name";
+        $fullPath = str_replace("\\", "/", $fullPath);
+
+        if ($depth == 2) { // day level → leaf nodes
+            $itemCount = countDirFiles("$photosDir/$fullPath", "*thumb*");
+            if ($itemCount > 0) {
+                $nodes[] = [
+                    'leaf'     => true,
+                    'text'     => $name,
+                    'path'     => $fullPath,
+                    'nodeType' => 'Day',
+                    'iconCls'  => 'fas fa-calendar-check',
+                    'items'    => $itemCount
+                ];
+            }
+        } else { // year or month level → non-leaf, no children yet
+            $iconCls = ($depth == 0) ? 'fas fa-calendar' : 'fas fa-calendar-alt';
+            $nodes[] = [
+                'leaf'       => false,
+                'expandable' => true,
+                'expanded'   => false,
+                'text'       => $name,
+                'path'       => $fullPath,
+                'iconCls'    => $iconCls
+            ];
+        }
+    }
+
+    return $nodes;
 }
 
 function getPhotos($req)
