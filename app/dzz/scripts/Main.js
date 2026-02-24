@@ -1,5 +1,11 @@
 Ext.onReady(function () {
 
+    // Helper: read a boolean setting from localStorage (prefix: 'ext-gallery-')
+    function lsGetBool(key, defaultVal) {
+        var stored = localStorage.getItem('ext-gallery-' + key);
+        return (stored === null) ? defaultVal : (stored === 'true');
+    }
+
     Ext.QuickTips.init();
 
     var LOC = dzz.i18n.txt[2];
@@ -9,7 +15,7 @@ Ext.onReady(function () {
         extend: 'Ext.app.ViewModel',
         alias: 'viewmodel.gallery',
         data: {
-            showExifData: true, //determine if we want to show EXIF data
+            showExifData: lsGetBool('showExifData', true), //determine if we want to show EXIF data
             slideExifData: null, //keeps the EXIF data for the current slide
             exifManagerInstantiated: false, //tracks if the 2-icons container in the bottom center of the screen is already instantiated
             exifVisualiserInstantiated: false, //tracks if the container holding the exif propertygrid and the gmap-panel is already instantiated
@@ -18,12 +24,12 @@ Ext.onReady(function () {
             exifVisualiserMapVisible: false, //tracks if the gmap panel is visible
             exifMapCenter: null, //the data object for current slide's gps data
             //2025-08-01:
-            indicateGpsLocation: true, //indicates if we want to show the location indicator on the thumbnails
-            showPhotos: true, //determines if we want to show the photos in the gallery
-            showVideos: true, //determines if we want to show the videos in the gallery
-            autoPlayVideos: false, //determines if we want to autoplay the videos in the gallery - may be very slow on some devices
-            paginateDataView: false, //determines if we want to paginate the data view
-            lazyLoad: true, //determines if the tree loads nodes level by level (lazy) or all at once
+            indicateGpsLocation: lsGetBool('indicateGpsLocation', true), //indicates if we want to show the location indicator on the thumbnails
+            showPhotos: lsGetBool('showPhotos', true), //determines if we want to show the photos in the gallery
+            showVideos: lsGetBool('showVideos', true), //determines if we want to show the videos in the gallery
+            autoPlayVideos: lsGetBool('autoPlayVideos', false), //determines if we want to autoplay the videos in the gallery - may be very slow on some devices
+            paginateDataView: lsGetBool('paginateDataView', false), //determines if we want to paginate the data view
+            lazyLoad: lsGetBool('lazyLoad', true), //determines if the tree loads nodes level by level (lazy) or all at once
         },
         formulas: {
             exifDataFiltered: function (get) {

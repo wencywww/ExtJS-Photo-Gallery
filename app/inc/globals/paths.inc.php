@@ -18,8 +18,8 @@ $glob['paths']['diskStatusFileName'] = $glob['paths']['photosDir'] . "/diskStatu
 $glob['paths']['savedLocationsFileName'] = $glob['paths']['photosDir'] . "/savedLocations.json";
 
 
-$dzzTheme = (isset($_COOKIE['dzz_UITheme'])) ? ($_COOKIE['dzz_UITheme']) : ("classic");
-$dzzLang = (isset($_COOKIE['dzz_UILang'])) ? ($_COOKIE['dzz_UILang']) : ("en");
+$dzzTheme = (isset($_COOKIE['ext-gallery-UITheme'])) ? ($_COOKIE['ext-gallery-UITheme']) : ("classic");
+$dzzLang = (isset($_COOKIE['ext-gallery-UILang'])) ? ($_COOKIE['ext-gallery-UILang']) : ("en");
 $glob['dzzLang'] = $dzzLang;
 
 

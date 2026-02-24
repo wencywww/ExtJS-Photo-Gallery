@@ -35,6 +35,7 @@ Ext.onReady(function () {
                 callback: function (panel) {
                     panel.getStore().sort('path', 'ASC');
                     panel.photosSort = 'ASC';
+                    localStorage.setItem('ext-gallery-photosSort', 'ASC');
                 }
             },
             {
@@ -42,6 +43,7 @@ Ext.onReady(function () {
                 callback: function (panel) {
                     panel.getStore().sort('path', 'DESC');
                     panel.photosSort = 'DESC';
+                    localStorage.setItem('ext-gallery-photosSort', 'DESC');
                 }
             }
         ],
@@ -61,7 +63,10 @@ Ext.onReady(function () {
                 itemcontextmenu: me.showContextMenu
             });
 
-            me.photosSort = 'DESC';
+            me.photosSort = localStorage.getItem('ext-gallery-photosSort') || 'DESC';
+            if (me.photosSort === 'ASC') {
+                me.getStore().sort('path', 'ASC');
+            }
 
             me.settingsMenu = Ext.widget('menu', {
                 viewModel: me.lookupViewModel(),
@@ -159,6 +164,16 @@ Ext.onReady(function () {
                     }
                 ]
             });
+
+            // Save all settings to localStorage whenever ViewModel values change
+            var vm = me.lookupViewModel();
+            if (vm) {
+                ['showExifData', 'indicateGpsLocation', 'showPhotos', 'showVideos', 'autoPlayVideos', 'paginateDataView', 'lazyLoad'].forEach(function (key) {
+                    vm.bind('{' + key + '}', function (val) {
+                        localStorage.setItem('ext-gallery-' + key, String(val));
+                    });
+                });
+            }
 
         },
 
