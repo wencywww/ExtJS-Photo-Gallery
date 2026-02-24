@@ -43,7 +43,7 @@ Ext.onReady(function () {
                     queryMode: 'local', editable: false,
                     displayField: 'name',
                     valueField: 'val',
-                    value: Ext.isEmpty(Ext.util.Cookies.get('dzz_UILang')) ? 'en' : Ext.util.Cookies.get('dzz_UILang'),
+                    value: Ext.isEmpty(Ext.util.Cookies.get('ext-gallery-UILang')) ? 'en' : Ext.util.Cookies.get('ext-gallery-UILang'),
                     tpl: Ext.create('Ext.XTemplate',
                         '<tpl for=".">',
                         '<div class="x-boundlist-item"><div class="{class}">{name}</div></div>',
@@ -51,7 +51,7 @@ Ext.onReady(function () {
                     )
                     , listeners: {
                     change: function (combo) {
-                        Ext.util.Cookies.set('dzz_UILang', combo.getValue());
+                        Ext.util.Cookies.set('ext-gallery-UILang', combo.getValue());
                         window.location.reload();
                     },
                     afterrender: function (combo) {
@@ -77,10 +77,10 @@ Ext.onReady(function () {
                     queryMode: 'local', editable: false,
                     displayField: 'name',
                     valueField: 'val',
-                    value: Ext.isEmpty(Ext.util.Cookies.get('dzz_UITheme')) ? 'classic' : Ext.util.Cookies.get('dzz_UITheme'),
+                    value: Ext.isEmpty(Ext.util.Cookies.get('ext-gallery-UITheme')) ? 'classic' : Ext.util.Cookies.get('ext-gallery-UITheme'),
                     listeners: {
                         change: function (combo) {
-                            Ext.util.Cookies.set('dzz_UITheme', combo.getValue());
+                            Ext.util.Cookies.set('ext-gallery-UITheme', combo.getValue());
                             window.location.reload();
                         }
                     }
@@ -104,7 +104,7 @@ Ext.onReady(function () {
                                         var frmPanel = Ext.getCmp('loginFrmPanel');
 
                                         Ext.getCmp('loginWindow').close();
-                                        var redir = '../dzz';
+                                        var redir = '../dzz/';
                                         window.location.href = redir;
                                     },
 

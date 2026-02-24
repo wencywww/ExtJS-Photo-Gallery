@@ -1,2 +1,4 @@
 vendor
 docker/docker-image-info.txt
+.claude
+CLAUDE.md

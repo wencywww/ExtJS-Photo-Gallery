@@ -77,6 +77,13 @@ switch ($targetAction) {
         print json_encode(['success' => true, 'RECORDS' => $navTree]);
         die();
         break;
+    case 'getTreeLevel':
+        $nodePath = isset($_REQUEST['nodePath']) ? $_REQUEST['nodePath'] : '';
+        $nodes = getTreeLevel($nodePath);
+        header("Content-type: application/json");
+        print json_encode(['success' => true, 'RECORDS' => $nodes]);
+        die();
+        break;
     case 'getPhotos':
         $results = getPhotos($_REQUEST);
         $photos = $results['data'];
@@ -319,41 +326,114 @@ function generateDirStruct()
 
 }
 
+function getTreeLevel($nodePath)
+{
+    global $photosDir;
+
+    $baseDir = ($nodePath === '') ? $photosDir : "$photosDir/$nodePath";
+    $depth = ($nodePath === '') ? 0 : substr_count($nodePath, '/') + 1;
+
+    $finder = new Finder();
+    $finder->directories()->depth('== 0')->in($baseDir);
+
+    $nodes = [];
+    foreach ($finder as $dir) {
+        $name = $dir->getFilename();
+        $fullPath = ($nodePath === '') ? $name : "$nodePath/$name";
+        $fullPath = str_replace("\\", "/", $fullPath);
+
+        if ($depth == 2) { // day level → leaf nodes
+            $itemCount = countDirFiles("$photosDir/$fullPath", "*thumb*");
+            if ($itemCount > 0) {
+                $nodes[] = [
+                    'leaf'     => true,
+                    'text'     => $name,
+                    'path'     => $fullPath,
+                    'nodeType' => 'Day',
+                    'iconCls'  => 'fas fa-calendar-check',
+                    'items'    => $itemCount
+                ];
+            }
+        } else { // year or month level → non-leaf, no children yet
+            $iconCls = ($depth == 0) ? 'fas fa-calendar' : 'fas fa-calendar-alt';
+            $nodes[] = [
+                'leaf'       => false,
+                'expandable' => true,
+                'expanded'   => false,
+                'text'       => $name,
+                'path'       => $fullPath,
+                'iconCls'    => $iconCls
+            ];
+        }
+    }
+
+    return $nodes;
+}
+
 function getPhotos($req)
 {
-    global $finder, $photosDir, $imgPattern, $videoPattern, $glob; 
+    global $finder, $photosDir, $imgPattern, $videoPattern, $glob;
     global $showPhotos, $showVideos, $photos_extensions, $videos_extensions;
     global $paginateData;
 
-    $path = $req['path'];
-
-    if (!file_exists("$photosDir/$path")) {
-        return [];
-    }
-
-    //2025-08-01:
-    if ($showPhotos && $showVideos) {
-        $finder->files()->name("*.thumb.*")->in("$photosDir/$path");
-    }elseif ($showPhotos) { //only photos
-        $finder->files()->name($photos_extensions)->in("$photosDir/$path");
-    }else { //only videos
-        $finder->files()->name($videos_extensions)->in("$photosDir/$path");
-    }
-
     $arr = [];
-    if ($finder->hasResults()) {
 
-        foreach ($finder as $file) {
-            $relPath = str_replace("\\", "/", $file->getRelativePath());
-            $uriBase = $glob['paths']['photosDir'] . "/" . $path . "/" . $relPath . "/";
-            $uriBase = str_replace("//", "/", $uriBase);
-            $thumbUri = $uriBase . $file->getFilename();
-            $realFileName = substr($file->getFilename(), 0, mb_stripos($file->getFilename(), ".thumb."));
-            $realUri = $uriBase . $realFileName;
-            $realFileDateTime = date('Y-m-d', filemtime("$photosDir/$path/$relPath/$realFileName"));
-            //check for file type
-            $fileType = (preg_match($videoPattern, str_replace('.thumb.jpg', '', $file->getFilename()))) ? ('video') : ('photo');
-            $arr[] = ['thumbUri' => $thumbUri, 'caption' => "$realFileDateTime / $realFileName", 'realUri' => $realUri, 'date' => $realFileDateTime, 'fileType' => $fileType];
+    // Lazy mode: load photos from multiple specific Day-level paths
+    if (!empty($req['paths'])) {
+        $pathList = json_decode($req['paths'], true);
+        foreach ($pathList as $dayPath) {
+            $dayPath = str_replace("\\", "/", $dayPath);
+            if (!is_dir("$photosDir/$dayPath")) {
+                continue;
+            }
+            $dayFinder = new Finder();
+            if ($showPhotos && $showVideos) {
+                $dayFinder->files()->name("*.thumb.*")->in("$photosDir/$dayPath");
+            } elseif ($showPhotos) {
+                $dayFinder->files()->name($photos_extensions)->in("$photosDir/$dayPath");
+            } else {
+                $dayFinder->files()->name($videos_extensions)->in("$photosDir/$dayPath");
+            }
+            foreach ($dayFinder as $file) {
+                $uriBase = $glob['paths']['photosDir'] . "/" . $dayPath . "/";
+                $thumbUri = $uriBase . $file->getFilename();
+                $realFileName = substr($file->getFilename(), 0, mb_stripos($file->getFilename(), ".thumb."));
+                $realUri = $uriBase . $realFileName;
+                $realFileDateTime = date('Y-m-d', filemtime("$photosDir/$dayPath/$realFileName"));
+                $fileType = (preg_match($videoPattern, str_replace('.thumb.jpg', '', $file->getFilename()))) ? ('video') : ('photo');
+                $arr[] = ['thumbUri' => $thumbUri, 'caption' => "$realFileDateTime / $realFileName", 'realUri' => $realUri, 'date' => $realFileDateTime, 'fileType' => $fileType];
+            }
+        }
+    } else {
+        // Normal mode: load photos from a single path (recursive — covers year/month/day)
+        $path = $req['path'];
+
+        if (!file_exists("$photosDir/$path")) {
+            return [];
+        }
+
+        //2025-08-01:
+        if ($showPhotos && $showVideos) {
+            $finder->files()->name("*.thumb.*")->in("$photosDir/$path");
+        } elseif ($showPhotos) { //only photos
+            $finder->files()->name($photos_extensions)->in("$photosDir/$path");
+        } else { //only videos
+            $finder->files()->name($videos_extensions)->in("$photosDir/$path");
+        }
+
+        if ($finder->hasResults()) {
+            foreach ($finder as $file) {
+                $relPath = str_replace("\\", "/", $file->getRelativePath());
+                $uriBase = $glob['paths']['photosDir'] . "/" . $path . "/" . $relPath . "/";
+                $uriBase = str_replace("//", "/", $uriBase);
+                $thumbUri = $uriBase . $file->getFilename();
+                $realFileName = substr($file->getFilename(), 0, mb_stripos($file->getFilename(), ".thumb."));
+                $realUri = $uriBase . $realFileName;
+                $realFileDateTime = date('Y-m-d', filemtime("$photosDir/$path/$relPath/$realFileName"));
+                //check for file type
+                $fileType = (preg_match($videoPattern, str_replace('.thumb.jpg', '', $file->getFilename()))) ? ('video') : ('photo');
+                $arr[] = ['thumbUri' => $thumbUri, 'caption' => "$realFileDateTime / $realFileName", 'realUri' => $realUri, 'date' => $realFileDateTime, 'fileType' => $fileType];
+            }
         }
     }
 

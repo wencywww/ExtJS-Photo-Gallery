@@ -43,7 +43,8 @@
       "autoPlayVideos": "Autoplay video thumbs",
       "paginateDataView": "Paginate gallery",
       "sortASC": "Sort by date, ascending",
-      "sortDESC": "Sort by date, descending"
+      "sortDESC": "Sort by date, descending",
+      "lazyLoad": "Lazy tree loading"
     },
     "**2": "**--** file - /dzz/scripts/Main.js",
     "2": {

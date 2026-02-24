@@ -139,6 +139,8 @@ ExtJS Photo Gallery
 
 **List of Changes**
 
+  * **2026-02-24**, Added lazy tree loading mode (togglable via the gear settings menu). In lazy mode the tree loads nodes level by level on demand instead of fetching the entire structure at once. Smart click behaviour applies: a single click on a collapsed non-Day node does nothing (expand via double-click or the arrow); a single click on an already-expanded non-Day node loads photos from all currently visible Day nodes beneath it
+  * **2026-02-24**, All settings menu options (`Show EXIF`, `Indicate GPS`, `Show Photos`, `Show Videos`, `Autoplay Videos`, `Paginate`, `Lazy Load`) and the sort order of the tree are now persisted in `localStorage` and restored on next application load. All keys use the prefix `ext-gallery-`. The UI language and theme preferences (previously stored as `dzz_UILang` / `dzz_UITheme` cookies) are also renamed to follow the same `ext-gallery-UILang` / `ext-gallery-UITheme` convention
   * **2026-01-12**, switched to PHP 8.4; added Docker image information
   * **2025-08-02**, Added gallery pagination feature - allows the items to be viewed in a small sets in case of bad computer/browser performance is experienced with many files on the screen simultaneously (default - no pagination)
   * **2025-08-02**, Photos and videos can be seen simultaneously or separately (default - both are shown)

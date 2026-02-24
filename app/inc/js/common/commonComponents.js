@@ -118,7 +118,15 @@ Ext.onReady(function () {
 
             store.on({
                 beforeload: function (store, operation, eOpts) {
-                    store.getProxy().setExtraParam('path', me.confData.node.path);
+                    // In lazy mode with an expanded year/month node, dayPaths holds the list
+                    // of already-loaded Day node paths; use that instead of the node's own path
+                    if (me.confData.node.dayPaths) {
+                        store.getProxy().setExtraParam('paths', Ext.encode(me.confData.node.dayPaths));
+                        store.getProxy().setExtraParam('path', '');
+                    } else {
+                        store.getProxy().setExtraParam('path', me.confData.node.path);
+                        store.getProxy().setExtraParam('paths', '');
+                    }
                     store.getProxy().setExtraParam('photosSort', me.confData.photosSort);
                     store.getProxy().setExtraParam('showPhotos', me.lookupViewModel().get('showPhotos'));
                     store.getProxy().setExtraParam('showVideos', me.lookupViewModel().get('showVideos'));

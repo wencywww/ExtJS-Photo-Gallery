@@ -9,7 +9,7 @@ $localesAvailable = Array(
 
 $defaultLang = "en";
 
-$targetLang = $_COOKIE['dzz_UILang'];
+$targetLang = isset($_COOKIE['ext-gallery-UILang']) ? $_COOKIE['ext-gallery-UILang'] : '';
 
 if (!array_key_exists($targetLang, $localesAvailable)) {
     $targetLang = $defaultLang;

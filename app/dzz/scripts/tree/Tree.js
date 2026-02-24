@@ -35,6 +35,7 @@ Ext.onReady(function () {
                 callback: function (panel) {
                     panel.getStore().sort('path', 'ASC');
                     panel.photosSort = 'ASC';
+                    localStorage.setItem('ext-gallery-photosSort', 'ASC');
                 }
             },
             {
@@ -42,6 +43,7 @@ Ext.onReady(function () {
                 callback: function (panel) {
                     panel.getStore().sort('path', 'DESC');
                     panel.photosSort = 'DESC';
+                    localStorage.setItem('ext-gallery-photosSort', 'DESC');
                 }
             }
         ],
@@ -53,14 +55,18 @@ Ext.onReady(function () {
             me.createTreeStore();
 
             me.on({
-                itemclick: me.loadObject, scope: me
+                itemclick: me.loadObject, scope: me,
+                itemdblclick: me.onDblClick, scope: me
             });
 
             me.getView().on({
                 itemcontextmenu: me.showContextMenu
             });
 
-            me.photosSort = 'DESC';
+            me.photosSort = localStorage.getItem('ext-gallery-photosSort') || 'DESC';
+            if (me.photosSort === 'ASC') {
+                me.getStore().sort('path', 'ASC');
+            }
 
             me.settingsMenu = Ext.widget('menu', {
                 viewModel: me.lookupViewModel(),
@@ -135,9 +141,39 @@ Ext.onReady(function () {
                                 Ext.ComponentQuery.query('ux-gridpager[dzz_role=galleryPager]')[0].setHidden(!checked);
                             }
                         }
+                    },
+                    {
+                        xtype: 'menucheckitem',
+                        checked: true,
+                        text: captions['lazyLoad'],
+                        bind: {
+                            checked: '{lazyLoad}'
+                        },
+                        checkHandler: function (item, checked) {
+                            var appWindow = me.up('window[id=dzzAppWindow]');
+                            var centerPanel = appWindow.query('[region=center]');
+                            if (centerPanel.length > 0) {
+                                centerPanel[0].destroy();
+                            }
+                            var root = me.getRootNode();
+                            root.collapse();
+                            root.removeAll();
+                            root.set('loaded', false);
+                            root.expand();
+                        }
                     }
                 ]
             });
+
+            // Save all settings to localStorage whenever ViewModel values change
+            var vm = me.lookupViewModel();
+            if (vm) {
+                ['showExifData', 'indicateGpsLocation', 'showPhotos', 'showVideos', 'autoPlayVideos', 'paginateDataView', 'lazyLoad'].forEach(function (key) {
+                    vm.bind('{' + key + '}', function (val) {
+                        localStorage.setItem('ext-gallery-' + key, String(val));
+                    });
+                });
+            }
 
         },
 
@@ -188,6 +224,14 @@ Ext.onReady(function () {
                 beforeload: function (store, operation, eOpts) {
                     store.getProxy().setExtraParam('showPhotos', me.lookupViewModel().get('showPhotos'));
                     store.getProxy().setExtraParam('showVideos', me.lookupViewModel().get('showVideos'));
+                    if (me.lookupViewModel().get('lazyLoad')) {
+                        var node = operation.node;
+                        var nodePath = (node.get('id') === 'rootNode') ? '' : (node.get('path') || '');
+                        store.getProxy().setExtraParam('targetAction', 'getTreeLevel');
+                        store.getProxy().setExtraParam('nodePath', nodePath);
+                    } else {
+                        store.getProxy().setExtraParam('targetAction', 'generateDirStruct');
+                    }
                 }
             });
 
@@ -198,6 +242,13 @@ Ext.onReady(function () {
         //loads the center region content
         loadObject: function (view, record) {
             var me = this;
+            var lazyLoad = me.lookupViewModel().get('lazyLoad');
+            var nodeType = record.get('nodeType');
+
+            // In lazy mode: non-Day collapsed node → do nothing (expand via double-click or arrow)
+            if (lazyLoad && nodeType !== 'Day' && !record.isExpanded()) {
+                return;
+            }
 
             //destroy the component in the center region of the window - if exist
             var appWindow = me.up('window[id=dzzAppWindow]');
@@ -207,9 +258,18 @@ Ext.onReady(function () {
             }
 
             var metaData = me.getObjectMetaData(record.data.id);
-            metaData.node = record.data;
+            metaData.node = Ext.apply({}, record.data);
             metaData.photosSort = me.photosSort;
             metaData.vm = me.lookupViewModel();
+
+            // In lazy mode: expanded non-Day node → load only photos from visible (loaded) Day nodes
+            if (lazyLoad && nodeType !== 'Day' && record.isExpanded()) {
+                var dayPaths = me.collectDayPaths(record);
+                if (dayPaths.length === 0) {
+                    return;
+                }
+                metaData.node.dayPaths = dayPaths;
+            }
 
             var view = Ext.widget('homeGalleryDataView', { confData: metaData });
 
@@ -237,6 +297,35 @@ Ext.onReady(function () {
                 ]
             });
 
+        },
+
+        // Recursively collect paths of Day leaf nodes that are currently loaded/visible
+        // (only descends into expanded nodes — skips collapsed ones)
+        collectDayPaths: function (node) {
+            var me = this;
+            var paths = [];
+            node.eachChild(function (child) {
+                if (child.get('nodeType') === 'Day') {
+                    paths.push(child.get('path'));
+                } else if (child.isExpanded()) {
+                    paths = paths.concat(me.collectDayPaths(child));
+                }
+            });
+            return paths;
+        },
+
+        // In lazy mode: double-click expands a collapsed non-Day node
+        onDblClick: function (view, record) {
+            var me = this;
+            if (!me.lookupViewModel().get('lazyLoad')) {
+                return;
+            }
+            if (record.get('nodeType') === 'Day') {
+                return;
+            }
+            if (!record.isExpanded()) {
+                record.expand();
+            }
         },
 
         getObjectMetaData: function (targetObj) {
