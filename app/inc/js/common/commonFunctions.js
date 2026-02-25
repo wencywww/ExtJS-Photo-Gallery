@@ -52,8 +52,12 @@ Ext.onReady(function () {
             //A global Ext.Ajax error handler
             ProcessAjaxExceptions: function (response) {
 
-                if (!Ext.isEmpty(response.responseText)) {
-                    var respObject = Ext.decode(response.responseText, true);
+                var responseProperty = response.responseText || response.responseJson;
+
+                //if (!Ext.isEmpty(response.responseText)) {
+                if (!Ext.isEmpty(responseProperty)) {
+                    //var respObject = Ext.decode(response.responseText, true);
+                    var respObject = Ext.isString(responseProperty) ? Ext.decode(responseProperty, true) : responseProperty;
 
                     if (respObject == null) {
                         dzz.func.ShowErrorMsg('', '');
