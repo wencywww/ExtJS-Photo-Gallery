@@ -70,7 +70,9 @@ Ext.onReady(function () {
                             {"val": "classic", "name": "Classic"},
                             {"val": "gray", "name": "Gray"},
                             {"val": "neptune", "name": "Neptune"},
+                            {"val": "neptune-touch", "name": "Neptune Touch"},
                             {"val": "crisp", "name": "Crisp"},
+                            {"val": "crisp-touch", "name": "Crisp Touch"},
                             {"val": "triton", "name": "Triton"}
                         ]
                     },
