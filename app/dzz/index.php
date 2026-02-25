@@ -9,8 +9,10 @@
 
     <title><?=$DZZ_LOC_STRINGS['common']['GALLERY-TITLE']?></title>
 
-    <!-- Font awesome -->
-    <link rel="stylesheet" type="text/css" href="<?=$glob['paths']['font-awesomeCSS']?>"/>
+    <?php if (!in_array($_COOKIE['ext-gallery-UITheme'], ['triton', 'material']) ){ ?>
+        <!-- Font awesome -->
+        <link rel="stylesheet" type="text/css" href="<?=$glob['paths']['font-awesomeCSS']?>"/>
+    <?php } ?>
 
     <!-- ExtJS initialization stuff -->
     <link rel="stylesheet" type="text/css" href="<?=$glob['paths']['extThemeCSS']?>"/>
