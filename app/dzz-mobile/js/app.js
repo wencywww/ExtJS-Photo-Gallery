@@ -205,14 +205,23 @@ async function bootstrap() {
     // _base / _seq / _push are defined at module scope so the swipe handler
     // (onMainTouchEnd) can also call _push() after each page change.
     history.replaceState({ _ga: 0 }, '', _base + '#0');  // mark initial entry
-    _push();  // buffer #1
+
+    // Chrome does NOT fire popstate for entries created inside a popstate handler,
+    // whether synchronously or via setTimeout/Promise.  The only entries that reliably
+    // trigger popstate are those created from user-gesture contexts (swipe handlers)
+    // or from page-load context.  Strategy:
+    //   • pre-push N buffer entries at startup (page-load context → reliable)
+    //   • swipe navigation pushes 1 entry per page change (touch context → reliable)
+    //   • popstate handler does NOT push — it just handles and returns
+    // Buffer count: covers opening/closing every modal + some pages without any swipe.
+    for (let i = 0; i < 8; i++) _push();  // buffers #1..#8
 
     window.addEventListener('popstate', () => {
         // Check current hash (after navigation), not e.state — Android may return
         // null state for the replaceState'd initial entry, causing the guard to skip.
         if (!/^#\d+$/.test(location.hash)) return; // not our entry (e.g. Fancybox hash)
         handleBackNavigation();
-        _push();  // new unique entry — can't be collapsed with previous
+        // No _push() here — see comment above.
     });
 
     // 5. Initial ping (disk status + pending uploads count)
