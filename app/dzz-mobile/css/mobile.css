@@ -892,7 +892,6 @@ html, body {
     z-index: 310;
     display: flex;
     flex-direction: column;
-    padding-top: var(--header-height);
 }
 
 .upload-header {
