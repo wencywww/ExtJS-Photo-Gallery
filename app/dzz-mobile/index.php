@@ -3,12 +3,15 @@ require("../inc/php/auth.php");
 require("../inc/globals/globals.inc.php");
 ?>
 <!DOCTYPE html>
-<html lang="<?= htmlspecialchars($glob['dzzLang'], ENT_QUOTES) ?>">
+<html lang="<?= htmlspecialchars($glob['dzzLang'], ENT_QUOTES) ?>" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title><?= $DZZ_LOC_STRINGS['common']['GALLERY-TITLE'] ?></title>
+
+    <!-- Google Fonts: Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" type="text/css" href="<?= $glob['paths']['font-awesomeCSS'] ?>" />

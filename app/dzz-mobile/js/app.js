@@ -16,7 +16,7 @@ import { Pagination }      from './components/Pagination.js';
 import { GpsMapModal }    from './components/GpsMapModal.js';
 import { NodeActionSheet } from './components/NodeActionSheet.js';
 
-const { createApp, provide } = Vue;
+const { createApp, provide, watch } = Vue;
 
 // ===== History API helpers — module scope so swipe handler can call _push() =====
 const _base = location.pathname + (location.search || '');
@@ -174,6 +174,14 @@ function handleBackNavigation() {
         return true;
     }
     if (store.drawerOpen)          { store.drawerOpen = false;         return true; }
+    // Home screen drill-down: go up one level
+    if (store.photos.length === 0 && store.drillPath !== '') {
+        const parts = store.drillPath.split('/');
+        parts.pop();
+        store.drillPath = parts.join('/');
+        store.drillCards = [];
+        return true;
+    }
     // Pagination: consume back always; only navigate if page > 1
     if (store.paginateDataView && store.photos.length > 0) {
         if (store.page > 1) {
@@ -196,6 +204,12 @@ async function bootstrap() {
     // TreeNodeItem is recursive and used inside NavTree — must be globally registered
     app.component('TreeNodeItem', TreeNodeItem);
     app.mount('#app');
+
+    // 2a. Dark mode: apply saved theme + watch for changes
+    document.documentElement.setAttribute('data-theme', store.darkMode ? 'dark' : 'light');
+    watch(() => store.darkMode, val => {
+        document.documentElement.setAttribute('data-theme', val ? 'dark' : 'light');
+    });
 
     // 3. Android back button trap
     // Root cause of same-URL approach failures: Android Chrome/WebView silently

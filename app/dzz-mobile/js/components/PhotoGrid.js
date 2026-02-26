@@ -143,6 +143,77 @@ export const PhotoGrid = {
 
         const noPhotosText = computed(() => store.t.gallery?.emptyText || 'No photos to show');
 
+        // ===== Home screen drill-down =====
+        const currentCards = computed(() =>
+            store.drillPath === '' ? store.tree : store.drillCards
+        );
+
+        function buildBreadcrumbFromPath(path) {
+            const parts = path.split('/');
+            const crumbs = [];
+            if (parts[0]) crumbs.push({ text: parts[0], path: parts[0] });
+            if (parts[1]) crumbs.push({ text: parts[1], path: `${parts[0]}/${parts[1]}` });
+            if (parts[2]) crumbs.push({ text: parts[2], path });
+            return crumbs;
+        }
+
+        function cardIcon(card) {
+            if (card.leaf) return 'fas fa-calendar-check';
+            const depth = card.path ? card.path.split('/').length : 0;
+            return depth === 1 ? 'fas fa-calendar' : 'fas fa-calendar-alt';
+        }
+
+        function cardLabel(card) {
+            const depth = card.path ? card.path.split('/').length : 0;
+            if (depth === 2) {
+                try {
+                    const yearPart = card.path.split('/')[0];
+                    const d = new Date(parseInt(yearPart), parseInt(card.text, 10) - 1, 1);
+                    return d.toLocaleString(store.locale || 'en', { month: 'long' });
+                } catch { return card.text; }
+            }
+            return card.text;
+        }
+
+        async function drillInto(card) {
+            if (card.leaf) {
+                // Day node → load photos
+                store.breadcrumb     = buildBreadcrumbFromPath(card.path);
+                store.currentPath    = card.path;
+                store.currentDayPaths = null;
+                store.page           = 1;
+                store.loading        = true;
+                try {
+                    const data = await api.getPhotos(card.path, null, 1);
+                    store.photos      = data.RECORDS || [];
+                    store.totalPhotos = data.total   || 0;
+                } catch(e) {
+                    console.error('Drill-down photo load failed', e);
+                }
+                store.loading = false;
+                if (window.innerWidth < 768) store.drawerOpen = false;
+            } else {
+                // Year or Month → load children
+                store.drillPath    = card.path;
+                store.drillCards   = [];
+                store.drillLoading = true;
+                try {
+                    const data = await api.getTreeLevel(card.path);
+                    store.drillCards = data.RECORDS || [];
+                } catch(e) {
+                    console.error('Drill-down tree load failed', e);
+                }
+                store.drillLoading = false;
+            }
+        }
+
+        function drillUp() {
+            const parts = store.drillPath.split('/');
+            parts.pop();
+            store.drillPath  = parts.join('/');
+            store.drillCards = [];
+        }
+
         // Breadcrumb navigation — clicking a crumb loads photos for that path
         async function clickBreadcrumb(crumb, idx) {
             if (idx === store.breadcrumb.length - 1) return; // current level — no-op
@@ -164,7 +235,8 @@ export const PhotoGrid = {
 
         return {
             store, isSelected, onTouchStart, onTouchEnd, onTouchMove,
-            onPhotoTap, onContextMenu, noPhotosText, clickBreadcrumb
+            onPhotoTap, onContextMenu, noPhotosText, clickBreadcrumb,
+            currentCards, drillInto, drillUp, cardIcon, cardLabel
         };
     },
     template: `
@@ -198,10 +270,48 @@ export const PhotoGrid = {
                 <p>{{ noPhotosText }}</p>
             </div>
 
-            <!-- No path selected -->
-            <div v-else-if="!store.loading && store.photos.length === 0 && store.breadcrumb.length === 0" class="content-empty">
-                <i class="fas fa-hand-point-left"></i>
-                <p>Select a date from the tree</p>
+            <!-- Home screen: drill-down year/month/day cards -->
+            <div v-else-if="!store.loading && store.photos.length === 0 && store.breadcrumb.length === 0" class="home-screen">
+
+                <!-- Drill breadcrumb (shown when inside a year or month) -->
+                <div v-if="store.drillPath" class="home-drill-crumb">
+                    <button class="home-crumb-btn" @click="drillUp">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <span class="home-crumb-sep">/</span>
+                    <button class="home-crumb-btn" @click="store.drillPath = store.drillPath.split('/')[0]; store.drillCards = []">
+                        {{ store.drillPath.split('/')[0] }}
+                    </button>
+                    <template v-if="store.drillPath.includes('/')">
+                        <span class="home-crumb-sep">/</span>
+                        <span class="home-crumb-current">{{ cardLabel({ text: store.drillPath.split('/')[1], path: store.drillPath }) }}</span>
+                    </template>
+                </div>
+
+                <!-- Drill-level loading -->
+                <div v-if="store.drillLoading" class="loading-overlay">
+                    <div class="spinner"></div>
+                </div>
+
+                <!-- Cards grid -->
+                <div v-else class="home-cards-grid">
+                    <div
+                        v-for="card in currentCards"
+                        :key="card.path"
+                        class="home-card"
+                        @click="drillInto(card)"
+                    >
+                        <i :class="['home-card-icon', cardIcon(card)]"></i>
+                        <div class="home-card-value">{{ cardLabel(card) }}</div>
+                        <span v-if="card.items" class="home-card-count">
+                            <i class="fas fa-image"></i> {{ card.items }}
+                        </span>
+                        <span v-if="!card.leaf && !card.items" class="home-card-sub">
+                            <i class="fas fa-chevron-right" style="font-size:0.65rem"></i>
+                        </span>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Photo grid -->

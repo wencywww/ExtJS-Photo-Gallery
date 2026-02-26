@@ -117,6 +117,20 @@ export const SettingsSheet = {
                         </span>
                     </label>
 
+                    <!-- Appearance -->
+                    <div class="settings-section-label" style="margin-top:8px">Appearance</div>
+
+                    <label class="settings-row">
+                        <span class="settings-row-label">
+                            <i class="fas fa-moon" style="margin-right:8px; color:var(--color-primary)"></i>
+                            Dark mode
+                        </span>
+                        <span class="toggle">
+                            <input type="checkbox" v-model="store.darkMode">
+                            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                        </span>
+                    </label>
+
                     <!-- Logout -->
                     <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--color-border)">
                         <a href="../login/logout.php" class="settings-logout-btn">
