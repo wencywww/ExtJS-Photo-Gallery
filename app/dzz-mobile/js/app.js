@@ -18,6 +18,14 @@ import { NodeActionSheet } from './components/NodeActionSheet.js';
 
 const { createApp, provide } = Vue;
 
+// ===== History API helpers — module scope so swipe handler can call _push() =====
+const _base = location.pathname + (location.search || '');
+let _seq = 0;
+function _push() {
+    _seq++;
+    history.pushState({ _ga: _seq }, '', _base + '#' + _seq);
+}
+
 // Root app component
 const App = {
     name: 'App',
@@ -62,10 +70,12 @@ const App = {
                 store.page++;
                 if (store._reloadPhotos) await store._reloadPhotos();
                 document.querySelector('.main-content').scrollTop = 0;
+                _push();  // register swipe-forward as a history entry
             } else if (dx > 0 && store.page > 1) {
                 store.page--;
                 if (store._reloadPhotos) await store._reloadPhotos();
                 document.querySelector('.main-content').scrollTop = 0;
+                _push();  // register swipe-back as a history entry
             }
         }
 
@@ -188,28 +198,21 @@ async function bootstrap() {
     app.mount('#app');
 
     // 3. Android back button trap
-    // - replaceState marks the initial entry so it's "ours" (prevents going past it)
-    // - double pushState gives a 2-entry buffer (handles Android double-fire quirk)
-    // - explicit URL (not empty string) avoids path-resolution bugs in some Android WebViews
-    // - _backHandling guard prevents re-entrant popstate handling
-    const _appUrl = location.pathname + (location.search || '');
-    let _backHandling = false;
-
-    history.replaceState({ galleryApp: true }, '', _appUrl);  // mark initial entry
-    history.pushState({ galleryApp: true }, '', _appUrl);     // buffer #1
-    history.pushState({ galleryApp: true }, '', _appUrl);     // buffer #2
+    // Root cause of same-URL approach failures: Android Chrome/WebView silently
+    // collapses consecutive history entries with identical URLs.
+    // Fix: every pushState uses a unique URL (incrementing hash fragment),
+    // so the browser is forced to treat each entry as distinct.
+    // _base / _seq / _push are defined at module scope so the swipe handler
+    // (onMainTouchEnd) can also call _push() after each page change.
+    history.replaceState({ _ga: 0 }, '', _base + '#0');  // mark initial entry
+    _push();  // buffer #1
 
     window.addEventListener('popstate', () => {
-        if (_backHandling) return;
-        _backHandling = true;
-        try {
-            handleBackNavigation();
-        } finally {
-            // Re-push two entries to maintain the double buffer
-            history.pushState({ galleryApp: true }, '', _appUrl);
-            history.pushState({ galleryApp: true }, '', _appUrl);
-            setTimeout(() => { _backHandling = false; }, 100);
-        }
+        // Check current hash (after navigation), not e.state — Android may return
+        // null state for the replaceState'd initial entry, causing the guard to skip.
+        if (!/^#\d+$/.test(location.hash)) return; // not our entry (e.g. Fancybox hash)
+        handleBackNavigation();
+        _push();  // new unique entry — can't be collapsed with previous
     });
 
     // 5. Initial ping (disk status + pending uploads count)
