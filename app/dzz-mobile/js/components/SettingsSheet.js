@@ -108,17 +108,6 @@ export const SettingsSheet = {
 
                     <label class="settings-row">
                         <span class="settings-row-label">
-                            <i class="fas fa-bolt" style="margin-right:8px; color:var(--color-primary)"></i>
-                            {{ store.t.lazyLoad || 'Lazy tree loading' }}
-                        </span>
-                        <span class="toggle">
-                            <input type="checkbox" v-model="store.lazyLoad">
-                            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-                        </span>
-                    </label>
-
-                    <label class="settings-row">
-                        <span class="settings-row-label">
                             <i class="fas fa-th-large" style="margin-right:8px; color:var(--color-primary)"></i>
                             {{ store.t.paginateDataView || 'Paginate gallery' }}
                         </span>
@@ -127,6 +116,14 @@ export const SettingsSheet = {
                             <span class="toggle-track"><span class="toggle-thumb"></span></span>
                         </span>
                     </label>
+
+                    <!-- Logout -->
+                    <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--color-border)">
+                        <a href="../login/logout.php" class="settings-logout-btn">
+                            <i class="fas fa-sign-out-alt" style="margin-right:8px"></i>
+                            {{ store.t.logout || 'Logout' }}
+                        </a>
+                    </div>
 
                 </div>
             </div>

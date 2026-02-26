@@ -812,6 +812,28 @@ html, body {
     color: var(--color-primary);
 }
 
+.settings-logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 11px 16px;
+    border: 1px solid #e53935;
+    border-radius: 8px;
+    background: transparent;
+    color: #e53935;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+.settings-logout-btn:hover,
+.settings-logout-btn:active {
+    background: #e53935;
+    color: #fff;
+}
+
 /* ===== Action Sheet ===== */
 .action-sheet-item {
     display: flex;

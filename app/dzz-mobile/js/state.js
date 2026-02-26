@@ -19,7 +19,7 @@ export const store = reactive({
     showVideos:          lsGetBool('showVideos', true),
     autoPlayVideos:      lsGetBool('autoPlayVideos', false),
     paginateDataView:    lsGetBool('paginateDataView', false),
-    lazyLoad:            lsGetBool('lazyLoad', true),
+    lazyLoad:            true,  // always on in mobile; not user-configurable
     photosSort:          lsGetStr('photosSort', 'DESC'),
 
     // Navigation
@@ -84,7 +84,7 @@ export const store = reactive({
 // Persist settings to localStorage on change (identical keys with desktop)
 const boolKeys = [
     'showExifData', 'indicateGpsLocation', 'showPhotos', 'showVideos',
-    'autoPlayVideos', 'paginateDataView', 'lazyLoad'
+    'autoPlayVideos', 'paginateDataView'
 ];
 boolKeys.forEach(key => {
     watch(() => store[key], val => localStorage.setItem(LS_PREFIX + key, String(val)));

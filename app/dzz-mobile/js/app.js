@@ -164,6 +164,15 @@ function handleBackNavigation() {
         return true;
     }
     if (store.drawerOpen)          { store.drawerOpen = false;         return true; }
+    // Pagination: consume back always; only navigate if page > 1
+    if (store.paginateDataView && store.photos.length > 0) {
+        if (store.page > 1) {
+            store.page--;
+            if (store._reloadPhotos) store._reloadPhotos();
+            document.querySelector('.main-content')?.scrollTo(0, 0);
+        }
+        return true;  // on page 1 — consume back but do nothing
+    }
     return false;
 }
 
@@ -178,12 +187,29 @@ async function bootstrap() {
     app.component('TreeNodeItem', TreeNodeItem);
     app.mount('#app');
 
-    // 3. Android back button trap — push initial history entry, re-push on every popstate
-    history.pushState({ galleryApp: true }, '');
+    // 3. Android back button trap
+    // - replaceState marks the initial entry so it's "ours" (prevents going past it)
+    // - double pushState gives a 2-entry buffer (handles Android double-fire quirk)
+    // - explicit URL (not empty string) avoids path-resolution bugs in some Android WebViews
+    // - _backHandling guard prevents re-entrant popstate handling
+    const _appUrl = location.pathname + (location.search || '');
+    let _backHandling = false;
+
+    history.replaceState({ galleryApp: true }, '', _appUrl);  // mark initial entry
+    history.pushState({ galleryApp: true }, '', _appUrl);     // buffer #1
+    history.pushState({ galleryApp: true }, '', _appUrl);     // buffer #2
+
     window.addEventListener('popstate', () => {
-        handleBackNavigation();
-        // Always re-push so the next back press is also caught (never leaves the app)
-        history.pushState({ galleryApp: true }, '');
+        if (_backHandling) return;
+        _backHandling = true;
+        try {
+            handleBackNavigation();
+        } finally {
+            // Re-push two entries to maintain the double buffer
+            history.pushState({ galleryApp: true }, '', _appUrl);
+            history.pushState({ galleryApp: true }, '', _appUrl);
+            setTimeout(() => { _backHandling = false; }, 100);
+        }
     });
 
     // 5. Initial ping (disk status + pending uploads count)
