@@ -76,10 +76,6 @@ export const store = reactive({
     pendingUploads: 0,
     diskStatus:     null,
 
-    // Pull-to-refresh
-    ptrPulling: 0,    // 0..1 pull progress (for visual feedback opacity)
-    ptrLoading: false,
-
     // i18n
     t:      {},
     locale: 'en'

@@ -7,12 +7,14 @@ export const UploadPanel = {
         const api   = inject('api');
 
         const dropzoneEl = ref(null);
-        let   dzInstance = null;
+        let   dzInstance  = null;
+        let   isDestroying = false;
 
-        const stats     = store.uploadStats;
-        const isUploading   = ref(false);
+        const stats          = store.uploadStats;
+        const isUploading    = ref(false);
+        const uploadComplete = ref(false);
         const canStartUpload = computed(() => stats.queued > 0 && !isUploading.value);
-        const canProcess     = computed(() => stats.uploaded > 0);
+        const canProcess     = computed(() => stats.uploaded > 0 || store.pendingUploads > 0);
 
         function close() {
             store.uploadOpen = false;
@@ -20,13 +22,14 @@ export const UploadPanel = {
         }
 
         function resetStats() {
-            stats.total         = 0;
-            stats.queued        = 0;
-            stats.uploaded      = 0;
-            stats.failed        = 0;
-            stats.bytes         = 0;
-            stats.uploadedBytes = 0;
-            store.uploadDone    = false;
+            stats.total          = 0;
+            stats.queued         = 0;
+            stats.uploaded       = 0;
+            stats.failed         = 0;
+            stats.bytes          = 0;
+            stats.uploadedBytes  = 0;
+            store.uploadDone     = false;
+            uploadComplete.value = false;
         }
 
         function formatBytes(bytes) {
@@ -81,14 +84,16 @@ export const UploadPanel = {
                 if (!dzInstance) return;
                 stats.total++;
                 stats.bytes += file.size || 0;
-                stats.queued = dzInstance.getQueuedFiles().length;
+                // Newly added files have status ADDED, not QUEUED yet (autoProcessQueue:false).
+                // getQueuedFiles() returns only QUEUED status → always 0 here. Use manual counter.
+                stats.queued++;
             });
 
             dzInstance.on('removedfile', (file) => {
                 if (!dzInstance) return;
                 stats.total  = Math.max(0, stats.total - 1);
                 stats.bytes  = Math.max(0, stats.bytes - (file.size || 0));
-                stats.queued = dzInstance.getQueuedFiles().length;
+                stats.queued = Math.max(0, stats.queued - 1);
             });
 
             dzInstance.on('processing', () => {
@@ -109,8 +114,8 @@ export const UploadPanel = {
 
             dzInstance.on('error', (file, err) => {
                 if (!dzInstance) return;
-                // Ignore "Upload canceled" errors triggered by destroy()
-                if (typeof err === 'string' && err.toLowerCase().includes('canceled')) return;
+                // Ignore errors triggered by explicit destroy() on panel close
+                if (isDestroying) return;
                 stats.failed++;
                 console.error('Upload error', err);
             });
@@ -128,18 +133,21 @@ export const UploadPanel = {
                 dzInstance.options.autoProcessQueue = false;
                 isUploading.value = false;
                 stats.queued = 0;
+                // Signal that upload is done so Process Files button gets highlighted
+                if (stats.uploaded > 0) uploadComplete.value = true;
             });
         });
 
         onUnmounted(() => {
             if (dzInstance) {
+                isDestroying = true;
                 dzInstance.destroy();
                 dzInstance = null;
             }
         });
 
         return {
-            store, stats, dropzoneEl, isUploading,
+            store, stats, dropzoneEl, isUploading, uploadComplete,
             canStartUpload, canProcess,
             close, startUpload, processFiles, formatBytes
         };
@@ -168,7 +176,7 @@ export const UploadPanel = {
                 </button>
 
                 <button
-                    class="btn-secondary"
+                    :class="['btn-secondary', { 'btn-process-ready': canProcess && (uploadComplete || store.pendingUploads > 0) }]"
                     @click="processFiles"
                     :disabled="!canProcess || store.loading"
                     :title="store.t.indexer?.processingPhotos || 'Process files'"
@@ -195,6 +203,24 @@ export const UploadPanel = {
                         {{ formatBytes(stats.bytes) }}
                     </span>
                 </div>
+            </div>
+
+            <!-- Pending notice: files from a previous upload session (not yet processed) -->
+            <div
+                v-if="store.pendingUploads > 0 && stats.uploaded === 0 && !store.uploadDone"
+                style="background:#fff3e0; padding:10px 14px; font-size:0.85rem; color:#e65100; display:flex; align-items:center; gap:8px"
+            >
+                <i class="fas fa-clock"></i>
+                {{ store.pendingUploads }} file(s) awaiting processing — click <strong style="margin:0 3px">Process Files</strong> to finish.
+            </div>
+
+            <!-- Upload-complete notice: files uploaded, Process Files is next -->
+            <div
+                v-if="uploadComplete && !store.uploadDone"
+                style="background:#e3f2fd; padding:10px 14px; font-size:0.85rem; color:#1565c0; display:flex; align-items:center; gap:8px"
+            >
+                <i class="fas fa-check-circle"></i>
+                {{ stats.uploaded }} file(s) uploaded — click <strong style="margin:0 3px">Process Files</strong> to finish.
             </div>
 
             <!-- Success notice -->

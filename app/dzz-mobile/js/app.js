@@ -41,50 +41,18 @@ const App = {
         provide('store', store);
         provide('api',   api);
 
-        // Swipe left/right to change pages + Pull-to-Refresh
-        let swipeStartX   = 0;
-        let swipeStartY   = 0;
-        let startScrollTop = 0;
+        // Swipe left/right to change pages
+        let swipeStartX = 0;
+        let swipeStartY = 0;
 
         function onMainTouchStart(evt) {
-            swipeStartX    = evt.touches[0].clientX;
-            swipeStartY    = evt.touches[0].clientY;
-            const main     = document.querySelector('.main-content');
-            startScrollTop = main ? main.scrollTop : 0;
-        }
-
-        function onMainTouchMove(evt) {
-            // Show pull-to-refresh indicator only when at the top of the list
-            if (startScrollTop > 5) return;
-            const dy = evt.touches[0].clientY - swipeStartY;
-            const dx = evt.touches[0].clientX - swipeStartX;
-            if (dy > 0 && Math.abs(dy) > Math.abs(dx)) {
-                store.ptrPulling = Math.min(dy / 80, 1);
-            } else {
-                store.ptrPulling = 0;
-            }
+            swipeStartX = evt.touches[0].clientX;
+            swipeStartY = evt.touches[0].clientY;
         }
 
         async function onMainTouchEnd(evt) {
             const dx = evt.changedTouches[0].clientX - swipeStartX;
             const dy = evt.changedTouches[0].clientY - swipeStartY;
-
-            // Reset pull indicator
-            store.ptrPulling = 0;
-
-            // Pull-to-Refresh: pull down ≥80px from top, mostly vertical
-            if (startScrollTop <= 5 && dy > 80 && Math.abs(dy) > Math.abs(dx) * 1.5) {
-                store.ptrLoading = true;
-                try {
-                    if (store._loadRoot) await store._loadRoot();
-                    if (store.currentPath || store.currentDayPaths) {
-                        if (store._reloadPhotos) await store._reloadPhotos();
-                    }
-                } finally {
-                    store.ptrLoading = false;
-                }
-                return; // don't also trigger pagination
-            }
 
             // Swipe left/right for pagination
             if (!store.paginateDataView || store.photos.length === 0) return;
@@ -101,7 +69,7 @@ const App = {
             }
         }
 
-        return { store, onMainTouchStart, onMainTouchMove, onMainTouchEnd };
+        return { store, onMainTouchStart, onMainTouchEnd };
     },
     template: `
         <div class="gallery-app">
@@ -125,17 +93,8 @@ const App = {
                 :class="{ 'has-pagination': store.paginateDataView && store.photos.length > 0 }"
                 role="main"
                 @touchstart.passive="onMainTouchStart"
-                @touchmove.passive="onMainTouchMove"
                 @touchend.passive="onMainTouchEnd"
             >
-                <!-- Pull-to-Refresh indicator -->
-                <div
-                    class="ptr-indicator"
-                    :class="{ loading: store.ptrLoading }"
-                    :style="{ opacity: store.ptrLoading ? 1 : store.ptrPulling }"
-                >
-                    <i class="fas fa-sync" :class="{ 'fa-spin': store.ptrLoading }"></i>
-                </div>
                 <PhotoGrid />
             </main>
 
@@ -187,6 +146,27 @@ const App = {
     `
 };
 
+// ===== Android Back Button — History API trap =====
+function handleBackNavigation() {
+    // Close modals/panels in priority order (topmost first)
+    if (store.confirmDialog.open)  { store.confirmDialog.open = false; return true; }
+    if (store.gpsMapOpen)          { store.gpsMapOpen = false;         return true; }
+    if (store.dateChangeOpen)      { store.dateChangeOpen = false;     return true; }
+    if (store.gpsEditorOpen)       { store.gpsEditorOpen = false;      return true; }
+    if (store.exifModalOpen)       { store.exifModalOpen = false;      return true; }
+    if (store.actionSheetOpen)     { store.actionSheetOpen = false;    return true; }
+    if (store.nodeSheetOpen)       { store.nodeSheetOpen = false;      return true; }
+    if (store.uploadOpen)          { store.uploadOpen = false;         return true; }
+    if (store.settingsOpen)        { store.settingsOpen = false;       return true; }
+    if (store.selectionMode)       {
+        store.selectionMode = false;
+        store.selectedPhotos = [];
+        return true;
+    }
+    if (store.drawerOpen)          { store.drawerOpen = false;         return true; }
+    return false;
+}
+
 // ===== Bootstrap =====
 async function bootstrap() {
     // 1. Load i18n strings
@@ -198,7 +178,15 @@ async function bootstrap() {
     app.component('TreeNodeItem', TreeNodeItem);
     app.mount('#app');
 
-    // 3. Initial ping (disk status + pending uploads count)
+    // 3. Android back button trap — push initial history entry, re-push on every popstate
+    history.pushState({ galleryApp: true }, '');
+    window.addEventListener('popstate', () => {
+        handleBackNavigation();
+        // Always re-push so the next back press is also caught (never leaves the app)
+        history.pushState({ galleryApp: true }, '');
+    });
+
+    // 5. Initial ping (disk status + pending uploads count)
     try {
         const pingResult = await api.ping();
         const details = pingResult.details || {};
@@ -208,7 +196,7 @@ async function bootstrap() {
         console.warn('Initial ping failed', e);
     }
 
-    // 4. Periodic ping every 10 seconds
+    // 6. Periodic ping every 10 seconds
     setInterval(async () => {
         try {
             const pingResult = await api.ping();

@@ -1,4 +1,4 @@
-const { ref, inject, onMounted, onUnmounted } = Vue;
+const { ref, inject, onMounted, onUnmounted, nextTick } = Vue;
 
 export const GpsMapModal = {
     name: 'GpsMapModal',
@@ -45,9 +45,14 @@ export const GpsMapModal = {
             }
 
             loading.value = false;
+            // Wait for Vue to render the v-else map div before accessing mapEl
+            await nextTick();
 
             // 2. Init read-only Google Map
-            if (typeof google === 'undefined' || !mapEl.value) return;
+            if (typeof google === 'undefined' || !mapEl.value) {
+                error.value = store.t.gps?.noGpsData || 'Google Maps not available';
+                return;
+            }
             const pos = { lat: lat.value, lng: lng.value };
             gmap = new google.maps.Map(mapEl.value, {
                 zoom:      15,

@@ -6,9 +6,10 @@ export const GpsEditor = {
         const store = inject('store');
         const api   = inject('api');
 
-        const mapEl       = ref(null);
-        let   gMap        = null;
-        let   gMarker     = null;
+        const mapEl           = ref(null);
+        let   gMap            = null;
+        let   gMarker         = null;
+        const mapsAvailable   = ref(false);   // set in onMounted; window.google not in Vue template scope
 
         const saving      = ref(false);
         const fetchingAlt = ref(false);
@@ -42,7 +43,8 @@ export const GpsEditor = {
         onMounted(async () => {
             await loadSavedLocations();
 
-            if (!window.google || !window.google.maps) return;
+            mapsAvailable.value = !!(window.google && window.google.maps);
+            if (!mapsAvailable.value) return;
 
             const defaultLat = parseFloat(form.lat) || 42.698334;
             const defaultLng = parseFloat(form.lng) || 23.319941;
@@ -144,11 +146,11 @@ export const GpsEditor = {
 
         function applyLocation(evt) {
             const locId = evt.target.value;
-            const loc   = savedLocations.value.find(l => String(l.locationId) === String(locId));
+            const loc   = savedLocations.value.find(l => String(l.id) === String(locId));
             if (!loc) return;
-            form.lat = String(loc.lat  || '');
-            form.lng = String(loc.lng  || '');
-            form.alt = String(loc.alt  || '');
+            form.lat = String(loc.lat || '');
+            form.lng = String(loc.lng || '');
+            form.alt = String(loc.alt || '');
             syncMapToForm();
         }
 
@@ -161,9 +163,9 @@ export const GpsEditor = {
 
         function startEditLocation() {
             const locId = selectedLocation.value;
-            const loc   = savedLocations.value.find(l => String(l.locationId) === String(locId));
+            const loc   = savedLocations.value.find(l => String(l.id) === String(locId));
             if (!loc) return;
-            editingLocName.value  = loc.locationName;
+            editingLocName.value  = loc.name;
             editingExisting.value = true;
             editingLocId.value    = locId;
             showLocEditor.value   = true;
@@ -172,14 +174,17 @@ export const GpsEditor = {
         async function saveLocation() {
             const name = editingLocName.value.trim();
             if (!name) return;
+            // PHP expects data as JSON: {name, lat, lng, alt, zoom} for create
+            //                           {id, name, lat, lng, alt, zoom} for update
             const payload = {
-                locationName: name,
-                lat: form.lat,
-                lng: form.lng,
-                alt: form.alt
+                name: name,
+                lat:  parseFloat(form.lat) || 0,
+                lng:  parseFloat(form.lng) || 0,
+                alt:  parseFloat(form.alt) || 0,
+                zoom: 0
             };
             if (editingExisting.value) {
-                payload.locationId = editingLocId.value;
+                payload.id = editingLocId.value;
                 await api.manageSavedLocations('update', payload);
             } else {
                 await api.manageSavedLocations('create', payload);
@@ -191,14 +196,14 @@ export const GpsEditor = {
         function deleteLocation() {
             const locId = selectedLocation.value;
             if (!locId) return;
-            const loc = savedLocations.value.find(l => String(l.locationId) === String(locId));
+            const loc = savedLocations.value.find(l => String(l.id) === String(locId));
             if (!loc) return;
             store.confirmDialog = {
                 open:    true,
                 title:   store.t.gps?.locationsDeleteConfirm || 'Delete location',
-                message: `Delete "${loc.locationName}"?`,
+                message: `Delete "${loc.name}"?`,
                 onConfirm: async () => {
-                    await api.manageSavedLocations('destroy', { locationId: locId });
+                    await api.manageSavedLocations('destroy', { id: locId });
                     selectedLocation.value = '';
                     await loadSavedLocations();
                 }
@@ -206,7 +211,7 @@ export const GpsEditor = {
         }
 
         return {
-            store, mapEl, form, saving, fetchingAlt,
+            store, mapEl, mapsAvailable, form, saving, fetchingAlt,
             savedLocations, selectedLocation, editingLocName, showLocEditor, editingExisting,
             syncMapToForm, fetchElevation, save, close,
             applyLocation, startNewLocation, startEditLocation, saveLocation, deleteLocation
@@ -226,7 +231,7 @@ export const GpsEditor = {
                 <!-- Google Map -->
                 <div class="gps-map-container">
                     <div ref="mapEl"></div>
-                    <div v-if="!$root || typeof google === 'undefined'"
+                    <div v-if="!mapsAvailable"
                          style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--color-text-muted);font-size:0.85rem">
                         Google Maps not available
                     </div>
@@ -310,9 +315,9 @@ export const GpsEditor = {
                             <option value="">{{ store.t.gps?.locationsComboLbl || 'Locations...' }}</option>
                             <option
                                 v-for="loc in savedLocations"
-                                :key="loc.locationId"
-                                :value="loc.locationId"
-                            >{{ loc.locationName }}</option>
+                                :key="loc.id"
+                                :value="loc.id"
+                            >{{ loc.name }}</option>
                         </select>
                         <button class="btn-icon" @click="startNewLocation" :title="store.t.gps?.locationsBtnNew || 'New'">
                             <i class="fas fa-plus"></i>

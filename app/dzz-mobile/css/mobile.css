@@ -932,6 +932,12 @@ html, body {
     transform: scale(0.96);
 }
 
+/* Upload complete — highlight Process Files button in green */
+.btn-process-ready {
+    background: #2e7d32 !important;
+    box-shadow: 0 0 0 2px #a5d6a7;
+}
+
 .upload-stats {
     font-size: 0.75rem;
     color: var(--color-text-muted);
@@ -1161,6 +1167,11 @@ html, body {
     height: 100%;
     border-radius: 0;
 }
+/* In full-screen mode, modal-body must shrink to allow footer to stay visible.
+   Default min-height:auto on flex children prevents proper shrink+scroll. */
+.gps-editor-backdrop .modal-body {
+    min-height: 0;
+}
 @media (min-width: 768px) {
     .gps-editor-backdrop {
         align-items: center;
@@ -1180,6 +1191,7 @@ html, body {
     background: var(--color-background);
     position: relative;
     flex-shrink: 0;
+    overflow: hidden;   /* Prevent child divs from overflowing and covering form controls */
 }
 
 .gps-map-container > div {
@@ -1322,24 +1334,6 @@ html, body {
 
 .main-content.has-pagination {
     padding-bottom: 80px;
-}
-
-/* ===== Pull-to-Refresh indicator ===== */
-.ptr-indicator {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px 0;
-    color: var(--color-primary);
-    font-size: 1.1rem;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-    height: 36px;
-    margin-top: -36px;  /* hidden above content by default */
-}
-.ptr-indicator.loading {
-    opacity: 1 !important;
-    margin-top: 0;
 }
 
 /* ===== Tablet persistent sidebar ===== */

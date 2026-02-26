@@ -103,10 +103,13 @@ export const api = {
     },
 
     manageSavedLocations(action, payload) {
-        return post({
+        const params = {
             targetAction: 'manageSavedLocations',
-            action,
-            ...(payload || {})
-        });
+            actionType:   action   // PHP reads $_REQUEST['actionType'], not 'action'
+        };
+        if (payload) {
+            params.data = JSON.stringify(payload);  // PHP does json_decode($_REQUEST['data'])
+        }
+        return post(params);
     }
 };
