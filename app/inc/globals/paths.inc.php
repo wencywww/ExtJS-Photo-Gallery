@@ -29,7 +29,7 @@ $glob['paths']['extAllJS'] = $glob['paths']['extIncPath'] . "/build/ext-all.js";
 $glob['paths']['extLocaleJS'] = $glob['paths']['extIncPath'] . "/build/classic/locale/locale-$dzzLang.js";
 
 
-$glob['paths']['font-awesomeCSS'] = $glob['paths']['appRootPrefix'] . "/libraries/css/fa/fontawesome-free-5.13.0-web/css/all.css";
+$glob['paths']['font-awesomeCSS'] = $glob['paths']['appRootPrefix'] . "/libraries/css/fa/fontawesome-free-7.2.0-web/css/all.css";
 
 $glob['paths']['jqueryJS'] = $glob['paths']['appRootPrefix'] . "/libraries/js/jquery/jquery.min.js";
 

@@ -113,3 +113,11 @@
 .dropzone .dz-preview .dz-error-message{
     top: 150px;
 }
+
+/* Fix FA 7 icon width inside ExtJS button icon spans */
+.x-btn-icon-el.fas,
+.x-btn-icon-el.far,
+.x-btn-icon-el.fa-solid,
+.x-btn-icon-el.fa-regular {
+    width: auto;
+}

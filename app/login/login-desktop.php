@@ -9,12 +9,14 @@
     <!-- JS fallback: redirect touch-primary devices that PHP missed (e.g. iPad) -->
     <script>
         if (window.matchMedia('(pointer: coarse)').matches && screen.width <= 1024) {
-            window.location.replace('Login.php?mobile=1');
+            window.location.replace('login.php?mobile=1');
         }
     </script>
 
-    <!-- Font awesome -->
-    <link rel="stylesheet" type="text/css" href="<?= $glob['paths']['font-awesomeCSS']; ?>" />
+    <?php if (!in_array($_COOKIE['ext-gallery-UITheme'], ['triton', 'material']) ){ ?>
+        <!-- Font awesome -->
+        <link rel="stylesheet" type="text/css" href="<?=$glob['paths']['font-awesomeCSS']?>"/>
+    <?php } ?>
 
     <!-- ExtJS initialization stuff -->
     <link rel="stylesheet" type="text/css" href="<?= $glob['paths']['extThemeCSS'] ?>" />
