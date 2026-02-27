@@ -9,7 +9,7 @@
     <!-- JS fallback: redirect touch-primary devices that PHP missed (e.g. iPad) -->
     <script>
         if (window.matchMedia('(pointer: coarse)').matches && screen.width <= 1024) {
-            window.location.replace('login.php?mobile=1');
+            window.location.replace('index.php?mobile=1');
         }
     </script>
 

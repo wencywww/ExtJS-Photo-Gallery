@@ -1,6 +1,6 @@
 <?php
-require("../inc/php/auth.php");
-require("../inc/globals/globals.inc.php");
+require("../../inc/php/auth.php");
+require("../../inc/globals/globals.inc.php");
 ?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars($glob['dzzLang'], ENT_QUOTES) ?>" data-theme="light">
@@ -11,7 +11,7 @@ require("../inc/globals/globals.inc.php");
     <title><?= $DZZ_LOC_STRINGS['common']['GALLERY-TITLE'] ?></title>
 
     <!-- Roboto (self-hosted) -->
-    <link rel="stylesheet" href="../inc/css/mobile/roboto.css">
+    <link rel="stylesheet" href="../../inc/css/mobile/roboto.css">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" type="text/css" href="<?= $glob['paths']['font-awesomeCSS'] ?>" />
@@ -23,7 +23,7 @@ require("../inc/globals/globals.inc.php");
     <link rel="stylesheet" href="<?= $glob['paths']['dropzonejs-css'] ?>">
 
     <!-- Mobile App CSS -->
-    <link rel="stylesheet" type="text/css" href="../inc/css/mobile/mobile.css" />
+    <link rel="stylesheet" type="text/css" href="../../inc/css/mobile/mobile.css" />
 
     <!-- jQuery -->
     <script src="<?= $glob['paths']['jqueryJS'] ?>"></script>
@@ -49,9 +49,9 @@ require("../inc/globals/globals.inc.php");
     <!-- PHP → JS config bridge -->
     <script>
         window.GALLERY_CONFIG = {
-            apiUrl: '../dzz/scripts/tree/php/processUploads.php',
-            uploadUrl: '../dzz/scripts/tree/php/dropZone/dropZone.php',
-            localeUrl: '../locale/php/getJSStrings.php',
+            apiUrl: '../scripts/tree/php/processUploads.php',
+            uploadUrl: '../scripts/tree/php/dropZone/dropZone.php',
+            localeUrl: '../../locale/php/getJSStrings.php',
             lang: '<?= htmlspecialchars($glob['dzzLang'], ENT_QUOTES) ?>'
         };
     </script>

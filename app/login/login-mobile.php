@@ -222,7 +222,7 @@
                     if (data.success) {
                         // Persist chosen language before navigating to the app
                         document.cookie = 'ext-gallery-UILang=' + langSel.value + '; path=/; max-age=31536000';
-                        window.location.href = '../dzz-mobile/';
+                        window.location.href = '../dzz/mobile/';
                     } else {
                         showModal(data.Title, data.Text);
                     }

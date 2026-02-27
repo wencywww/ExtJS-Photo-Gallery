@@ -2,7 +2,7 @@ Ext.onReady(function () {
     Ext.ns('dzz.i18n');
 
     Ext.Ajax.request({
-        //IMPORTANT: initLang.js is included in login/login.php and dzz/index.html which are in the same depth in relation to the app root.
+        //IMPORTANT: initLang.js is included in login/index.php and dzz/index.php which are in the same depth in relation to the app root.
         //Otherwise th url config below will not work as expected
         url: '../locale/php/getJSStrings.php',
         async: false,

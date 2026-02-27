@@ -133,7 +133,7 @@ export const SettingsSheet = {
 
                     <!-- Logout -->
                     <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--color-border)">
-                        <a href="../login/logout.php" class="settings-logout-btn">
+                        <a href="../../login/logout.php" class="settings-logout-btn">
                             <i class="fas fa-sign-out-alt" style="margin-right:8px"></i>
                             {{ store.t.logout || 'Logout' }}
                         </a>
