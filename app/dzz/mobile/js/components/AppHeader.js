@@ -23,7 +23,8 @@ export const AppHeader = {
         }
 
         const galleryTitle = computed(() => {
-            return store.t.GALLERY_TITLE || window.GALLERY_CONFIG?.title || 'Gallery';
+            return ''; //override
+            //return store.t.GALLERY_TITLE || window.GALLERY_CONFIG?.title || 'Gallery';
         });
 
         const sortIcon = computed(() => {
@@ -41,10 +42,10 @@ export const AppHeader = {
     template: `
         <!-- Selection mode header -->
         <header v-if="store.selectionMode" class="selection-bar" role="banner">
-            <button class="header-btn" @click="cancelSelection" :title="'Cancel'">
+            <button class="header-btn" @click="cancelSelection" :title="store.t.btnCancel || 'Cancel'">
                 <i class="fas fa-times"></i>
             </button>
-            <span class="sel-count">{{ store.selectedPhotos.length }} selected</span>
+            <span class="sel-count">{{ store.selectedPhotos.length }} {{ store.t.nSelected || 'selected' }}</span>
             <button class="header-btn" @click="openActionSheet" :title="'Actions'">
                 <i class="fas fa-ellipsis-v"></i>
             </button>

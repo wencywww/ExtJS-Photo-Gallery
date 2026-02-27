@@ -123,7 +123,7 @@ const App = {
                 </span>
                 <span v-if="store.diskStatus" class="status-item" style="margin-left:auto">
                     <i class="fas fa-database"></i>
-                    Free: {{ store.diskStatus.diskFreeSpace }}
+                    {{ store.t.diskStatus || 'Free' }}: {{ store.diskStatus.diskFreeSpace }}
                 </span>
             </footer>
 

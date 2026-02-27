@@ -76,8 +76,8 @@ export const UploadPanel = {
                 acceptedFiles:     'image/*,video/*',
                 addRemoveLinks:    true,
                 parallelUploads:   1,
-                dictDefaultMessage: '📷 Tap to select or drop files here',
-                dictRemoveFile:     'Remove'
+                dictDefaultMessage: store.t.uploader?.dropZone?.dictDefaultMessage || '📷 Tap to select or drop files here',
+                dictRemoveFile:     store.t.uploader?.dropZone?.dictRemoveFile     || 'Remove'
             });
 
             dzInstance.on('addedfile', (file) => {
@@ -182,7 +182,7 @@ export const UploadPanel = {
                     :title="store.t.indexer?.processingPhotos || 'Process files'"
                 >
                     <i :class="store.loading ? 'fas fa-spinner fa-spin' : 'fas fa-cogs'"></i>
-                    Process Files
+                    {{ store.t.uploader?.tbBtnProcess || 'Process Files' }}
                 </button>
 
                 <div class="upload-stats">
@@ -211,7 +211,9 @@ export const UploadPanel = {
                 style="background:#fff3e0; padding:10px 14px; font-size:0.85rem; color:#e65100; display:flex; align-items:center; gap:8px"
             >
                 <i class="fas fa-clock"></i>
-                {{ store.pendingUploads }} file(s) awaiting processing — click <strong style="margin:0 3px">Process Files</strong> to finish.
+                {{ store.pendingUploads }} {{ store.t.uploader?.msgPendingFiles || 'file(s) awaiting processing — click' }}
+                <strong style="margin:0 3px">{{ store.t.uploader?.tbBtnProcess || 'Process Files' }}</strong>
+                {{ store.t.uploader?.msgPendingTail || 'to finish.' }}
             </div>
 
             <!-- Upload-complete notice: files uploaded, Process Files is next -->
@@ -220,7 +222,9 @@ export const UploadPanel = {
                 style="background:#e3f2fd; padding:10px 14px; font-size:0.85rem; color:#1565c0; display:flex; align-items:center; gap:8px"
             >
                 <i class="fas fa-check-circle"></i>
-                {{ stats.uploaded }} file(s) uploaded — click <strong style="margin:0 3px">Process Files</strong> to finish.
+                {{ stats.uploaded }} {{ store.t.uploader?.msgUploadedFiles || 'file(s) uploaded — click' }}
+                <strong style="margin:0 3px">{{ store.t.uploader?.tbBtnProcess || 'Process Files' }}</strong>
+                {{ store.t.uploader?.msgPendingTail || 'to finish.' }}
             </div>
 
             <!-- Success notice -->
@@ -229,7 +233,7 @@ export const UploadPanel = {
                 style="background:#e8f5e9; padding:10px 14px; font-size:0.85rem; color:#2e7d32; display:flex; align-items:center; gap:8px"
             >
                 <i class="fas fa-check-circle"></i>
-                Files processed successfully! Tree has been refreshed.
+                {{ store.t.uploader?.msgProcessedSuccess || 'Files processed successfully! Tree has been refreshed.' }}
             </div>
 
             <!-- DropZone area -->

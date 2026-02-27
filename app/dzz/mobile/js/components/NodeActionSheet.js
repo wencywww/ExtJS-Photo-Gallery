@@ -94,7 +94,7 @@ export const NodeActionSheet = {
                     <!-- Cancel -->
                     <div class="action-sheet-item" @click="close" style="border-top: 2px solid var(--color-border)">
                         <i class="fas fa-times"></i>
-                        <span class="action-label">Cancel</span>
+                        <span class="action-label">{{ store.t.btnCancel || 'Cancel' }}</span>
                     </div>
 
                 </div>

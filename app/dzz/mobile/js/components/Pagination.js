@@ -38,7 +38,7 @@ export const Pagination = {
                     <option v-for="n in [10,20,50,100]" :key="n" :value="n">{{ n }}</option>
                 </select>
                 <span style="margin-left:auto; color:var(--color-text-muted)">
-                    Total: {{ store.totalPhotos }}
+                    {{ store.t.gridPager?.total || 'Total' }}: {{ store.totalPhotos }}
                 </span>
             </div>
             <div class="pagination-bar">

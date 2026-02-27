@@ -25,7 +25,7 @@ export const SettingsSheet = {
                 <div class="sheet-body">
 
                     <!-- Sort -->
-                    <div class="settings-section-label">Sort order</div>
+                    <div class="settings-section-label">{{ store.t.sortOrder || 'Sort order' }}</div>
                     <div class="sort-options">
                         <button
                             class="sort-option"
@@ -46,7 +46,7 @@ export const SettingsSheet = {
                     </div>
 
                     <!-- Display settings -->
-                    <div class="settings-section-label" style="margin-top:8px">Display</div>
+                    <div class="settings-section-label" style="margin-top:8px">{{ store.t.sectionDisplay || 'Display' }}</div>
 
                     <label class="settings-row">
                         <span class="settings-row-label">
@@ -104,7 +104,7 @@ export const SettingsSheet = {
                     </label>
 
                     <!-- Navigation settings -->
-                    <div class="settings-section-label" style="margin-top:8px">Navigation</div>
+                    <div class="settings-section-label" style="margin-top:8px">{{ store.t.sectionNavigation || 'Navigation' }}</div>
 
                     <label class="settings-row">
                         <span class="settings-row-label">
@@ -118,12 +118,12 @@ export const SettingsSheet = {
                     </label>
 
                     <!-- Appearance -->
-                    <div class="settings-section-label" style="margin-top:8px">Appearance</div>
+                    <div class="settings-section-label" style="margin-top:8px">{{ store.t.sectionAppearance || 'Appearance' }}</div>
 
                     <label class="settings-row">
                         <span class="settings-row-label">
                             <i class="fas fa-moon" style="margin-right:8px; color:var(--color-primary)"></i>
-                            Dark mode
+                            {{ store.t.darkMode || 'Dark mode' }}
                         </span>
                         <span class="toggle">
                             <input type="checkbox" v-model="store.darkMode">
@@ -132,7 +132,7 @@ export const SettingsSheet = {
                     </label>
 
                     <!-- Logout -->
-                    <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--color-border)">
+                    <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--color-border); display:flex; justify-content:center">
                         <a href="../../login/logout.php" class="settings-logout-btn">
                             <i class="fas fa-sign-out-alt" style="margin-right:8px"></i>
                             {{ store.t.logout || 'Logout' }}

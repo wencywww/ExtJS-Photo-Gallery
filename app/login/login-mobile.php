@@ -51,8 +51,15 @@
                 margin-bottom: 15px;
             }
 
-            input,
-            select {
+            .form-group label {
+                display: block;
+                font-size: 13px;
+                color: #666;
+                margin-bottom: 5px;
+                font-weight: 500;
+            }
+
+            input {
                 width: 100%;
                 padding: 14px;
                 border: 1px solid var(--border-color);
@@ -67,6 +74,94 @@
             input:focus {
                 outline: none;
                 border-color: var(--primary-color);
+            }
+
+            /* Language combo */
+            .lang-combo {
+                position: relative;
+                width: 100%;
+            }
+
+            .lang-combo-display {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 14px;
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                background: var(--input-bg);
+                font-size: 16px;
+                cursor: pointer;
+                user-select: none;
+                box-sizing: border-box;
+            }
+
+            .lang-combo-display:hover {
+                border-color: #aaa;
+            }
+
+            .lang-combo-display.open {
+                border-color: var(--primary-color);
+            }
+
+            .lang-combo-arrow {
+                margin-left: auto;
+                color: #888;
+                font-size: 12px;
+                transition: transform 0.15s;
+            }
+
+            .lang-combo-display.open .lang-combo-arrow {
+                transform: rotate(180deg);
+            }
+
+            .lang-combo-dropdown {
+                display: none;
+                position: absolute;
+                top: calc(100% + 4px);
+                left: 0;
+                right: 0;
+                background: var(--card-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+                z-index: 10;
+                overflow: hidden;
+            }
+
+            .lang-combo-dropdown.open {
+                display: block;
+            }
+
+            .lang-combo-opt {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 12px 14px;
+                font-size: 15px;
+                cursor: pointer;
+                color: #333;
+            }
+
+            .lang-combo-opt:hover {
+                background: #f3eaff;
+                color: var(--primary-color);
+            }
+
+            .lang-combo-opt.selected {
+                font-weight: 500;
+                color: var(--primary-color);
+            }
+
+            .lang-combo-opt + .lang-combo-opt {
+                border-top: 1px solid var(--border-color);
+            }
+
+            .lang-flag {
+                width: 16px;
+                height: 11px;
+                display: block;
+                flex-shrink: 0;
             }
 
             #loginBtn {
@@ -151,23 +246,44 @@
     <body>
 
         <div class="login-card">
-            <h2>Вход</h2>
+            <h2><?= htmlspecialchars($DZZ_LOC_STRINGS['loginForm']['loginWinTitle'], ENT_QUOTES) ?></h2>
 
             <div class="form-group">
-                <input type="text" id="username" placeholder="Потребител" autocomplete="username">
+                <label for="username"><?= htmlspecialchars($DZZ_LOC_STRINGS['loginForm']['lblUser'], ENT_QUOTES) ?></label>
+                <input type="text" id="username" autocomplete="username">
             </div>
             <div class="form-group">
-                <input type="password" id="password" placeholder="Парола" autocomplete="current-password">
+                <label for="password"><?= htmlspecialchars($DZZ_LOC_STRINGS['loginForm']['lblPass'], ENT_QUOTES) ?></label>
+                <input type="password" id="password" autocomplete="current-password">
             </div>
+<?php
+    $langs = [
+        'bg' => ['name' => 'Български', 'flag' => 'bg.png'],
+        'en' => ['name' => 'English',   'flag' => 'gb.png'],
+    ];
+    $cur = $glob['dzzLang'];
+?>
             <div class="form-group">
-                <select id="language">
-                    <option value="bg">Български</option>
-                    <option value="en">English</option>
-                </select>
+                <label><?= htmlspecialchars($DZZ_LOC_STRINGS['loginForm']['lblLanguage'], ENT_QUOTES) ?></label>
+                <div class="lang-combo" id="langCombo">
+                    <div class="lang-combo-display" id="langDisplay" tabindex="0">
+                        <img class="lang-flag" src="../inc/css/pictures/silk-flags/icons/<?= $langs[$cur]['flag'] ?>" alt="<?= $cur ?>">
+                        <span id="langDisplayName"><?= htmlspecialchars($langs[$cur]['name'], ENT_QUOTES) ?></span>
+                        <span class="lang-combo-arrow">&#9660;</span>
+                    </div>
+                    <div class="lang-combo-dropdown" id="langDropdown">
+<?php foreach ($langs as $val => $info): ?>
+                        <div class="lang-combo-opt<?= $val === $cur ? ' selected' : '' ?>" data-val="<?= $val ?>">
+                            <img class="lang-flag" src="../inc/css/pictures/silk-flags/icons/<?= $info['flag'] ?>" alt="<?= $val ?>">
+                            <?= htmlspecialchars($info['name'], ENT_QUOTES) ?>
+                        </div>
+<?php endforeach; ?>
+                    </div>
+                </div>
             </div>
 
             <button id="loginBtn">
-                <span id="btnText">ВХОД</span>
+                <span id="btnText"><?= htmlspecialchars($DZZ_LOC_STRINGS['loginForm']['btnLogin'], ENT_QUOTES) ?></span>
                 <div class="spinner" id="spinner"></div>
             </button>
         </div>
@@ -176,23 +292,60 @@
             <div class="modal">
                 <h3 id="mTitle"></h3>
                 <p id="mText"></p>
-                <button class="modal-btn" onclick="closeModal()">ОК</button>
+                <button class="modal-btn" onclick="closeModal()"><?= htmlspecialchars($DZZ_LOC_STRINGS['loginForm']['modalOK'], ENT_QUOTES) ?></button>
             </div>
         </div>
 
         <script>
-            const btn = document.getElementById('loginBtn');
+            const L = {
+                btnLogin:     '<?= htmlspecialchars($DZZ_LOC_STRINGS['loginForm']['btnLogin'],     ENT_QUOTES) ?>',
+                btnLoading:   '<?= htmlspecialchars($DZZ_LOC_STRINGS['loginForm']['btnLoading'],   ENT_QUOTES) ?>',
+                errorTitle:   '<?= htmlspecialchars($DZZ_LOC_STRINGS['common']['ERROR'],           ENT_QUOTES) ?>',
+                errorNoServer:'<?= htmlspecialchars($DZZ_LOC_STRINGS['loginForm']['errorNoServer'],ENT_QUOTES) ?>'
+            };
+
+            const btn     = document.getElementById('loginBtn');
             const btnText = document.getElementById('btnText');
             const spinner = document.getElementById('spinner');
-            const langSel = document.getElementById('language');
+            let   currentLang = <?= json_encode($glob['dzzLang']) ?>;
 
-            // Pre-select current language (set server-side via cookie)
-            langSel.value = <?= json_encode($glob['dzzLang']) ?>;
+            // Language combo
+            const langDisplay  = document.getElementById('langDisplay');
+            const langDropdown = document.getElementById('langDropdown');
 
-            // Language change: update cookie (no reload needed for login page)
-            langSel.addEventListener('change', function() {
-                document.cookie = 'ext-gallery-UILang=' + this.value + '; path=/; max-age=31536000';
+            function closeLangDropdown() {
+                langDropdown.style.display = 'none';
+                langDisplay.classList.remove('open');
+            }
+
+            langDisplay.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isOpen = langDropdown.style.display === 'block';
+                if (isOpen) {
+                    closeLangDropdown();
+                } else {
+                    langDropdown.style.display = 'block';
+                    langDisplay.classList.add('open');
+                }
             });
+
+            langDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const opt = e.target.closest('.lang-combo-opt');
+                if (!opt) return;
+                const newLang = opt.dataset.val;
+                const changed = newLang !== currentLang;
+                currentLang = newLang;
+                langDisplay.querySelector('.lang-flag').src = opt.querySelector('.lang-flag').src;
+                document.getElementById('langDisplayName').textContent = opt.textContent.trim();
+                langDropdown.querySelectorAll('.lang-combo-opt').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                closeLangDropdown();
+                document.cookie = 'ext-gallery-UILang=' + currentLang + '; path=/; max-age=31536000';
+                if (changed) window.location.reload();
+            });
+
+            document.addEventListener('click', closeLangDropdown);
 
             // Enter key submits
             document.addEventListener('keydown', function(e) {
@@ -205,7 +358,7 @@
                 if (!username || !password) return;
 
                 btn.disabled = true;
-                btnText.innerText = 'ЗАРЕЖДАНЕ';
+                btnText.innerText = L.btnLoading;
                 spinner.style.display = 'block';
 
                 try {
@@ -220,24 +373,27 @@
                     const data = await response.json();
 
                     if (data.success) {
-                        // Persist chosen language before navigating to the app
-                        document.cookie = 'ext-gallery-UILang=' + langSel.value + '; path=/; max-age=31536000';
+                        document.cookie = 'ext-gallery-UILang=' + currentLang + '; path=/; max-age=31536000';
                         window.location.href = '../dzz/mobile/';
                     } else {
                         showModal(data.Title, data.Text);
                     }
                 } catch (error) {
-                    showModal('Грешка', 'Няма връзка със сървъра.');
+                    showModal(L.errorTitle, L.errorNoServer);
                 } finally {
                     btn.disabled = false;
-                    btnText.innerText = 'ВХОД';
+                    btnText.innerText = L.btnLogin;
                     spinner.style.display = 'none';
                 }
             });
 
             function showModal(title, text) {
-                document.getElementById('mTitle').innerText = title || 'Грешка';
-                document.getElementById('mText').innerText = text || 'Невалидни данни.';
+                const lf = <?= json_encode([
+                    'errorTitle'   => $DZZ_LOC_STRINGS['common']['ERROR'],
+                    'errorInvalid' => $DZZ_LOC_STRINGS['common']['passwordInvalid']
+                ]) ?>;
+                document.getElementById('mTitle').innerText = title || lf.errorTitle;
+                document.getElementById('mText').innerText  = text  || lf.errorInvalid;
                 document.getElementById('modalOverlay').style.display = 'flex';
             }
 

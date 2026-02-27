@@ -350,11 +350,11 @@ export const GpsEditor = {
 
                 <div class="modal-footer">
                     <button class="btn-txt" @click="close" :disabled="saving">
-                        {{ store.t.gps?.cancelBtn || 'Cancel' }}
+                        {{ store.t.btnCancel || 'Cancel' }}
                     </button>
                     <button class="btn-primary" @click="save" :disabled="saving">
                         <i :class="saving ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i>
-                        Write GPS
+                        {{ store.t.gps?.btnWrite || 'Write GPS' }}
                     </button>
                 </div>
             </div>

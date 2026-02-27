@@ -883,16 +883,14 @@ html, body {
 }
 
 .settings-logout-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 11px 16px;
+    padding: 8px 20px;
     border: 1px solid #e53935;
     border-radius: 8px;
     background: transparent;
     color: #e53935;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 500;
     text-decoration: none;
     cursor: pointer;

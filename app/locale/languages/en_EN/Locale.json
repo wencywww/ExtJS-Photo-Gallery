@@ -28,8 +28,11 @@
       "lblPass": "Password",
       "lblLanguage": "Language",
       "lblUITheme": "Style",
-      "btnLogin": "Login",
-      "btnCancel": "Cancel"
+      "btnLogin": "LOGIN",
+      "btnCancel": "Cancel",
+      "btnLoading": "LOADING",
+      "modalOK": "OK",
+      "errorNoServer": "No server connection."
     },
     "**1": "**--** file - /dzz/scripts/tree/Tree.js",
     "1": {
@@ -44,7 +47,16 @@
       "paginateDataView": "Paginate gallery",
       "sortASC": "Sort by date, ascending",
       "sortDESC": "Sort by date, descending",
-      "lazyLoad": "Lazy tree loading"
+      "lazyLoad": "Lazy tree loading",
+      "sortOrder": "Sort order",
+      "sectionDisplay": "Display",
+      "sectionNavigation": "Navigation",
+      "sectionAppearance": "Appearance",
+      "darkMode": "Dark mode",
+      "logout": "Logout",
+      "btnCancel": "Cancel",
+      "btnClose": "Close",
+      "nSelected": "selected"
     },
     "**2": "**--** file - /dzz/scripts/Main.js",
     "2": {
@@ -98,8 +110,9 @@
         "locationsBtnEdit": "Edit selected",
         "locationsBtnDelete": "Delete selected...",
         "locationsDeleteConfirm": "Delete location",
-        "locationsEditorLbl": "Location Name"
-
+        "locationsEditorLbl": "Location Name",
+        "mapViewTitle": "View on Map",
+        "btnWrite": "Write GPS"
       },
       "photoUploader": {
         "winTitle": "FILE UPLOADER",
@@ -114,6 +127,15 @@
           "text": "Files ready - should i start to process them?",
           "toastYes": "Processing uploaded files started",
           "toastNo": "Files uploaded, the processing have to be started manually"
+        },
+        "tbBtnProcess": "Process Files",
+        "msgPendingFiles": "file(s) awaiting processing — click",
+        "msgPendingTail": "to finish.",
+        "msgUploadedFiles": "file(s) uploaded — click",
+        "msgProcessedSuccess": "Files processed successfully! Tree has been refreshed.",
+        "dropZone": {
+          "dictDefaultMessage": "📷 Tap to select or drop files here",
+          "dictRemoveFile": "Remove"
         }
       }
     },
@@ -122,7 +144,8 @@
       "**gridPager": "**--** file - inc/js/ux/GridPager.js",
       "gridPager": {
           "pageSize": "Photos per page",
-          "pageSizeTip": "Hit Enter to apply the new page size"
+          "pageSizeTip": "Hit Enter to apply the new page size",
+          "total": "Total"
       }
     }
   },

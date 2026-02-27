@@ -1,29 +1,6 @@
 const { ref, watch, onMounted, inject } = Vue;
 
-// Format a node path into a human-readable label
-function formatNodeLabel(path, nodeType, text) {
-    if (!path) return text;
-    const parts = path.split('/');
-    if (parts.length === 1) {
-        // Year
-        return text;
-    }
-    if (parts.length === 2) {
-        // Month — format "08" → "Aug 2024"
-        try {
-            const d = new Date(parts[0] + '-' + parts[1] + '-01');
-            return d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-        } catch(e) { return text; }
-    }
-    if (parts.length === 3) {
-        // Day — format "2024/08/15" → "15 Aug"
-        try {
-            const d = new Date(parts[0] + '-' + parts[1] + '-' + parts[2]);
-            return d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
-        } catch(e) { return text; }
-    }
-    return text;
-}
+const _localeMap = { bg: 'bg-BG', en: 'en-US' };
 
 // Recursively collect all expanded Day paths below a node
 function collectDayPaths(node) {
@@ -45,6 +22,28 @@ export const NavTree = {
     setup() {
         const store = inject('store');
         const api   = inject('api');
+
+        function formatNodeLabel(path, nodeType, text) {
+            if (!path) return text;
+            const parts = path.split('/');
+            if (parts.length === 1) return text;
+            const bcp47 = _localeMap[store.locale] || undefined;
+            if (parts.length === 2) {
+                try {
+                    const d = new Date(parts[0] + '-' + parts[1] + '-01');
+                    const s = d.toLocaleDateString(bcp47, { month: 'long', year: 'numeric' });
+                    return s.replace(/[а-яёa-z]/i, c => c.toUpperCase());
+                } catch(e) { return text; }
+            }
+            if (parts.length === 3) {
+                try {
+                    const d = new Date(parts[0] + '-' + parts[1] + '-' + parts[2]);
+                    const s = d.toLocaleDateString(bcp47, { day: '2-digit', month: 'short' });
+                    return s.replace(/[а-яёa-z]/i, c => c.toUpperCase());
+                } catch(e) { return text; }
+            }
+            return text;
+        }
 
         const treeLoading = ref(false);
 

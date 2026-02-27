@@ -1,4 +1,4 @@
-const { ref, inject, computed, onMounted } = Vue;
+const { ref, inject, computed } = Vue;
 
 export const PhotoActionSheet = {
     name: 'PhotoActionSheet',
@@ -125,7 +125,7 @@ export const PhotoActionSheet = {
             <div class="bottom-sheet open" role="dialog">
                 <div class="sheet-handle"></div>
                 <div class="sheet-title">
-                    {{ count }} photo{{ count !== 1 ? 's' : '' }} selected
+                    {{ count }} {{ store.t.nSelected || 'selected' }}
                 </div>
                 <div class="sheet-body">
 
@@ -184,7 +184,7 @@ export const PhotoActionSheet = {
                     <!-- Cancel -->
                     <div class="action-sheet-item" @click="close" style="border-top: 2px solid var(--color-border)">
                         <i class="fas fa-times"></i>
-                        <span class="action-label">Cancel</span>
+                        <span class="action-label">{{ store.t.btnCancel || 'Cancel' }}</span>
                     </div>
                 </div>
             </div>

@@ -10,7 +10,7 @@
       "dateChange": "Смяна на датата...",
       "GALLERY_TITLE": ".:: Галерия ::.",
       "filesCount": "Файлове",
-      "diskStatus": "Свободно място на диска"
+      "diskStatus": "Свободни на диска"
     },
     "php": {
       "GALLERY-TITLE": ".:: Галерия ::.",
@@ -28,8 +28,11 @@
       "lblPass": "Парола",
       "lblLanguage": "Език",
       "lblUITheme": "Стил",
-      "btnLogin": "Вход",
-      "btnCancel": "Отказ"
+      "btnLogin": "ВХОД",
+      "btnCancel": "Отказ",
+      "btnLoading": "ЗАРЕЖДАНЕ",
+      "modalOK": "ОК",
+      "errorNoServer": "Няма връзка със сървъра."
     },
     "**1": "**--** file - /dzz/scripts/tree/Tree.js",
     "1": {
@@ -44,7 +47,16 @@
       "paginateDataView": "Страниране на галерията",
       "sortASC": "Сортиране по дата, най-ранни най-отгоре",
       "sortDESC": "Сортиране по дата, най-скорошните най-отгоре",
-      "lazyLoad": "Последователно зареждане"
+      "lazyLoad": "Последователно зареждане",
+      "sortOrder": "Сортиране",
+      "sectionDisplay": "Показване",
+      "sectionNavigation": "Навигация",
+      "sectionAppearance": "Изглед",
+      "darkMode": "Тъмен режим",
+      "logout": "Изход",
+      "btnCancel": "Отказ",
+      "btnClose": "Затвори",
+      "nSelected": "избрани"
     },
     "**2": "**--** file - /dzz/scripts/Main.js",
     "2": {
@@ -98,7 +110,9 @@
         "locationsBtnEdit": "Редакция",
         "locationsBtnDelete": "Изтриване...",
         "locationsDeleteConfirm": "Изтриване на локация",
-        "locationsEditorLbl": "Име на локацията"
+        "locationsEditorLbl": "Име на локацията",
+        "mapViewTitle": "Виж на картата",
+        "btnWrite": "Запис GPS"
       },
       "photoUploader": {
         "winTitle": "КАЧВАНЕ НА СНИМКИ",
@@ -114,6 +128,11 @@
           "toastYes": "Обработката стартирана",
           "toastNo": "Файловете са качени, обработката трябва да се стартира ръчно"
         },
+        "tbBtnProcess": "Обработка на файловете",
+        "msgPendingFiles": "файл/а чакат обработка — натиснете",
+        "msgPendingTail": "за финализиране.",
+        "msgUploadedFiles": "файл/а качени — натиснете",
+        "msgProcessedSuccess": "Файловете са обработени успешно! Дървото е обновено.",
         "dropZone": {
           "dictDefaultMessage": "Дръпнете файловете тук или щракнете за избор...",
           "dictFallbackMessage": "Браузърът не поддържа drag'n'drop качване на файлове.",
@@ -135,7 +154,8 @@
       "**gridPager": "**--** file - inc/js/ux/GridPager.js",
       "gridPager": {
           "pageSize": "Снимки на страница",
-          "pageSizeTip": "Натиснете Enter за опресняване"
+          "pageSizeTip": "Натиснете Enter за опресняване",
+          "total": "Общо"
       }
     }
   },

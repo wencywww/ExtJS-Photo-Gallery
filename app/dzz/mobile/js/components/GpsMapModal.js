@@ -122,7 +122,7 @@ export const GpsMapModal = {
 
                 <div class="modal-footer">
                     <button class="btn-txt" @click="close">
-                        {{ store.t.gallery?.closeBtn || 'Close' }}
+                        {{ store.t.btnClose || 'Close' }}
                     </button>
                 </div>
             </div>
