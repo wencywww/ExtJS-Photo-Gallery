@@ -29,8 +29,7 @@ export const store = reactive({
     breadcrumb:      [],     // [{text, path}, ...] — shown when drawer is closed
 
     // Home screen drill-down
-    drillPath:       '',     // '' = years, 'YYYY' = months, 'YYYY/MM' = days
-    drillCards:      [],     // loaded month or day nodes for current drill level
+    drillStack:      [],     // [{path, cards}] — stack of drill levels; top = current
     drillLoading:    false,
 
     // Photo grid

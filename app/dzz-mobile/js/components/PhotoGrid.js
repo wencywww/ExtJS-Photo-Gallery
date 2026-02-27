@@ -89,6 +89,7 @@ export const PhotoGrid = {
 
             $.fancybox.open(items, {
                 loop: true,
+                hash: false,
                 animationEffect: 'zoom',
                 buttons: ['zoom', 'slideShow', 'fullScreen', 'download', 'thumbs', 'close'],
                 afterShow: function(instance, slide) {
@@ -144,8 +145,14 @@ export const PhotoGrid = {
         const noPhotosText = computed(() => store.t.gallery?.emptyText || 'No photos to show');
 
         // ===== Home screen drill-down =====
+        // drillStack: [{path, cards}, ...] — each entry is one drilled level
+        const drillPath = computed(() =>
+            store.drillStack.length > 0 ? store.drillStack[store.drillStack.length - 1].path : ''
+        );
         const currentCards = computed(() =>
-            store.drillPath === '' ? store.tree : store.drillCards
+            store.drillStack.length === 0
+                ? store.tree
+                : store.drillStack[store.drillStack.length - 1].cards
         );
 
         function buildBreadcrumbFromPath(path) {
@@ -177,12 +184,12 @@ export const PhotoGrid = {
 
         async function drillInto(card) {
             if (card.leaf) {
-                // Day node → load photos
-                store.breadcrumb     = buildBreadcrumbFromPath(card.path);
-                store.currentPath    = card.path;
+                // Day node → load photos (drillStack stays intact for back navigation)
+                store.breadcrumb      = buildBreadcrumbFromPath(card.path);
+                store.currentPath     = card.path;
                 store.currentDayPaths = null;
-                store.page           = 1;
-                store.loading        = true;
+                store.page            = 1;
+                store.loading         = true;
                 try {
                     const data = await api.getPhotos(card.path, null, 1);
                     store.photos      = data.RECORDS || [];
@@ -193,13 +200,11 @@ export const PhotoGrid = {
                 store.loading = false;
                 if (window.innerWidth < 768) store.drawerOpen = false;
             } else {
-                // Year or Month → load children
-                store.drillPath    = card.path;
-                store.drillCards   = [];
+                // Year or Month → push new level with loaded children
                 store.drillLoading = true;
                 try {
                     const data = await api.getTreeLevel(card.path);
-                    store.drillCards = data.RECORDS || [];
+                    store.drillStack = [...store.drillStack, { path: card.path, cards: data.RECORDS || [] }];
                 } catch(e) {
                     console.error('Drill-down tree load failed', e);
                 }
@@ -208,10 +213,7 @@ export const PhotoGrid = {
         }
 
         function drillUp() {
-            const parts = store.drillPath.split('/');
-            parts.pop();
-            store.drillPath  = parts.join('/');
-            store.drillCards = [];
+            store.drillStack = store.drillStack.slice(0, -1);
         }
 
         // Breadcrumb navigation — clicking a crumb loads photos for that path
@@ -236,7 +238,7 @@ export const PhotoGrid = {
         return {
             store, isSelected, onTouchStart, onTouchEnd, onTouchMove,
             onPhotoTap, onContextMenu, noPhotosText, clickBreadcrumb,
-            currentCards, drillInto, drillUp, cardIcon, cardLabel
+            currentCards, drillPath, drillInto, drillUp, cardIcon, cardLabel
         };
     },
     template: `
@@ -274,17 +276,17 @@ export const PhotoGrid = {
             <div v-else-if="!store.loading && store.photos.length === 0 && store.breadcrumb.length === 0" class="home-screen">
 
                 <!-- Drill breadcrumb (shown when inside a year or month) -->
-                <div v-if="store.drillPath" class="home-drill-crumb">
+                <div v-if="store.drillStack.length > 0" class="home-drill-crumb">
                     <button class="home-crumb-btn" @click="drillUp">
                         <i class="fas fa-arrow-left"></i>
                     </button>
                     <span class="home-crumb-sep">/</span>
-                    <button class="home-crumb-btn" @click="store.drillPath = store.drillPath.split('/')[0]; store.drillCards = []">
-                        {{ store.drillPath.split('/')[0] }}
+                    <button class="home-crumb-btn" @click="store.drillStack = store.drillStack.slice(0, 1)">
+                        {{ store.drillStack[0].path }}
                     </button>
-                    <template v-if="store.drillPath.includes('/')">
+                    <template v-if="store.drillStack.length > 1">
                         <span class="home-crumb-sep">/</span>
-                        <span class="home-crumb-current">{{ cardLabel({ text: store.drillPath.split('/')[1], path: store.drillPath }) }}</span>
+                        <span class="home-crumb-current">{{ cardLabel({ text: drillPath.split('/')[1], path: drillPath }) }}</span>
                     </template>
                 </div>
 

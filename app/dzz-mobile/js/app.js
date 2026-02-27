@@ -158,6 +158,12 @@ const App = {
 
 // ===== Android Back Button — History API trap =====
 function handleBackNavigation() {
+    // Fancybox open → navigate to previous photo instead of closing
+    if (typeof $ !== 'undefined' && $.fancybox) {
+        const fb = $.fancybox.getInstance();
+        if (fb) { fb.previous(); return true; }
+    }
+
     // Close modals/panels in priority order (topmost first)
     if (store.confirmDialog.open)  { store.confirmDialog.open = false; return true; }
     if (store.gpsMapOpen)          { store.gpsMapOpen = false;         return true; }
@@ -174,22 +180,34 @@ function handleBackNavigation() {
         return true;
     }
     if (store.drawerOpen)          { store.drawerOpen = false;         return true; }
-    // Home screen drill-down: go up one level
-    if (store.photos.length === 0 && store.drillPath !== '') {
-        const parts = store.drillPath.split('/');
-        parts.pop();
-        store.drillPath = parts.join('/');
-        store.drillCards = [];
+
+    // Home screen drill-down: pop one level (cards preserved in drillStack)
+    if (store.photos.length === 0 && store.drillStack.length > 0) {
+        store.drillStack = store.drillStack.slice(0, -1);
         return true;
     }
-    // Pagination: consume back always; only navigate if page > 1
+
+    // Pagination: page > 1 → previous page (takes priority over drill-down exit)
+    if (store.paginateDataView && store.photos.length > 0 && store.page > 1) {
+        store.page--;
+        if (store._reloadPhotos) store._reloadPhotos();
+        document.querySelector('.main-content')?.scrollTo(0, 0);
+        return true;
+    }
+
+    // Back from photos loaded via drill-down (page 1, or no pagination) → day list
+    if (store.photos.length > 0 && store.drillStack.length > 0) {
+        store.photos      = [];
+        store.totalPhotos = 0;
+        store.breadcrumb  = [];
+        store.currentPath = null;
+        store.page        = 1;
+        return true;
+    }
+
+    // Pagination on page 1, no drill-down context: consume back to stay in app
     if (store.paginateDataView && store.photos.length > 0) {
-        if (store.page > 1) {
-            store.page--;
-            if (store._reloadPhotos) store._reloadPhotos();
-            document.querySelector('.main-content')?.scrollTo(0, 0);
-        }
-        return true;  // on page 1 — consume back but do nothing
+        return true;
     }
     return false;
 }
