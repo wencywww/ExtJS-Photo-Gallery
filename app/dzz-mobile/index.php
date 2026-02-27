@@ -10,8 +10,8 @@ require("../inc/globals/globals.inc.php");
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title><?= $DZZ_LOC_STRINGS['common']['GALLERY-TITLE'] ?></title>
 
-    <!-- Google Fonts: Roboto -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Roboto (self-hosted) -->
+    <link rel="stylesheet" href="../inc/css/mobile/roboto.css">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" type="text/css" href="<?= $glob['paths']['font-awesomeCSS'] ?>" />
@@ -23,7 +23,7 @@ require("../inc/globals/globals.inc.php");
     <link rel="stylesheet" href="<?= $glob['paths']['dropzonejs-css'] ?>">
 
     <!-- Mobile App CSS -->
-    <link rel="stylesheet" type="text/css" href="css/mobile.css" />
+    <link rel="stylesheet" type="text/css" href="../inc/css/mobile/mobile.css" />
 
     <!-- jQuery -->
     <script src="<?= $glob['paths']['jqueryJS'] ?>"></script>

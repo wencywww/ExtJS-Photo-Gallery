@@ -5,7 +5,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <title><?= htmlspecialchars($DZZ_LOC_STRINGS['common']['GALLERY-TITLE'], ENT_QUOTES) ?></title>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="../inc/css/mobile/roboto.css">
         <style>
             :root {
                 --primary-color: #6200ee;
