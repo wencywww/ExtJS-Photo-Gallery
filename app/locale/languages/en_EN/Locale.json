@@ -56,7 +56,8 @@
       "logout": "Logout",
       "btnCancel": "Cancel",
       "btnClose": "Close",
-      "nSelected": "selected"
+      "nSelected": "selected",
+      "allLabel": "all"
     },
     "**2": "**--** file - /dzz/scripts/Main.js",
     "2": {

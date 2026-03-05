@@ -56,7 +56,8 @@
       "logout": "Изход",
       "btnCancel": "Отказ",
       "btnClose": "Затвори",
-      "nSelected": "избрани"
+      "nSelected": "избрани",
+      "allLabel": "всички"
     },
     "**2": "**--** file - /dzz/scripts/Main.js",
     "2": {

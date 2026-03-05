@@ -7,14 +7,17 @@ export const NodeActionSheet = {
         const api   = inject('api');
 
         // Human-readable label from path "YYYY/MM/DD"
+        const _localeMap = { bg: 'bg-BG', en: 'en-US' };
+
         const dayLabel = computed(() => {
             const path = store.nodeSheetPath;
             if (!path) return '';
             const parts = path.split('/');
             if (parts.length !== 3) return path;
             try {
+                const bcp47 = _localeMap[store.locale] || undefined;
                 const d = new Date(parts[0] + '-' + parts[1] + '-' + parts[2]);
-                return d.toLocaleDateString(undefined, { day: '2-digit', month: 'long', year: 'numeric' });
+                return d.toLocaleDateString(bcp47, { day: '2-digit', month: 'long', year: 'numeric' });
             } catch(e) { return path; }
         });
 
@@ -82,13 +85,13 @@ export const NodeActionSheet = {
                     <!-- Change Date for all photos of this day -->
                     <div class="action-sheet-item" @click="openDateChange">
                         <i class="fas fa-calendar-alt"></i>
-                        <span class="action-label">{{ store.t.dateChange?.winTitle || 'Change Date' }} (all)</span>
+                        <span class="action-label">{{ store.t.dateChange?.winTitle || 'Change Date' }} ({{ store.t.allLabel || 'all' }})</span>
                     </div>
 
                     <!-- GPS Editor for all photos of this day -->
                     <div class="action-sheet-item" @click="openGpsEditor">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span class="action-label">{{ store.t.gps?.winTitle || 'GPS Editor' }} (all)</span>
+                        <span class="action-label">{{ store.t.gps?.winTitle || 'GPS Editor' }} ({{ store.t.allLabel || 'all' }})</span>
                     </div>
 
                     <!-- Cancel -->
