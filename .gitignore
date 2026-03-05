@@ -2,3 +2,4 @@ vendor
 docker/docker-image-info.txt
 .claude
 CLAUDE.md
+.github/DOCKER-BUILD.md
