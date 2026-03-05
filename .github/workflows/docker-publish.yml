@@ -17,6 +17,9 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write   # required for GHA cache write
 
     steps:
       - name: Checkout
