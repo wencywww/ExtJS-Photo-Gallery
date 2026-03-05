@@ -3,6 +3,11 @@ name: Build and push Docker image
 on:
   # Manual trigger from GitHub UI (Actions tab → Run workflow)
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. 26.02.27) — leave empty to push only :latest'
+        required: false
+        default: ''
 
   # Optional: also trigger automatically on push to main
   # push:
@@ -35,10 +40,11 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/extjs-photo-gallery:latest
+            ${{ github.event.inputs.version != '' && format('{0}/extjs-photo-gallery:{1}', secrets.DOCKERHUB_USERNAME, github.event.inputs.version) || '' }}
           # Layer cache — significantly speeds up subsequent builds
           cache-from: type=gha
           cache-to: type=gha,mode=max
