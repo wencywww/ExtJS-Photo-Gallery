@@ -270,8 +270,8 @@ html, body {
 }
 
 .drawer-section-header {
-    padding: 10px 16px 6px;
-    font-size: 0.7rem;
+    padding: 13px 16px 8px;
+    font-size: 0.9rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -286,38 +286,40 @@ html, body {
     text-align: center;
 }
 
-/* Tree nodes */
+/* ===== Tree nodes — 21st.dev filesystem-item style ===== */
 .tree-node {
     display: flex;
     align-items: center;
     cursor: pointer;
     padding: 0;
-    border-radius: 0;
     transition: background var(--transition-fast);
+    position: relative;
 }
 
-.tree-node:hover { background: var(--color-node-hover); }
+.tree-node:hover  { background: var(--color-node-hover); }
+.tree-node:active { background: var(--color-node-active); }
 .tree-node.active { background: var(--color-node-active); }
 
 .tree-node-inner {
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 11px 16px;
+    padding: 7px 10px 7px 8px;
     gap: 8px;
 }
 
 .tree-node-icon {
     color: var(--color-primary);
-    font-size: 0.85rem;
-    width: 16px;
+    font-size: 1.4rem;
+    width: 28px;
     text-align: center;
     flex-shrink: 0;
+    transition: color 0.15s ease;
 }
 
 .tree-node-text {
     flex: 1;
-    font-size: 0.875rem;
+    font-size: 1.15rem;
     color: var(--color-text);
     white-space: nowrap;
     overflow: hidden;
@@ -325,21 +327,21 @@ html, body {
 }
 
 .tree-node-count {
-    background: var(--color-primary-light);
+    background: var(--color-primary);
     color: #fff;
     border-radius: 10px;
-    font-size: 0.65rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    padding: 1px 6px;
-    min-width: 22px;
+    padding: 2px 7px;
+    min-width: 26px;
     text-align: center;
     flex-shrink: 0;
 }
 
 /* Day node context (⋮) button */
 .tree-node-ctx-btn {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     border: none;
     background: transparent;
     color: var(--color-text-muted);
@@ -347,7 +349,7 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
+    font-size: 1rem;
     margin-left: 2px;
     border-radius: var(--radius-sm);
     flex-shrink: 0;
@@ -360,24 +362,28 @@ html, body {
     outline: none;
 }
 
+/* Chevron — spring-like rotation 0.35s */
 .tree-node-arrow {
     color: var(--color-text-muted);
-    font-size: 0.7rem;
-    width: 14px;
-    transition: transform var(--transition-fast);
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+    transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1);
     flex-shrink: 0;
+    padding: 3px;
+    margin: -3px;
+    border-radius: 3px;
 }
 
-.tree-node-arrow.expanded {
-    transform: rotate(90deg);
-}
+.tree-node-arrow:hover { background: var(--color-node-hover); }
+.tree-node-arrow.expanded { transform: rotate(90deg); }
 
-/* Tree levels indentation */
-.tree-level-0 > .tree-node-inner { padding-left: 12px; }
-.tree-level-1 > .tree-node-inner { padding-left: 28px; }
-.tree-level-2 > .tree-node-inner { padding-left: 44px; }
+/* Tree levels — 24px indent per level (matching pl-6 from original) */
+.tree-level-0 > .tree-node-inner { padding-left: 8px; }
+.tree-level-1 > .tree-node-inner { padding-left: 32px; }
+.tree-level-2 > .tree-node-inner { padding-left: 56px; }
 
-.tree-level-0 .tree-node-text { font-weight: 600; font-size: 0.9rem; }
+.tree-level-0 .tree-node-text { font-weight: 600; font-size: 1.2rem; }
 .tree-level-1 .tree-node-text { font-weight: 500; }
 
 .tree-children {

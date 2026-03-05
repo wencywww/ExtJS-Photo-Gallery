@@ -280,7 +280,32 @@ export const TreeNodeItem = {
             return node.expanded ? 'fas fa-folder-open' : 'fas fa-folder';
         }
 
-        return { store, isActive, iconClass };
+        // Spring-like height slide — matches framer-motion spring(bounce:0, duration:0.35)
+        function slideEnter(el, done) {
+            el.style.height   = '0';
+            el.style.overflow = 'hidden';
+            requestAnimationFrame(() => {
+                const h = el.scrollHeight;
+                el.style.transition = 'height 0.35s cubic-bezier(0.2, 0, 0, 1)';
+                el.style.height     = h + 'px';
+                el.addEventListener('transitionend', () => {
+                    el.style.height = el.style.overflow = el.style.transition = '';
+                    done();
+                }, { once: true });
+            });
+        }
+
+        function slideLeave(el, done) {
+            el.style.overflow = 'hidden';
+            el.style.height   = el.scrollHeight + 'px';
+            requestAnimationFrame(() => {
+                el.style.transition = 'height 0.28s cubic-bezier(0.2, 0, 0, 1)';
+                el.style.height     = '0';
+                el.addEventListener('transitionend', done, { once: true });
+            });
+        }
+
+        return { store, isActive, iconClass, slideEnter, slideLeave };
     },
     template: `
         <li>
@@ -329,23 +354,25 @@ export const TreeNodeItem = {
                 </div>
             </div>
 
-            <!-- Children (expanded non-leaf) -->
-            <ul
-                v-if="!node.leaf && node.expanded && node.children && node.children.length"
-                class="tree-children"
-                style="list-style:none; padding:0; margin:0"
-            >
-                <tree-node-item
-                    v-for="child in node.children"
-                    :key="child.path"
-                    :node="child"
-                    :level="level + 1"
-                    @toggle="$emit('toggle', $event)"
-                    @collapse="$emit('collapse', $event)"
-                    @node-context="$emit('node-context', $event)"
-                    :format-label="formatLabel"
-                />
-            </ul>
+            <!-- Children (expanded non-leaf) with spring-like slide animation -->
+            <transition :css="false" @enter="slideEnter" @leave="slideLeave">
+                <ul
+                    v-if="!node.leaf && node.expanded && node.children && node.children.length"
+                    class="tree-children"
+                    style="list-style:none; padding:0; margin:0"
+                >
+                    <tree-node-item
+                        v-for="child in node.children"
+                        :key="child.path"
+                        :node="child"
+                        :level="level + 1"
+                        @toggle="$emit('toggle', $event)"
+                        @collapse="$emit('collapse', $event)"
+                        @node-context="$emit('node-context', $event)"
+                        :format-label="formatLabel"
+                    />
+                </ul>
+            </transition>
         </li>
     `
 };
