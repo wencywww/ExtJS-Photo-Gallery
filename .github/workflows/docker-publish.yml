@@ -36,15 +36,22 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Prepare tags
+        id: tags
+        run: |
+          TAGS="${{ secrets.DOCKERHUB_USERNAME }}/extjs-photo-gallery:latest"
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            TAGS="$TAGS,${{ secrets.DOCKERHUB_USERNAME }}/extjs-photo-gallery:${{ github.event.inputs.version }}"
+          fi
+          echo "value=$TAGS" >> $GITHUB_OUTPUT
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/extjs-photo-gallery:latest
-            ${{ github.event.inputs.version != '' && format('{0}/extjs-photo-gallery:{1}', secrets.DOCKERHUB_USERNAME, github.event.inputs.version) || '' }}
+          tags: ${{ steps.tags.outputs.value }}
           # Layer cache — significantly speeds up subsequent builds
           cache-from: type=gha
           cache-to: type=gha,mode=max
