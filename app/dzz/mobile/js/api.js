@@ -2,6 +2,7 @@ import { store } from './state.js';
 
 const API = window.GALLERY_CONFIG.apiUrl;
 
+/** Sends a POST request to the gallery API with the given params and returns parsed JSON. */
 async function post(params) {
     const body = new URLSearchParams(params);
     const res  = await fetch(API, { method: 'POST', body });
@@ -10,10 +11,12 @@ async function post(params) {
 }
 
 export const api = {
+    /** Pings the server; returns pending upload count and disk status. */
     ping() {
         return post({ targetAction: 'ping' });
     },
 
+    /** Fetches direct child nodes for the given tree path (lazy load). */
     getTreeLevel(nodePath) {
         return post({
             targetAction: 'getTreeLevel',
@@ -23,6 +26,7 @@ export const api = {
         });
     },
 
+    /** Fetches the complete directory tree in one request (non-lazy mode). */
     generateDirStruct() {
         return post({
             targetAction: 'generateDirStruct',
@@ -31,6 +35,7 @@ export const api = {
         });
     },
 
+    /** Loads photos for a single path or an array of day paths, with pagination support. */
     getPhotos(path, dayPaths, page) {
         const params = {
             targetAction: 'getPhotos',
@@ -51,10 +56,12 @@ export const api = {
         return post(params);
     },
 
+    /** Triggers server-side processing (EXIF extraction, thumbnail generation) of pending uploads. */
     processUploads() {
         return post({ targetAction: 'processUploads' });
     },
 
+    /** Rotates the given photos by the specified angle (90, -90, or 180 degrees). */
     rotatePhotos(photos, angle) {
         return post({
             targetAction: 'rotatePhotos',
@@ -63,6 +70,7 @@ export const api = {
         });
     },
 
+    /** Permanently deletes the given photos from the server. */
     deletePhotos(photos) {
         return post({
             targetAction: 'deletePhotos',
@@ -70,6 +78,7 @@ export const api = {
         });
     },
 
+    /** Moves the given photos to a new date directory; converts YYYY-MM-DD to YYYY/MM/DD for PHP. */
     changePhotoDates(photos, targetDate) {
         // HTML date input returns YYYY-MM-DD; PHP expects YYYY/MM/DD for dir creation
         const serverDate = targetDate.split('-').join('/');
@@ -80,6 +89,7 @@ export const api = {
         });
     },
 
+    /** Writes GPS coordinates/altitude into the EXIF of the given photos. */
     setGpsData(photos, gpsParams) {
         return post({
             targetAction: 'setGpsData',
@@ -88,6 +98,7 @@ export const api = {
         });
     },
 
+    /** Fetches all photos for a single day path without pagination (used by NodeActionSheet). */
     getAllPhotosForDay(path) {
         return post({
             targetAction: 'getPhotos',
@@ -102,6 +113,7 @@ export const api = {
         });
     },
 
+    /** CRUD operations for saved GPS locations; action is 'read'|'create'|'update'|'destroy'. */
     manageSavedLocations(action, payload) {
         const params = {
             targetAction: 'manageSavedLocations',

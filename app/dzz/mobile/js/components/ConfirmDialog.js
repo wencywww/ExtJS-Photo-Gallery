@@ -5,6 +5,7 @@ export const ConfirmDialog = {
     setup() {
         const store = inject('store');
 
+        /** Calls the stored onConfirm callback and closes the dialog. */
         function confirm() {
             if (store.confirmDialog.onConfirm) {
                 store.confirmDialog.onConfirm();
@@ -12,6 +13,7 @@ export const ConfirmDialog = {
             store.confirmDialog.open = false;
         }
 
+        /** Closes the dialog without calling the onConfirm callback. */
         function cancel() {
             store.confirmDialog.open = false;
         }

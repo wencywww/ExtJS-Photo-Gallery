@@ -8,11 +8,13 @@ export const PhotoActionSheet = {
 
         const showRotateSub = ref(false);
 
+        /** Closes the action sheet and hides the rotate sub-menu. */
         function close() {
             store.actionSheetOpen = false;
             showRotateSub.value   = false;
         }
 
+        /** Closes the action sheet and exits selection mode, clearing the selected photos. */
         function closeAndClearSelection() {
             close();
             store.selectionMode  = false;
@@ -25,6 +27,7 @@ export const PhotoActionSheet = {
         );
 
         // ===== Rotate =====
+        /** Rotates selected photos by the given angle and reloads the grid. */
         async function rotate(angle) {
             close();
             store.loading = true;
@@ -40,6 +43,7 @@ export const PhotoActionSheet = {
         }
 
         // ===== Delete =====
+        /** Shows a confirmation dialog and deletes selected photos upon confirmation. */
         function deleteSelected() {
             close();
             const photos = [...store.selectedPhotos];
@@ -63,6 +67,7 @@ export const PhotoActionSheet = {
         }
 
         // ===== Change Date =====
+        /** Opens the DateChangeModal pre-loaded with the selected photos. */
         function changeDate() {
             close();
             store.dateChangePhotos = [...store.selectedPhotos];
@@ -70,6 +75,7 @@ export const PhotoActionSheet = {
         }
 
         // ===== GPS =====
+        /** Opens the GPS Editor pre-loaded with the selected photos. */
         function openGps() {
             close();
             store.gpsEditorPhotos = [...store.selectedPhotos];
@@ -77,6 +83,7 @@ export const PhotoActionSheet = {
         }
 
         // ===== GPS Map Viewer =====
+        /** Opens the read-only GPS map for the single selected photo. */
         function openGpsMap() {
             close();
             store.gpsMapPhoto = store.selectedPhotos[0];
@@ -84,6 +91,7 @@ export const PhotoActionSheet = {
         }
 
         // ===== EXIF =====
+        /** Fetches and parses EXIF data for the single selected photo and opens ExifModal. */
         async function viewExif() {
             close();
             const photo = store.selectedPhotos[0];

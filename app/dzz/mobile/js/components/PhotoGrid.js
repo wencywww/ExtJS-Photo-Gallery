@@ -2,6 +2,7 @@ const { computed, inject, watch } = Vue;
 
 
 // Cache-bust URL helper (same as desktop)
+/** Appends a cache-busting timestamp query parameter to a URL. */
 function dcUrl(url) {
     return url + '?_dc=' + Date.now();
 }
@@ -15,10 +16,12 @@ export const PhotoGrid = {
         const store = inject('store');
         const api   = inject('api');
 
+        /** Returns true if the given photo is in the current selection. */
         function isSelected(photo) {
             return store.selectedPhotos.some(p => p.realUri === photo.realUri);
         }
 
+        /** Adds or removes a photo from the selection; exits selection mode when the list empties. */
         function toggleSelect(photo) {
             const idx = store.selectedPhotos.findIndex(p => p.realUri === photo.realUri);
             if (idx >= 0) {
@@ -31,6 +34,7 @@ export const PhotoGrid = {
             }
         }
 
+        /** Starts a 500 ms long-press timer that enters selection mode if not cancelled. */
         function onTouchStart(photo, evt) {
             longPressTimer = setTimeout(() => {
                 longPressTimer = null;
@@ -42,6 +46,7 @@ export const PhotoGrid = {
             }, 500);
         }
 
+        /** Cancels the long-press timer when the finger lifts before 500 ms. */
         function onTouchEnd() {
             if (longPressTimer) {
                 clearTimeout(longPressTimer);
@@ -49,6 +54,7 @@ export const PhotoGrid = {
             }
         }
 
+        /** Cancels the long-press timer when the finger moves (scroll gesture). */
         function onTouchMove() {
             // Cancel long-press on scroll
             if (longPressTimer) {
@@ -57,6 +63,7 @@ export const PhotoGrid = {
             }
         }
 
+        /** Handles a tap on a thumbnail: toggles selection in selection mode, or opens the lightbox. */
         function onPhotoTap(photo, index) {
             if (store.selectionMode) {
                 toggleSelect(photo);
@@ -65,6 +72,7 @@ export const PhotoGrid = {
             openLightbox(index);
         }
 
+        /** Opens Fancybox for all current photos starting at startIndex, loading EXIF after each slide. */
         function openLightbox(startIndex) {
             const dc = '?_dc=' + Date.now();
             const items = store.photos.map(p => {
@@ -100,6 +108,7 @@ export const PhotoGrid = {
             }, startIndex);
         }
 
+        /** Fetches and parses EXIF tags from an image URL into store.exifData. */
         async function loadExifForSlide(url) {
             try {
                 const resp = await fetch(url);
@@ -112,6 +121,7 @@ export const PhotoGrid = {
             }
         }
 
+        /** Flattens ExifReader tag groups into a deduplicated array of {key, val} rows. */
         function buildExifMap(tags) {
             if (!tags) return [];
             const rows = [];
@@ -135,6 +145,7 @@ export const PhotoGrid = {
             });
         }
 
+        /** Desktop right-click handler: prevents the browser menu and enters selection mode. */
         function onContextMenu(photo, evt) {
             // Prevent default context menu on desktop; long-press handles mobile
             evt.preventDefault();
@@ -146,15 +157,18 @@ export const PhotoGrid = {
 
         // ===== Home screen drill-down =====
         // drillStack: [{path, cards}, ...] — each entry is one drilled level
+        /** Returns the path of the deepest drill level, or empty string on the root screen. */
         const drillPath = computed(() =>
             store.drillStack.length > 0 ? store.drillStack[store.drillStack.length - 1].path : ''
         );
+        /** Returns the cards to display: root tree nodes or the top of the drill stack. */
         const currentCards = computed(() =>
             store.drillStack.length === 0
                 ? store.tree
                 : store.drillStack[store.drillStack.length - 1].cards
         );
 
+        /** Builds a breadcrumb array from a slash-separated YYYY/MM/DD path string. */
         function buildBreadcrumbFromPath(path) {
             const parts = path.split('/');
             const crumbs = [];
@@ -164,12 +178,14 @@ export const PhotoGrid = {
             return crumbs;
         }
 
+        /** Returns the Font Awesome icon class appropriate for the card's depth (year/month/day). */
         function cardIcon(card) {
             if (card.leaf) return 'fas fa-calendar-check';
             const depth = card.path ? card.path.split('/').length : 0;
             return depth === 1 ? 'fas fa-calendar' : 'fas fa-calendar-alt';
         }
 
+        /** Returns a human-readable label for a card; month cards show the localised month name. */
         function cardLabel(card) {
             const depth = card.path ? card.path.split('/').length : 0;
             if (depth === 2) {
@@ -182,6 +198,7 @@ export const PhotoGrid = {
             return card.text;
         }
 
+        /** Sorts a card array in-place according to the current photosSort direction. */
         function sortCards(cards) {
             const desc = store.photosSort === 'DESC';
             cards.sort((a, b) => desc
@@ -189,6 +206,10 @@ export const PhotoGrid = {
                 : a.text.localeCompare(b.text));
         }
 
+/**
+ * Handles a card tap: loads photos when the card is a Day leaf, or pushes the next
+ * drill level (year → months, month → days) onto drillStack.
+ */
         async function drillInto(card) {
             if (card.leaf) {
                 // Day node → load photos (drillStack stays intact for back navigation)
@@ -226,11 +247,13 @@ export const PhotoGrid = {
             store.drillStack.forEach(level => sortCards(level.cards));
         });
 
+        /** Pops the top level from drillStack, returning to the previous card view. */
         function drillUp() {
             store.drillStack = store.drillStack.slice(0, -1);
         }
 
         // Breadcrumb navigation — clicking a crumb loads photos for that path
+        /** Navigates to an ancestor breadcrumb level and loads its photos. */
         async function clickBreadcrumb(crumb, idx) {
             if (idx === store.breadcrumb.length - 1) return; // current level — no-op
             store.loading        = true;
@@ -249,6 +272,7 @@ export const PhotoGrid = {
             store.loading = false;
         }
 
+        /** Clears the loaded photos and breadcrumb, returning to the home drill-down card view. */
         function backToCards() {
             store.photos          = [];
             store.breadcrumb      = [];

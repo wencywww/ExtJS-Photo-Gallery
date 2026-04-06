@@ -2,7 +2,7 @@ const { ref, watch, onMounted, inject } = Vue;
 
 const _localeMap = { bg: 'bg-BG', en: 'en-US' };
 
-// Recursively collect all expanded Day paths below a node
+/** Recursively collects path strings of all expanded Day nodes beneath the given node. */
 function collectDayPaths(node) {
     const paths = [];
     if (node.nodeType === 'Day') {
@@ -23,6 +23,7 @@ export const NavTree = {
         const store = inject('store');
         const api   = inject('api');
 
+        /** Returns a localised display label for a tree node (e.g. "January 2024" for month nodes). */
         function formatNodeLabel(path, nodeType, text) {
             if (!path) return text;
             const parts = path.split('/');
@@ -48,6 +49,7 @@ export const NavTree = {
         const treeLoading = ref(false);
 
         // ===== Sort helpers =====
+        /** Sorts a flat array of tree nodes by text according to the current photosSort direction. */
         function sortNodes(nodes) {
             const desc = store.photosSort === 'DESC';
             nodes.sort((a, b) => desc
@@ -55,6 +57,7 @@ export const NavTree = {
                 : a.text.localeCompare(b.text));
         }
 
+        /** Recursively re-sorts all levels of the tree when the sort direction changes. */
         function resortTree(nodes) {
             if (!nodes || !nodes.length) return;
             sortNodes(nodes);
@@ -63,6 +66,7 @@ export const NavTree = {
             }
         }
 
+        /** Loads the top-level year nodes into store.tree, using lazy or full-tree mode. */
         async function loadRoot() {
             treeLoading.value = true;
             try {
@@ -83,6 +87,7 @@ export const NavTree = {
             treeLoading.value = false;
         }
 
+        /** Recursively normalises a full-tree API response into the internal node format. */
         function normalizeFullTree(nodes) {
             return nodes.map(n => {
                 const node = { ...n, expanded: false };
@@ -94,6 +99,10 @@ export const NavTree = {
             });
         }
 
+/**
+ * Handles a tap on a tree node: loads photos for Day nodes, loads photos from all
+ * visible days for already-expanded nodes, or expands the node with lazy-loaded children.
+ */
         async function toggleNode(node) {
             if (node.nodeType === 'Day') {
                 // Load photos for this single day
@@ -128,15 +137,18 @@ export const NavTree = {
             node.expanded = true;
         }
 
+        /** Collapses an expanded tree node (chevron tap with @click.stop). */
         function collapseNode(node) {
             node.expanded = false;
         }
 
+        /** Opens the NodeActionSheet for the given Day node (long-press / ellipsis button). */
         function onNodeContext(node) {
             store.nodeSheetPath = node.path;
             store.nodeSheetOpen = true;
         }
 
+        /** Fetches and stores photos for a single Day node, resetting pagination to page 1. */
         async function loadPhotosForNode(node) {
             store.loading = true;
             store.photos = [];
@@ -157,6 +169,7 @@ export const NavTree = {
             store.loading = false;
         }
 
+        /** Fetches and stores photos for a set of day paths (Year/Month expanded click). */
         async function loadPhotosForDayPaths(node, dayPaths) {
             store.loading = true;
             store.photos = [];
@@ -176,6 +189,7 @@ export const NavTree = {
             store.loading = false;
         }
 
+        /** Builds store.breadcrumb from the node's path parts for display in PhotoGrid. */
         function buildBreadcrumb(node) {
             const crumbs = [];
             const parts = node.path.split('/');
@@ -191,6 +205,7 @@ export const NavTree = {
         }
 
         // Reload photos when filters/sort change while a path is active
+        /** Re-fetches the current photo set when filters, sort order, or page changes. */
         async function reloadCurrentPhotos() {
             if (!store.currentPath && !store.currentDayPaths) return;
             store.loading = true;
@@ -268,6 +283,7 @@ export const TreeNodeItem = {
     setup(props, { emit }) {
         const store = inject('store');
 
+        /** Returns true when this Day node is the currently loaded photo path. */
         function isActive(node) {
             if (node.nodeType === 'Day') {
                 return store.currentPath === node.path;
@@ -275,12 +291,14 @@ export const TreeNodeItem = {
             return false;
         }
 
+        /** Returns the Font Awesome class for the node's type/state icon. */
         function iconClass(node) {
             if (node.nodeType === 'Day') return 'fas fa-calendar-check';
             return node.expanded ? 'fas fa-folder-open' : 'fas fa-folder';
         }
 
         // Spring-like height slide — matches framer-motion spring(bounce:0, duration:0.35)
+        /** Animates a child list into view with a spring-like height slide. */
         function slideEnter(el, done) {
             el.style.height   = '0';
             el.style.overflow = 'hidden';
@@ -295,6 +313,7 @@ export const TreeNodeItem = {
             });
         }
 
+        /** Animates a child list out of view with a spring-like height collapse. */
         function slideLeave(el, done) {
             el.style.overflow = 'hidden';
             el.style.height   = el.scrollHeight + 'px';

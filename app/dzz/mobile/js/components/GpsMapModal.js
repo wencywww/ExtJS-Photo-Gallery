@@ -13,6 +13,7 @@ export const GpsMapModal = {
         let   gmap   = null;
         let   marker = null;
 
+        /** Closes the GPS map modal and clears the photo reference from the store. */
         function close() {
             store.gpsMapOpen  = false;
             store.gpsMapPhoto = null;

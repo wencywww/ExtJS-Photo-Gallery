@@ -16,11 +16,13 @@ export const UploadPanel = {
         const canStartUpload = computed(() => stats.queued > 0 && !isUploading.value);
         const canProcess     = computed(() => stats.uploaded > 0 || store.pendingUploads > 0);
 
+        /** Closes the upload panel and resets all upload stats. */
         function close() {
             store.uploadOpen = false;
             resetStats();
         }
 
+        /** Resets all upload counters and state flags to their initial values. */
         function resetStats() {
             stats.total          = 0;
             stats.queued         = 0;
@@ -32,18 +34,21 @@ export const UploadPanel = {
             uploadComplete.value = false;
         }
 
+        /** Formats a byte count as a human-readable string (B / KB / MB). */
         function formatBytes(bytes) {
             if (bytes < 1024)        return bytes + ' B';
             if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
             return (bytes / 1024 / 1024).toFixed(1) + ' MB';
         }
 
+        /** Tells Dropzone to begin uploading the queued files. */
         function startUpload() {
             if (!dzInstance) return;
             isUploading.value = true;
             dzInstance.processQueue();
         }
 
+        /** Triggers server-side processing, refreshes the tree, and shows a success notice. */
         async function processFiles() {
             store.loading = true;
             try {

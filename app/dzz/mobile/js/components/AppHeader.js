@@ -5,32 +5,38 @@ export const AppHeader = {
     setup() {
         const store = inject('store');
 
+        /** Toggles photo sort order between DESC and ASC and reloads the current photos. */
         function toggleSort() {
             store.photosSort = (store.photosSort === 'DESC') ? 'ASC' : 'DESC';
             // Reload photos
             if (store._reloadPhotos) store._reloadPhotos();
         }
 
+        /** Exits selection mode and clears the selected photos array. */
         function cancelSelection() {
             store.selectionMode   = false;
             store.selectedPhotos  = [];
         }
 
+        /** Opens the photo action sheet if at least one photo is selected. */
         function openActionSheet() {
             if (store.selectedPhotos.length > 0) {
                 store.actionSheetOpen = true;
             }
         }
 
+        /** Returns the gallery title string (currently overridden to empty). */
         const galleryTitle = computed(() => {
             return ''; //override
             //return store.t.GALLERY_TITLE || window.GALLERY_CONFIG?.title || 'Gallery';
         });
 
+        /** Returns the Font Awesome class for the current sort direction icon. */
         const sortIcon = computed(() => {
             return store.photosSort === 'DESC' ? 'fa-sort-amount-down' : 'fa-sort-amount-up';
         });
 
+        /** Returns the localised label for the current sort direction button. */
         const sortLabel = computed(() => {
             return store.photosSort === 'DESC'
                 ? (store.t.sortDESC || '▼ Date')

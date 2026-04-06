@@ -1,5 +1,9 @@
 import { store } from './state.js';
 
+/**
+ * Fetches locale strings from the server and populates store.t with a flat+structured
+ * translation map. Falls back to minimal English strings if the request fails.
+ */
 export async function loadLocale() {
     try {
         const res  = await fetch(window.GALLERY_CONFIG.localeUrl);

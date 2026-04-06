@@ -21,6 +21,7 @@ const { createApp, provide, watch } = Vue;
 // ===== History API helpers — module scope so swipe handler can call _push() =====
 const _base = location.pathname + (location.search || '');
 let _seq = 0;
+/** Pushes a new unique history entry so Android back-button can be trapped. */
 function _push() {
     _seq++;
     history.pushState({ _ga: _seq }, '', _base + '#' + _seq);
@@ -53,11 +54,13 @@ const App = {
         let swipeStartX = 0;
         let swipeStartY = 0;
 
+        /** Records the touch start coordinates for swipe detection. */
         function onMainTouchStart(evt) {
             swipeStartX = evt.touches[0].clientX;
             swipeStartY = evt.touches[0].clientY;
         }
 
+        /** Handles touch end: advances or retreats pagination when a horizontal swipe is detected. */
         async function onMainTouchEnd(evt) {
             const dx = evt.changedTouches[0].clientX - swipeStartX;
             const dy = evt.changedTouches[0].clientY - swipeStartY;
@@ -157,6 +160,10 @@ const App = {
 };
 
 // ===== Android Back Button — History API trap =====
+/**
+ * Handles a hardware/browser back gesture by closing modals or popping navigation state.
+ * Returns true if the event was consumed, false if nothing was done.
+ */
 function handleBackNavigation() {
     // Fancybox open → navigate to previous photo instead of closing
     if (typeof $ !== 'undefined' && $.fancybox) {
@@ -213,6 +220,10 @@ function handleBackNavigation() {
 }
 
 // ===== Bootstrap =====
+/**
+ * Application entry point: loads locale, mounts Vue, sets up the History API back-button
+ * trap, fires an initial ping and starts a periodic 10-second ping for disk status.
+ */
 async function bootstrap() {
     // 1. Load i18n strings
     await loadLocale();

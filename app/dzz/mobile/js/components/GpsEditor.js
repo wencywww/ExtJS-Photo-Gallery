@@ -34,6 +34,7 @@ export const GpsEditor = {
         const editingExisting  = ref(false);
         const editingLocId     = ref(null);
 
+        /** Closes the GPS editor and clears the photos list from the store. */
         function close() {
             store.gpsEditorOpen  = false;
             store.gpsEditorPhotos = [];
@@ -88,6 +89,7 @@ export const GpsEditor = {
             gMarker = null;
         });
 
+        /** Moves the map marker and re-centres the map to match the current lat/lng form values. */
         function syncMapToForm() {
             if (!gMap || !gMarker) return;
             const lat = parseFloat(form.lat);
@@ -99,6 +101,7 @@ export const GpsEditor = {
             }
         }
 
+        /** Queries elevation-api.io for the current coordinates and fills the altitude field. */
         async function fetchElevation() {
             if (!form.lat || !form.lng) return;
             fetchingAlt.value = true;
@@ -115,6 +118,7 @@ export const GpsEditor = {
             fetchingAlt.value = false;
         }
 
+        /** Writes GPS data to the selected photos via the API, then closes the editor. */
         async function save() {
             saving.value = true;
             const params = {};
@@ -135,6 +139,7 @@ export const GpsEditor = {
         }
 
         // ===== Saved Locations =====
+        /** Fetches the saved-locations list from the server and stores it in savedLocations. */
         async function loadSavedLocations() {
             try {
                 const data = await api.manageSavedLocations('read');
@@ -144,6 +149,7 @@ export const GpsEditor = {
             }
         }
 
+        /** Applies the selected saved location's coordinates to the form and map. */
         function applyLocation(evt) {
             const locId = evt.target.value;
             const loc   = savedLocations.value.find(l => String(l.id) === String(locId));
@@ -154,6 +160,7 @@ export const GpsEditor = {
             syncMapToForm();
         }
 
+        /** Shows the inline location-name editor ready to create a new saved location. */
         function startNewLocation() {
             editingLocName.value  = '';
             editingExisting.value = false;
@@ -161,6 +168,7 @@ export const GpsEditor = {
             showLocEditor.value   = true;
         }
 
+        /** Populates the inline name editor with the currently selected location for editing. */
         function startEditLocation() {
             const locId = selectedLocation.value;
             const loc   = savedLocations.value.find(l => String(l.id) === String(locId));
@@ -171,6 +179,7 @@ export const GpsEditor = {
             showLocEditor.value   = true;
         }
 
+        /** Creates or updates the saved location using the current form coordinates and name. */
         async function saveLocation() {
             const name = editingLocName.value.trim();
             if (!name) return;
@@ -193,6 +202,7 @@ export const GpsEditor = {
             await loadSavedLocations();
         }
 
+        /** Prompts for confirmation and deletes the currently selected saved location. */
         function deleteLocation() {
             const locId = selectedLocation.value;
             if (!locId) return;

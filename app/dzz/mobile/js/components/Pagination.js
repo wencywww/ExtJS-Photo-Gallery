@@ -5,6 +5,7 @@ export const Pagination = {
     setup() {
         const store = inject('store');
 
+        /** Computes the total number of pages from totalPhotos and pageSize. */
         const totalPages = computed(() => {
             if (!store.pageSize || store.pageSize <= 0) return 1;
             return Math.max(1, Math.ceil(store.totalPhotos / store.pageSize));
@@ -13,6 +14,7 @@ export const Pagination = {
         const hasPrev = computed(() => store.page > 1);
         const hasNext = computed(() => store.page < totalPages.value);
 
+        /** Navigates to the given page number, reloads photos, and scrolls the content to the top. */
         async function goTo(page) {
             if (page < 1 || page > totalPages.value) return;
             store.page = page;
@@ -22,6 +24,7 @@ export const Pagination = {
             if (main) main.scrollTop = 0;
         }
 
+        /** Updates the page size from the select element and reloads from page 1. */
         function changePageSize(evt) {
             store.pageSize = parseInt(evt.target.value, 10) || 20;
             store.page = 1;

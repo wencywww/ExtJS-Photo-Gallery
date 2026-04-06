@@ -2,11 +2,13 @@ const { reactive, watch } = Vue;
 
 const LS_PREFIX = 'ext-gallery-';
 
+/** Reads a boolean setting from localStorage, returning def if the key is absent. */
 function lsGetBool(key, def) {
     const v = localStorage.getItem(LS_PREFIX + key);
     return v === null ? def : v === 'true';
 }
 
+/** Reads a string setting from localStorage, returning def if the key is absent. */
 function lsGetStr(key, def) {
     return localStorage.getItem(LS_PREFIX + key) ?? def;
 }

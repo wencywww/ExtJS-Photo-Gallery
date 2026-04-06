@@ -7,6 +7,7 @@ export const DateChangeModal = {
         const api   = inject('api');
 
         // Default to first photo's date if available
+        /** Extracts the date portion from the first selected photo's caption (format YYYY-MM-DD). */
         const defaultDate = computed(() => {
             const photo = store.dateChangePhotos[0];
             if (!photo) return '';
@@ -18,15 +19,18 @@ export const DateChangeModal = {
         const targetDate = ref('');
         const saving     = ref(false);
 
+        /** Pre-fills the date input with the default date derived from the first photo. */
         function open() {
             targetDate.value = defaultDate.value;
         }
 
+        /** Closes the modal and clears the dateChangePhotos list from the store. */
         function close() {
             store.dateChangeOpen   = false;
             store.dateChangePhotos = [];
         }
 
+        /** Submits the date change, refreshes the tree and photo grid, then closes the modal. */
         async function save() {
             if (!targetDate.value) return;
             saving.value = true;

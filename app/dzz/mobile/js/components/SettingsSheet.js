@@ -5,8 +5,10 @@ export const SettingsSheet = {
     setup() {
         const store = inject('store');
 
+        /** Closes the settings bottom sheet. */
         function close() { store.settingsOpen = false; }
 
+        /** Sets the sort order and reloads the current photos immediately. */
         function setSort(val) {
             store.photosSort = val;
             if (store._reloadPhotos) store._reloadPhotos();

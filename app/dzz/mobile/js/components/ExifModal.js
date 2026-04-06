@@ -5,6 +5,7 @@ export const ExifModal = {
     setup() {
         const store = inject('store');
 
+        /** Closes the EXIF modal and clears cached EXIF data from the store. */
         function close() {
             store.exifModalOpen = false;
             store.exifData      = null;

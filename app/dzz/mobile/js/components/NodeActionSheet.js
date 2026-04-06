@@ -9,6 +9,7 @@ export const NodeActionSheet = {
         // Human-readable label from path "YYYY/MM/DD"
         const _localeMap = { bg: 'bg-BG', en: 'en-US' };
 
+        /** Returns a localised full-date string for the current nodeSheetPath (e.g. "12 April 2024"). */
         const dayLabel = computed(() => {
             const path = store.nodeSheetPath;
             if (!path) return '';
@@ -22,6 +23,7 @@ export const NodeActionSheet = {
         });
 
         // Close sheet and return the captured path for use by async callers
+        /** Closes the sheet, clears nodeSheetPath, and returns the path captured before closing. */
         function closeSheet() {
             const path = store.nodeSheetPath;
             store.nodeSheetOpen = false;
@@ -29,10 +31,12 @@ export const NodeActionSheet = {
             return path;
         }
 
+        /** Closes the sheet without performing any action. */
         function close() {
             closeSheet();
         }
 
+        /** Loads all photos for the day node and opens the DateChangeModal for them. */
         async function openDateChange() {
             const path = closeSheet();
             if (!path) return;
@@ -51,6 +55,7 @@ export const NodeActionSheet = {
             }
         }
 
+        /** Loads all photos for the day node and opens the GPS Editor for them. */
         async function openGpsEditor() {
             const path = closeSheet();
             if (!path) return;
