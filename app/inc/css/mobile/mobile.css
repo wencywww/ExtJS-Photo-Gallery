@@ -461,6 +461,21 @@ html, body {
 
 .breadcrumb-item.current:hover { background: none; }
 
+.breadcrumb-back-cards {
+    flex-shrink: 0;
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    font-size: 1rem;
+    padding: 4px 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    line-height: 1;
+    transition: background var(--transition-fast);
+}
+.breadcrumb-back-cards:hover { background: var(--color-node-hover); }
+
 /* ===== Loading Spinner ===== */
 .loading-overlay {
     display: flex;

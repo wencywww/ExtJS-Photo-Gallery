@@ -249,30 +249,48 @@ export const PhotoGrid = {
             store.loading = false;
         }
 
+        function backToCards() {
+            store.photos          = [];
+            store.breadcrumb      = [];
+            store.totalPhotos     = 0;
+            store.currentPath     = null;
+            store.currentDayPaths = null;
+            store.page            = 1;
+        }
+
         return {
             store, isSelected, onTouchStart, onTouchEnd, onTouchMove,
             onPhotoTap, onContextMenu, noPhotosText, clickBreadcrumb,
-            currentCards, drillPath, drillInto, drillUp, cardIcon, cardLabel
+            currentCards, drillPath, drillInto, drillUp, cardIcon, cardLabel,
+            backToCards
         };
     },
     template: `
         <div>
             <!-- Breadcrumb -->
             <div v-if="store.breadcrumb.length > 0" class="breadcrumb-bar">
-                <span
-                    v-for="(crumb, idx) in store.breadcrumb"
-                    :key="crumb.path"
-                    style="display:flex; align-items:center; gap:4px"
-                >
+                <span style="display:flex; align-items:center; gap:4px; flex:1; overflow:hidden">
                     <span
-                        class="breadcrumb-item"
-                        :class="{ current: idx === store.breadcrumb.length - 1 }"
-                        @click="clickBreadcrumb(crumb, idx)"
-                    >{{ crumb.text }}</span>
-                    <span v-if="idx < store.breadcrumb.length - 1" class="breadcrumb-sep">
-                        <i class="fas fa-chevron-right" style="font-size:0.6rem"></i>
+                        v-for="(crumb, idx) in store.breadcrumb"
+                        :key="crumb.path"
+                        style="display:flex; align-items:center; gap:4px"
+                    >
+                        <span
+                            class="breadcrumb-item"
+                            :class="{ current: idx === store.breadcrumb.length - 1 }"
+                            @click="clickBreadcrumb(crumb, idx)"
+                        >{{ crumb.text }}</span>
+                        <span v-if="idx < store.breadcrumb.length - 1" class="breadcrumb-sep">
+                            <i class="fas fa-chevron-right" style="font-size:0.6rem"></i>
+                        </span>
                     </span>
                 </span>
+                <button
+                    v-if="store.drillStack.length > 0"
+                    class="breadcrumb-back-cards"
+                    @click="backToCards"
+                    title="Back to cards"
+                ><i class="fas fa-border-all"></i></button>
             </div>
 
             <!-- Loading -->
