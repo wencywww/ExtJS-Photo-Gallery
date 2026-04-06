@@ -1,4 +1,4 @@
-const { computed, inject } = Vue;
+const { computed, inject, watch } = Vue;
 
 
 // Cache-bust URL helper (same as desktop)
@@ -182,6 +182,13 @@ export const PhotoGrid = {
             return card.text;
         }
 
+        function sortCards(cards) {
+            const desc = store.photosSort === 'DESC';
+            cards.sort((a, b) => desc
+                ? b.text.localeCompare(a.text)
+                : a.text.localeCompare(b.text));
+        }
+
         async function drillInto(card) {
             if (card.leaf) {
                 // Day node → load photos (drillStack stays intact for back navigation)
@@ -204,13 +211,20 @@ export const PhotoGrid = {
                 store.drillLoading = true;
                 try {
                     const data = await api.getTreeLevel(card.path);
-                    store.drillStack = [...store.drillStack, { path: card.path, cards: data.RECORDS || [] }];
+                    const cards = data.RECORDS || [];
+                    sortCards(cards);
+                    store.drillStack = [...store.drillStack, { path: card.path, cards }];
                 } catch(e) {
                     console.error('Drill-down tree load failed', e);
                 }
                 store.drillLoading = false;
             }
         }
+
+        // Re-sort all drillStack levels when sort order changes
+        watch(() => store.photosSort, () => {
+            store.drillStack.forEach(level => sortCards(level.cards));
+        });
 
         function drillUp() {
             store.drillStack = store.drillStack.slice(0, -1);
