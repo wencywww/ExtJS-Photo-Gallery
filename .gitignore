@@ -3,3 +3,5 @@ docker/docker-image-info.txt
 .claude
 CLAUDE.md
 .github/DOCKER-BUILD.md
+MOBILE-ARCHITECTURE.md
+tmp-notes.txt
