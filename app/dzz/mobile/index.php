@@ -52,7 +52,8 @@ require("../../inc/globals/globals.inc.php");
             apiUrl: '../scripts/tree/php/processUploads.php',
             uploadUrl: '../scripts/tree/php/dropZone/dropZone.php',
             localeUrl: '../../locale/php/getJSStrings.php',
-            lang: '<?= htmlspecialchars($glob['dzzLang'], ENT_QUOTES) ?>'
+            lang: '<?= htmlspecialchars($glob['dzzLang'], ENT_QUOTES) ?>',
+            appVersion: '<?= APP_VERSION ?>'
         };
     </script>
 </head>

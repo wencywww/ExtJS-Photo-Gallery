@@ -240,6 +240,13 @@
                 font-size: 16px;
                 cursor: pointer;
             }
+            .app-version {
+                margin-top: 16px;
+                text-align: center;
+                font-size: 12px;
+                color: #aaa;
+                letter-spacing: 0.03em;
+            }
         </style>
     </head>
 
@@ -286,6 +293,7 @@
                 <span id="btnText"><?= htmlspecialchars($DZZ_LOC_STRINGS['loginForm']['btnLogin'], ENT_QUOTES) ?></span>
                 <div class="spinner" id="spinner"></div>
             </button>
+            <div class="app-version"><?= htmlspecialchars($DZZ_LOC_STRINGS['commonJS']['appVersionLabel'], ENT_QUOTES) ?> <?= APP_VERSION ?></div>
         </div>
 
         <div id="modalOverlay">

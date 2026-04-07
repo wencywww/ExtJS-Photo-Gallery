@@ -10,7 +10,8 @@
       "dateChange": "Change date...",
       "GALLERY_TITLE": ".:: My Family Gallery ::.",
       "filesCount": "Files",
-      "diskStatus": "Disk free space"
+      "diskStatus": "Disk free space",
+      "appVersionLabel": "Version"
     },
     "php": {
       "GALLERY-TITLE": ".:: My Family Gallery ::.",

@@ -19,7 +19,6 @@ if (!array_key_exists($targetLang, $localesAvailable)) {
 }
 
 
-//$str = file_get_contents($_SERVER["DOCUMENT_ROOT"] . "/locale/languages/$targetLocaleDir/Locale.json");
 $str = file_get_contents("../languages/$targetLocaleDir/Locale.json");
 
 $locText = json_decode($str, true);
@@ -30,6 +29,8 @@ $outArr['Captions'] = $locText['JS'];
 $outArr['CommonCaptions'] = $locText['COMMON']['js'];
 $outArr['Locale'] = $targetLang;
 
+require('../../inc/globals/version.php');
+$outArr['CommonCaptions']['appVersion'] = APP_VERSION;
 
 $outArr['success'] = true;
 print json_encode($outArr);

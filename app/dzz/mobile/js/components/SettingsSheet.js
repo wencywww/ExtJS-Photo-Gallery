@@ -134,11 +134,12 @@ export const SettingsSheet = {
                     </label>
 
                     <!-- Logout -->
-                    <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--color-border); display:flex; justify-content:center">
+                    <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--color-border); display:flex; flex-direction:column; align-items:center; gap:8px">
                         <a href="../../login/logout.php" class="settings-logout-btn">
                             <i class="fas fa-sign-out-alt" style="margin-right:8px"></i>
                             {{ store.t.logout || 'Logout' }}
                         </a>
+                        <span style="font-size:0.72rem; color:var(--color-text-muted)">{{ store.t.appVersionLabel }} {{ store.t.appVersion }}</span>
                     </div>
 
                 </div>

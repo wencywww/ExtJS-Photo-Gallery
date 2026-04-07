@@ -24,7 +24,8 @@ $str = file_get_contents($glob['paths']['appRootPathAbsolute'] . "/locale/langua
 $locText = json_decode($str, true);
 
 $DZZ_LOC_STRINGS = $locText['PHP'];
-$DZZ_LOC_STRINGS['common'] = $locText['COMMON']['php'];
+$DZZ_LOC_STRINGS['common']   = $locText['COMMON']['php'];
+$DZZ_LOC_STRINGS['commonJS'] = $locText['COMMON']['js'];
 $DZZ_LOC_STRINGS['loginForm'] = $locText['JS']['0'];
 
 

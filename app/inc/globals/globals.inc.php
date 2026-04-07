@@ -4,6 +4,7 @@
 //ini_set('display_errors', '1');
 
 require 'paths.inc.php';
+require 'version.php';
 
 //user overrides
 require 'gallery-config.php';

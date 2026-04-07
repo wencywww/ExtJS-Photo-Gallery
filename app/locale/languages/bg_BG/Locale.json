@@ -10,7 +10,8 @@
       "dateChange": "Смяна на датата...",
       "GALLERY_TITLE": ".:: Галерия ::.",
       "filesCount": "Файлове",
-      "diskStatus": "Свободни на диска"
+      "diskStatus": "Свободни на диска",
+      "appVersionLabel": "Версия"
     },
     "php": {
       "GALLERY-TITLE": ".:: Галерия ::.",
@@ -137,7 +138,7 @@
         "dropZone": {
           "dictDefaultMessage": "Дръпнете файловете тук или щракнете за избор...",
           "dictFallbackMessage": "Браузърът не поддържа drag'n'drop качване на файлове.",
-          "dictFallbackText": "Изпозлвайте формата отдолу, за да качите файловете по стандартния начин.",
+          "dictFallbackText": "Използвайте формата отдолу, за да качите файловете по стандартния начин.",
           "dictFileTooBig": "Файлът е твърде голям ({{filesize}}MiB). Максималният размер е: {{maxFilesize}}MiB.",
           "dictInvalidFileType": "Не са позволени файлове от този тип.",
           "dictResponseError": "Сървърът върна код {{statusCode}}.",
