@@ -289,7 +289,10 @@ Ext.onReady(function () {
                                 xtype: 'tbtext',
                                 dzzRole: 'diskStatusLabel',
                                 data: {},
-                                tpl: '<b>' + dzz.i18n.common.filesCount + ':</b> {filesCount} / {totalSize}; <b>' + dzz.i18n.common.diskStatus + ':</b> {diskFreeSpace} / {diskTotalSpace}, {freePercent}'
+                                tpl: `<b>${dzz.i18n.common.filesCount}:</b> {filesCount} / {totalSize}; 
+                                <b>${dzz.i18n.common.diskStatus}:</b> {diskFreeSpace} / {diskTotalSpace}, {freePercent}; 
+                                <i><b>${dzz.i18n.common.appVersionLabel}: </b>${dzz.i18n.common.appVersion}</i>
+                                `
                             }
 
                         ]

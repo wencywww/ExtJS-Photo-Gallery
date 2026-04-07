@@ -1,6 +1,7 @@
 Ext.onReady(function () {
 
     var captions = dzz.i18n.txt[0];
+    var common_captions = dzz.i18n.common;
 
     //the login form panel
     var loginFormPanel = Ext.create('Ext.form.Panel',
@@ -8,8 +9,8 @@ Ext.onReady(function () {
             id: 'loginFrmPanel',
             preventHeader: true,
             url: 'php/doAction.php',
-            bodyPadding: 25,
-            bodyStyle: {background: 'transparent'},
+            bodyPadding: 15,
+            bodyStyle: { background: 'transparent' },
             border: false,
             items: [
                 {
@@ -36,8 +37,8 @@ Ext.onReady(function () {
                     store: {
                         fields: ['val', 'name', 'class'],
                         data: [
-                            {"val": "en", "name": "English", "class": "dzz-flag-en"},
-                            {"val": "bg", "name": "Български", "class": "dzz-flag-bg"}
+                            { "val": "en", "name": "English", "class": "dzz-flag-en" },
+                            { "val": "bg", "name": "Български", "class": "dzz-flag-bg" }
                         ]
                     },
                     queryMode: 'local', editable: false,
@@ -50,15 +51,15 @@ Ext.onReady(function () {
                         '</tpl>'
                     )
                     , listeners: {
-                    change: function (combo) {
-                        Ext.util.Cookies.set('ext-gallery-UILang', combo.getValue());
-                        window.location.reload();
-                    },
-                    afterrender: function (combo) {
-                        var val = combo.getValue();
-                        combo.inputEl.addCls('dzz-flag-' + val + '-displayField');
+                        change: function (combo) {
+                            Ext.util.Cookies.set('ext-gallery-UILang', combo.getValue());
+                            window.location.reload();
+                        },
+                        afterrender: function (combo) {
+                            var val = combo.getValue();
+                            combo.inputEl.addCls('dzz-flag-' + val + '-displayField');
+                        }
                     }
-                }
                 },
                 {
                     xtype: 'combobox',
@@ -67,13 +68,13 @@ Ext.onReady(function () {
                     store: {
                         fields: ['val', 'name'],
                         data: [
-                            {"val": "classic", "name": "Classic"},
-                            {"val": "gray", "name": "Gray"},
-                            {"val": "neptune", "name": "Neptune"},
-                            {"val": "neptune-touch", "name": "Neptune Touch"},
-                            {"val": "crisp", "name": "Crisp"},
-                            {"val": "crisp-touch", "name": "Crisp Touch"},
-                            {"val": "triton", "name": "Triton"}
+                            { "val": "classic", "name": "Classic" },
+                            { "val": "gray", "name": "Gray" },
+                            { "val": "neptune", "name": "Neptune" },
+                            { "val": "neptune-touch", "name": "Neptune Touch" },
+                            { "val": "crisp", "name": "Crisp" },
+                            { "val": "crisp-touch", "name": "Crisp Touch" },
+                            { "val": "triton", "name": "Triton" }
                         ]
                     },
                     queryMode: 'local', editable: false,
@@ -86,6 +87,11 @@ Ext.onReady(function () {
                             window.location.reload();
                         }
                     }
+                },
+                {
+                    xtype: 'component', 
+                    //style: {borderColor:'#000000', borderStyle:'solid', borderWidth:'1px'},
+                    html: `<div style="text-align: right;"><i>${common_captions['appVersionLabel']}: ${common_captions['appVersion']}</i></div>`
                 }
             ],
             buttons: [
