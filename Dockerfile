@@ -33,6 +33,13 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install gd exif \
     && rm -rf /var/lib/apt/lists/*
 
+# Enable mod_headers for Cache-Control on JS/CSS files
+RUN a2enmod headers
+
+# Apache cache-control config
+COPY docker/docker-apache-cache.conf /etc/apache2/conf-available/gallery-cache.conf
+RUN a2enconf gallery-cache
+
 # PHP ini overrides
 COPY docker/docker-php.ini /usr/local/etc/php/conf.d/99-gallery.ini
 
