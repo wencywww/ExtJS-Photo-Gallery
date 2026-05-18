@@ -139,6 +139,7 @@ ExtJS Photo Gallery
 
 **List of Changes**
 
+  * **2026-05-18**, Replaced elevation-api.io with api.open-elevation.com
   * **2026-02-27**, Added responsive stuff for mobile devices
   * **2026-02-27**, Updated FontAwesome to 7.2.0
   * **2026-02-24**, Added lazy tree loading mode (togglable via the gear settings menu). In lazy mode the tree loads nodes level by level on demand instead of fetching the entire structure at once. Smart click behaviour applies: a single click on a collapsed non-Day node does nothing (expand via double-click or the arrow); a single click on an already-expanded non-Day node loads photos from all currently visible Day nodes beneath it

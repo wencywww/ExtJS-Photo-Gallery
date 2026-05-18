@@ -101,16 +101,16 @@ export const GpsEditor = {
             }
         }
 
-        /** Queries elevation-api.io for the current coordinates and fills the altitude field. */
+        /** Queries open-elevation.com for the current coordinates and fills the altitude field. */
         async function fetchElevation() {
             if (!form.lat || !form.lng) return;
             fetchingAlt.value = true;
             try {
-                const url = `https://api.elevation-api.io/elevation?points=(${form.lat},${form.lng})`;
+                const url = `https://api.open-elevation.com/api/v1/lookup?locations=${form.lat},${form.lng}`;
                 const res = await fetch(url);
                 const data = await res.json();
-                if (data.elevations && data.elevations.length > 0) {
-                    form.alt = String(Math.round(data.elevations[0].elevation));
+                if (data.results && data.results.length > 0) {
+                    form.alt = String(Math.round(data.results[0].elevation));
                 }
             } catch(e) {
                 console.warn('Elevation API failed', e);
@@ -305,7 +305,7 @@ export const GpsEditor = {
                     <label class="form-checkbox-row">
                         <input type="checkbox" v-model="form.useElevationApi" />
                         <span class="form-checkbox-label">
-                            {{ store.t.gps?.elevationAPI || 'Use elevation API (elevation-api.io)' }}
+                            {{ store.t.gps?.elevationAPI || 'Use elevation API' }}
                         </span>
                     </label>
                     <label class="form-checkbox-row">

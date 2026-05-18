@@ -1216,7 +1216,7 @@ Ext.onReady(function () {
                         inputValue: 1,
                         uncheckedValue: 0,
                         value: true,
-                        //boxLabel: 'Use elevation API (elevation-api.io)',
+                        //boxLabel: 'Use elevation API',
                         boxLabel: LOC.gpsEditor.elevationAPI,
                         toolTipText: LOC.gpsEditor.elevationAPITip,
                         padding: '0 0 0 10'
@@ -1507,7 +1507,7 @@ Ext.onReady(function () {
         },
 
         //attempts to get the elevation based on a latitude/longitude
-        //currently uses the https://elevation-api.io service
+        //uses https://api.open-elevation.com
         setElevation: function () {
             var me = this;
             var vm = me.getViewModel();
@@ -1516,21 +1516,18 @@ Ext.onReady(function () {
                 return;
             }
 
-            var apiUrl = 'https://elevation-api.io/api/elevation?points=(' + vm.get('lat') + ',' + vm.get('lng') + ')';
+            var apiUrl = 'https://api.open-elevation.com/api/v1/lookup?locations=' + vm.get('lat') + ',' + vm.get('lng');
 
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function () {
-                if (this.readyState == 4 && this.status == 200) { //request successful
+                if (this.readyState == 4 && this.status == 200) {
                     var resp = JSON.parse(this.responseText);
-                    var altitude = resp.elevations[0].elevation;
-                    if (altitude !== false) {
-                        vm.set('alt', altitude);
+                    if (resp.results && resp.results.length > 0) {
+                        vm.set('alt', Math.round(resp.results[0].elevation));
                     }
-                    //console.log(altitude);
                 }
-
-            }
-            xhttp.timeout = 3000; //wait 3 seconds for response
+            };
+            xhttp.timeout = 8000;
             xhttp.open('GET', apiUrl, true);
             xhttp.send();
         },
