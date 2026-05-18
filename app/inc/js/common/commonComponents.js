@@ -1405,6 +1405,8 @@ Ext.onReady(function () {
         initComponent: function () {
             var me = this;
 
+            me.useSinglePhotoGps = (me.recs.length === 1 && me.recs[0].get('gpsData') === 1);
+
             me.callParent(arguments);
             me.extractData();
             me.showForm();
@@ -1424,6 +1426,9 @@ Ext.onReady(function () {
             );
             me.adjustMapSettings();
             me.getSavedLocations();
+            if (me.useSinglePhotoGps) {
+                me.preloadPhotoGps();
+            }
         },
 
         showForm: function () {
@@ -1504,6 +1509,27 @@ Ext.onReady(function () {
             });
 
 
+        },
+
+        preloadPhotoGps: function () {
+            var me = this;
+            var vm = me.getViewModel();
+            var photoUrl = me.recs[0].get('realUri');
+            dzz.func.imgToDataURL(photoUrl, function (dataUrl) {
+                var blob = dzz.func.imgDataUrlToBlob(dataUrl);
+                dzz.func.imgBlobToExifData(blob, me, function (cmp, exifData) {
+                    if (exifData.success && exifData.data.gps) {
+                        var gps = exifData.data.gps;
+                        vm.set({
+                            lat:       gps.Latitude,
+                            lng:       gps.Longitude,
+                            alt:       gps.Altitude != null ? Math.round(gps.Altitude) : 0,
+                            zoom:      14,
+                            centerMap: true
+                        });
+                    }
+                });
+            });
         },
 
         //attempts to get the elevation based on a latitude/longitude
@@ -1595,14 +1621,14 @@ Ext.onReady(function () {
                 }
             });
 
-            //auto-select the most-recent location within the store (they are sorted server-side)
             store.on({
                 load: function (store, recs) {
-                    //console.log('combo loading');
                     if (recs.length > 0) {
                         combo.select(recs.length - 1);
-                        combo.fireEvent('select', combo, recs[recs.length - 1]);
-                        combo.queryMode = 'local'; //to search the store without going to the server
+                        if (!me.useSinglePhotoGps) {
+                            combo.fireEvent('select', combo, recs[recs.length - 1]);
+                        }
+                        combo.queryMode = 'local';
                     }
                 }
             });
