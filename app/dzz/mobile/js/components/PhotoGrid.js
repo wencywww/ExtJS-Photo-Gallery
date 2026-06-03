@@ -77,12 +77,15 @@ export const PhotoGrid = {
             const dc = '?_dc=' + Date.now();
             const items = store.photos.map(p => {
                 if (p.fileType === 'video') {
+                    const ext = p.realUri.split('?')[0].split('.').pop().toLowerCase();
+                    const videoFormat = ext === 'ogv' ? 'video/ogg' : `video/${ext}`;
                     return {
                         src: p.realUri + dc,
                         type: 'video',
                         opts: {
-                            caption: p.caption,
-                            thumb:   p.thumbUri + dc
+                            caption:     p.caption,
+                            thumb:       p.thumbUri + dc,
+                            videoFormat: videoFormat
                         }
                     };
                 }
@@ -389,12 +392,12 @@ export const PhotoGrid = {
                     <template v-if="photo.fileType === 'video'">
                         <video
                             v-if="store.autoPlayVideos"
-                            :src="photo.thumbUri"
+                            :src="photo.realUri"
+                            :poster="photo.thumbUri"
                             autoplay
                             muted
                             loop
                             playsinline
-                            loading="lazy"
                         ></video>
                         <img
                             v-else
