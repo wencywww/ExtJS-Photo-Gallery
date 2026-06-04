@@ -78,37 +78,48 @@ export const PhotoGrid = {
             const items = store.photos.map(p => {
                 if (p.fileType === 'video') {
                     const ext = p.realUri.split('?')[0].split('.').pop().toLowerCase();
-                    const videoFormat = ext === 'ogv' ? 'video/ogg' : `video/${ext}`;
                     return {
-                        src: p.realUri + dc,
-                        type: 'video',
-                        opts: {
-                            caption:     p.caption,
-                            thumb:       p.thumbUri + dc,
-                            videoFormat: videoFormat
-                        }
+                        src:              p.realUri,   // no ?_dc= — videos need Range requests for seeking
+                        type:             'html5video',
+                        caption:          p.caption,
+                        thumbSrc:         p.thumbUri + dc,
+                        poster:           p.thumbUri + dc,
+                        html5videoFormat: ext === 'ogv' ? 'video/ogg' : `video/${ext}`
                     };
                 }
                 return {
-                    src: p.realUri + dc,
-                    opts: {
-                        caption: p.caption,
-                        thumb:   p.thumbUri + dc
-                    }
+                    src:      p.realUri + dc,
+                    caption:  p.caption,
+                    thumbSrc: p.thumbUri + dc
                 };
             });
 
-            $.fancybox.open(items, {
-                loop: true,
-                hash: false,
-                animationEffect: 'zoom',
-                buttons: ['zoom', 'slideShow', 'fullScreen', 'download', 'thumbs', 'close'],
-                afterShow: function(instance, slide) {
-                    if (store.showExifData && slide.type !== 'video') {
-                        loadExifForSlide(slide.src.replace(dc, ''));
+            Fancybox.show(items, {
+                startIndex: startIndex,
+                Carousel:   { infinite: true },
+                Hash:       false,
+                Toolbar: {
+                    display: {
+                        left:   [],
+                        middle: ['zoomIn', 'zoomOut', 'toggle1to1', 'fullscreen', 'autoplay', 'thumbs', 'download'],
+                        right:  ['close']
+                    }
+                },
+                on: {
+                    'ready': function(fancybox) {
+                        const slide = fancybox.getSlide();
+                        if (store.showExifData && slide?.type !== 'html5video') {
+                            loadExifForSlide(slide.src.replace(dc, ''));
+                        }
+                        fancybox.getCarousel()?.on('change', function() {
+                            const s = fancybox.getSlide();
+                            if (store.showExifData && s?.type !== 'html5video') {
+                                loadExifForSlide(s.src.replace(dc, ''));
+                            }
+                        });
                     }
                 }
-            }, startIndex);
+            });
         }
 
         /** Fetches and parses EXIF tags from an image URL into store.exifData. */

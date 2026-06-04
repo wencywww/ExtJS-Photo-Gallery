@@ -166,9 +166,9 @@ const App = {
  */
 function handleBackNavigation() {
     // Fancybox open → navigate to previous photo instead of closing
-    if (typeof $ !== 'undefined' && $.fancybox) {
-        const fb = $.fancybox.getInstance();
-        if (fb) { fb.previous(); return true; }
+    if (typeof Fancybox !== 'undefined') {
+        const fb = Fancybox.getInstance();
+        if (fb) { fb.getCarousel().prev(); return true; }
     }
 
     // Close modals/panels in priority order (topmost first)

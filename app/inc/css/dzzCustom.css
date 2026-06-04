@@ -114,6 +114,13 @@
     top: 150px;
 }
 
+/* Fancybox v6: modal:false keeps dialog out of browser top-layer so the floating
+   exifManager (z-index:99999) can stack above it. We bump the dialog z-index above
+   all ExtJS components (~20000 max) but below the exifManager. */
+dialog.fancybox__dialog {
+    z-index: 50000 !important;
+}
+
 /* Fix FA 7 icon width inside ExtJS button icon spans */
 .x-btn-icon-el.fas,
 .x-btn-icon-el.far,

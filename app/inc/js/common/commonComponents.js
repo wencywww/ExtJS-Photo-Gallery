@@ -31,50 +31,59 @@ Ext.onReady(function () {
                 itemdblclick: function (view, rec, item, index) {
 
                     //Starting fancybox entirely programmatically (without data-attributes).
-                    //we need to build an array of elements, options and start index required by the $.fancybox.open() method:
-                    //https://fancyapps.com/fancybox/3/docs/#api
+                    //https://fancyapps.com/fancybox/
                     var data = view.getStore().getData(); //the data is Ext.util.Collection
                     var items = [];
                     var dc = '?_dc=' + new Date().getTime(); //disable caching param - to ensure the actual picture is retrieved, for example, if it was rotated
                     data.each(function (item) {
-                        var itemObj = {
-                            src: item.get('realUri') + dc,
-                            opts: {
-                                caption: item.get('caption'),
-                                thumb: '\'' + item.get('thumbUri') + dc + '\''
-                            }
-                        };
+                        var isVideo = item.get('fileType') === 'video';
+                        var itemObj;
+                        if (isVideo) {
+                            var ext = item.get('realUri').split('?')[0].split('.').pop().toLowerCase();
+                            itemObj = {
+                                src:              item.get('realUri'),
+                                type:             'html5video',
+                                caption:          item.get('caption'),
+                                thumbSrc:         item.get('thumbUri') + dc,
+                                poster:           item.get('thumbUri') + dc,
+                                html5videoFormat: ext === 'ogv' ? 'video/ogg' : 'video/' + ext
+                            };
+                        } else {
+                            itemObj = {
+                                src:      item.get('realUri') + dc,
+                                caption:  item.get('caption'),
+                                thumbSrc: item.get('thumbUri') + dc
+                            };
+                        }
                         items.push(itemObj);
                     });
 
-                    $.fancybox.open(items, {
-                        animationEffect: 'zoom-in-out',
-                        animationDuration: 500,
-                        loop: true,
-                        buttons: [
-                            "zoom",
-                            "share",
-                            "slideShow",
-                            "fullScreen",
-                            "download",
-                            "thumbs",
-                            "close"
-                        ],
-                        x_transitionEffect: "tube",
-                        afterShow: function (instance, slide) {
-                            me.checkSlideMeta(slide);
+                    Fancybox.show(items, {
+                        startIndex: index,
+                        modal:    false,   // keep dialog out of top-layer so z-index stacking works for exifManager
+                        Carousel: { infinite: true },
+                        Toolbar: {
+                            display: {
+                                left:   [],
+                                middle: ['zoomIn', 'zoomOut', 'toggle1to1', 'fullscreen', 'autoplay', 'thumbs', 'download'],
+                                right:  ['close']
+                            }
                         },
-                        afterClose: function (instance, slide) {
-                            //console.log('close');
-                            me.lookupViewModel().set(
-                                {
-                                    slideExifData: null,
-                                    exifVisualiserVisible: false
-                                }
-                            );
+                        on: {
+                            'ready': function (fancybox) {
+                                me.checkSlideMeta(fancybox.getSlide());
+                                fancybox.getCarousel()?.on('change', function () {
+                                    me.checkSlideMeta(fancybox.getSlide());
+                                });
+                            },
+                            'close': function () {
+                                me.lookupViewModel().set({ slideExifData: null });
+                            },
+                            'destroy': function () {
+                                me.lookupViewModel().set({ exifVisualiserVisible: false });
+                            }
                         }
-
-                    }, index);
+                    });
                 },
 
                 //2025-08-02: paging toolbar
@@ -304,7 +313,7 @@ Ext.onReady(function () {
                 return;
             }
 
-            if (slide.type == 'video') { //no need to continue on videos
+            if (slide.type === 'html5video') { //no need to continue on videos
                 vm.set({
                     slideExifData: null
                 });
