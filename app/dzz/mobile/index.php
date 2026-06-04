@@ -25,9 +25,6 @@ require("../../inc/globals/globals.inc.php");
     <!-- Mobile App CSS -->
     <link rel="stylesheet" type="text/css" href="../../inc/css/mobile/mobile.css" />
 
-    <!-- jQuery -->
-    <script src="<?= $glob['paths']['jqueryJS'] ?>"></script>
-
     <!-- Fancybox -->
     <script src="<?= $glob['paths']['jquery-fancybox-js'] ?>"></script>
 

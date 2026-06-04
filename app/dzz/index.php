@@ -22,10 +22,7 @@
 
     <script type="text/javascript" src="<?=$glob['paths']['googlemaps-js']?>?key=<?=$glob['gmapsApiKey']?>"></script>
 
-    <!-- jquery  -->
-    <script type="text/javascript" src="<?=$glob['paths']['jqueryJS']?>"></script>
-
-    <!-- jquery / fancybox -->
+    <!-- fancybox -->
     <link rel="stylesheet" href="<?=$glob['paths']['jquery-fancybox-css']?>">
     <script type="text/javascript" src="<?=$glob['paths']['jquery-fancybox-js']?>"></script>
 

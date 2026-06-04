@@ -31,7 +31,6 @@ $glob['paths']['extLocaleJS'] = $glob['paths']['extIncPath'] . "/build/classic/l
 
 $glob['paths']['font-awesomeCSS'] = $glob['paths']['appRootPrefix'] . "/libraries/css/fa/fontawesome-free-7.2.0-web/css/all.css";
 
-$glob['paths']['jqueryJS'] = $glob['paths']['appRootPrefix'] . "/libraries/js/jquery/jquery.min.js";
 
 $glob['paths']['jquery-fancybox-css'] = $glob['paths']['appRootPrefix'] . "/libraries/js/jquery/jq-fancybox/fancybox.css";
 $glob['paths']['jquery-fancybox-js'] = $glob['paths']['appRootPrefix'] . "/libraries/js/jquery/jq-fancybox/fancybox.umd.js";
