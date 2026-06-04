@@ -99,12 +99,6 @@ export const PhotoGrid = {
                 Carousel: {
                     infinite: true,
                     Arrows:   false,
-                    gestures: {
-                        // Add 'video' so Panzoom/Carousel does not intercept touch/drag
-                        // events on video elements — required for the native seek bar to work
-                        ignore: ['textarea', 'input', 'select', '[contenteditable]',
-                                 '[data-selectable]', '[data-draggable]', 'video', '.f-html5video']
-                    },
                     Toolbar: {
                         display: {
                             left:   [],
