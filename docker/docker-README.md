@@ -7,7 +7,7 @@ This Docker image provides an **ExtJS Photo Gallery** built with PHP 8.4 and Sen
 * Organize and browse your photos/videos in a hierarchical (tree) view using any desktop browser
 * Items are automatically arranged by Year, Month and Day based on the EXIF information (if available)
 * The data view can display items for particular day/month/year or all available items
-* Slideshow available via jQuery/Fancybox
+* Slideshow available via Fancybox
 * Photo geographical locations (latitude/longitude/altitude) can be fine-tuned if needed via intuitive Google Maps-based editor
 * The EXIF data and location of the currently active slide can be visualized using a grid & Google Maps panel (using [ExifReader](https://github.com/mattiasw/ExifReader) JS library)
 * File uploading via [DropZone.js](https://www.dropzonejs.com/)

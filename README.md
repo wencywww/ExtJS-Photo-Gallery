@@ -20,7 +20,7 @@ ExtJS Photo Gallery
   * Organize and browse your photos/videos in a hierarchical (tree) view using browser
   * Items are automatically arranged by Year, Month and Day based on the EXIF information (if available)  
   * The data view can display items for particular day/month/year or all available items
-  * Slideshow available via jquery/fancybox
+  * Slideshow available via Fancybox
   * Photo geographical locations (latitude/longitude/altitude) can be fine-tuned if needed via intuitive Google Maps-based editor 
   * The EXIF data and location of the currently active slide can be visualised using a grid & Google Maps panel (using [ExifReader](https://github.com/mattiasw/ExifReader) JS library)
   * File uploading via the [DropZone.js](https://www.dropzonejs.com/)
@@ -139,6 +139,7 @@ ExtJS Photo Gallery
 
 **List of Changes**
 
+  * **2026-06-04**, Update Fancybox to 6.1.14
   * **2026-05-18**, Replaced elevation-api.io with api.open-elevation.com
   * **2026-02-27**, Added responsive stuff for mobile devices
   * **2026-02-27**, Updated FontAwesome to 7.2.0
