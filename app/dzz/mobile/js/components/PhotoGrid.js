@@ -96,15 +96,27 @@ export const PhotoGrid = {
 
             Fancybox.show(items, {
                 startIndex: startIndex,
-                Carousel:   { infinite: true },
-                Hash:       false,
-                Toolbar: {
-                    display: {
-                        left:   [],
-                        middle: ['zoomIn', 'zoomOut', 'toggle1to1', 'fullscreen', 'autoplay', 'thumbs', 'download'],
-                        right:  ['close']
+                Carousel: {
+                    infinite: true,
+                    Arrows:   false,
+                    gestures: {
+                        // Add 'video' so Panzoom/Carousel does not intercept touch/drag
+                        // events on video elements — required for the native seek bar to work
+                        ignore: ['textarea', 'input', 'select', '[contenteditable]',
+                                 '[data-selectable]', '[data-draggable]', 'video', '.f-html5video']
+                    },
+                    Toolbar: {
+                        display: {
+                            left:   [],
+                            /* middle: ['zoomIn', 'zoomOut', 'toggle1to1', 'rotateCCW', 'rotateCW',
+                                     'fullscreen', 'autoplay', 'thumbs', 'download'], */
+                            middle: ['toggle1to1', 'rotateCCW', 'rotateCW',
+                                     'fullscreen', 'autoplay', 'thumbs', 'download'],
+                            right:  ['close']
+                        }
                     }
                 },
+                Hash: false,
                 on: {
                     'ready': function(fancybox) {
                         const slide = fancybox.getSlide();

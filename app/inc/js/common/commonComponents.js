@@ -41,17 +41,17 @@ Ext.onReady(function () {
                         if (isVideo) {
                             var ext = item.get('realUri').split('?')[0].split('.').pop().toLowerCase();
                             itemObj = {
-                                src:              item.get('realUri'),
-                                type:             'html5video',
-                                caption:          item.get('caption'),
-                                thumbSrc:         item.get('thumbUri') + dc,
-                                poster:           item.get('thumbUri') + dc,
+                                src: item.get('realUri'),
+                                type: 'html5video',
+                                caption: item.get('caption'),
+                                thumbSrc: item.get('thumbUri') + dc,
+                                poster: item.get('thumbUri') + dc,
                                 html5videoFormat: ext === 'ogv' ? 'video/ogg' : 'video/' + ext
                             };
                         } else {
                             itemObj = {
-                                src:      item.get('realUri') + dc,
-                                caption:  item.get('caption'),
+                                src: item.get('realUri') + dc,
+                                caption: item.get('caption'),
                                 thumbSrc: item.get('thumbUri') + dc
                             };
                         }
@@ -60,13 +60,22 @@ Ext.onReady(function () {
 
                     Fancybox.show(items, {
                         startIndex: index,
-                        modal:    false,   // keep dialog out of top-layer so z-index stacking works for exifManager
-                        Carousel: { infinite: true },
-                        Toolbar: {
-                            display: {
-                                left:   [],
-                                middle: ['zoomIn', 'zoomOut', 'toggle1to1', 'fullscreen', 'autoplay', 'thumbs', 'download'],
-                                right:  ['close']
+                        modal: false,   // keep dialog out of top-layer so z-index stacking works for exifManager
+                        Carousel: {
+                            infinite: true,
+                            gestures: {
+                                // Add 'video' so Panzoom/Carousel does not intercept touch/drag
+                                // events on video elements — required for the native seek bar to work
+                                ignore: ['textarea', 'input', 'select', '[contenteditable]',
+                                    '[data-selectable]', '[data-draggable]', 'video', '.f-html5video']
+                            },
+                            Toolbar: {
+                                display: {
+                                    left: [],
+                                    middle: ['zoomIn', 'zoomOut', 'toggle1to1', 'rotateCCW', 'rotateCW',
+                                        'fullscreen', 'autoplay', 'thumbs', 'download'],
+                                    right: ['close']
+                                }
                             }
                         },
                         on: {
@@ -1530,10 +1539,10 @@ Ext.onReady(function () {
                     if (exifData.success && exifData.data.gps) {
                         var gps = exifData.data.gps;
                         vm.set({
-                            lat:       gps.Latitude,
-                            lng:       gps.Longitude,
-                            alt:       gps.Altitude != null ? Math.round(gps.Altitude) : 0,
-                            zoom:      14,
+                            lat: gps.Latitude,
+                            lng: gps.Longitude,
+                            alt: gps.Altitude != null ? Math.round(gps.Altitude) : 0,
+                            zoom: 14,
                             centerMap: true
                         });
                     }
