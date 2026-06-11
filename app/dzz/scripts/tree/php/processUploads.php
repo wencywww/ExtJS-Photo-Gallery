@@ -378,6 +378,20 @@ function getPhotos($req)
 
     $arr = [];
 
+    // 2026-06: filename filter (case-insensitive, part of name). Applied at Finder level via
+    // ->filter() so non-matching files are skipped before any per-file processing.
+    // Note: Finder ->name() calls are OR-combined, so a name filter cannot be added that way;
+    // ->filter() callbacks are AND-combined with the existing extension restrictions.
+    $nameFilter = isset($req['nameFilter']) ? trim($req['nameFilter']) : '';
+    $applyNameFilter = function (Finder $f) use ($nameFilter) {
+        if ($nameFilter !== '') {
+            $f->filter(function (\SplFileInfo $file) use ($nameFilter) {
+                return mb_stripos($file->getFilename(), $nameFilter) !== false;
+            });
+        }
+        return $f;
+    };
+
     // Lazy mode: load photos from multiple specific Day-level paths
     if (!empty($req['paths'])) {
         $pathList = json_decode($req['paths'], true);
@@ -394,6 +408,7 @@ function getPhotos($req)
             } else {
                 $dayFinder->files()->name($videos_extensions)->in("$photosDir/$dayPath");
             }
+            $applyNameFilter($dayFinder);
             foreach ($dayFinder as $file) {
                 $uriBase = $glob['paths']['photosDir'] . "/" . $dayPath . "/";
                 $thumbUri = $uriBase . $file->getFilename();
@@ -420,6 +435,7 @@ function getPhotos($req)
         } else { //only videos
             $finder->files()->name($videos_extensions)->in("$photosDir/$path");
         }
+        $applyNameFilter($finder);
 
         if ($finder->hasResults()) {
             foreach ($finder as $file) {

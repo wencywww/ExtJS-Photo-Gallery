@@ -30,6 +30,7 @@ Ext.onReady(function () {
             autoPlayVideos: lsGetBool('autoPlayVideos', false), //determines if we want to autoplay the videos in the gallery - may be very slow on some devices
             paginateDataView: lsGetBool('paginateDataView', false), //determines if we want to paginate the data view
             lazyLoad: lsGetBool('lazyLoad', true), //determines if the tree loads nodes level by level (lazy) or all at once
+            nameFilter: '', //filename filter (part of name) applied to the gallery; sent to getPhotos
         },
         formulas: {
             exifDataFiltered: function (get) {

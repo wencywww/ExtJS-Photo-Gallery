@@ -47,7 +47,52 @@ Ext.onReady(function () {
                 }
             },
             {
-                type: 'search', tooltip: captions['sortDESC']
+                type: 'search', tooltip: captions['filterFilenameTip'],
+                callback: function (panel, tool) {
+                    var bar = panel.down('[dzzRole=searchBar]');
+                    var willShow = bar.isHidden();
+                    bar.setHidden(!willShow);
+                    var field = bar.down('textfield');
+                    if (willShow) {
+                        field.focus(true, 100);
+                    } else if (field.getValue()) {
+                        field.setValue(''); // hiding → clears the filter (triggers change)
+                    }
+                }
+            }
+        ],
+
+        dockedItems: [
+            {
+                xtype: 'toolbar',
+                dock: 'top',
+                dzzRole: 'searchBar',
+                hidden: true,
+                items: [
+                    {
+                        xtype: 'textfield',
+                        flex: 1,
+                        emptyText: captions['filterFilenameEmptyText'],
+                        triggers: {
+                            clear: {
+                                cls: 'x-form-clear-trigger',
+                                hidden: true,
+                                handler: function (field) {
+                                    field.setValue('');
+                                }
+                            }
+                        },
+                        listeners: {
+                            change: {
+                                buffer: 400,
+                                fn: function (field, value) {
+                                    field.getTrigger('clear').setVisible(!!value);
+                                    field.up('dzzAppNavTree').applyNameFilter(value);
+                                }
+                            }
+                        }
+                    }
+                ]
             }
         ],
 
@@ -243,6 +288,17 @@ Ext.onReady(function () {
         },
 
         //loads the center region content
+        // Stores the filename filter in the ViewModel and reloads the open gallery (page 1).
+        // beforeload in homeGalleryDataView's store sends nameFilter to getPhotos.
+        applyNameFilter: function (value) {
+            var me = this;
+            me.lookupViewModel().set('nameFilter', value);
+            var gallery = Ext.ComponentQuery.query('homeGalleryDataView')[0];
+            if (gallery) {
+                gallery.getStore().loadPage(1); // safe for both paginated and non-paginated stores
+            }
+        },
+
         loadObject: function (view, record) {
             var me = this;
             var lazyLoad = me.lookupViewModel().get('lazyLoad');
