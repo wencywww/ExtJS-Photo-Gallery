@@ -272,6 +272,7 @@ Ext.onReady(function () {
                 beforeload: function (store, operation, eOpts) {
                     store.getProxy().setExtraParam('showPhotos', me.lookupViewModel().get('showPhotos'));
                     store.getProxy().setExtraParam('showVideos', me.lookupViewModel().get('showVideos'));
+                    store.getProxy().setExtraParam('nameFilter', me.lookupViewModel().get('nameFilter') || '');
                     if (me.lookupViewModel().get('lazyLoad')) {
                         var node = operation.node;
                         var nodePath = (node.get('id') === 'rootNode') ? '' : (node.get('path') || '');
@@ -288,11 +289,16 @@ Ext.onReady(function () {
         },
 
         //loads the center region content
-        // Stores the filename filter in the ViewModel and reloads the open gallery (page 1).
-        // beforeload in homeGalleryDataView's store sends nameFilter to getPhotos.
+        // Stores the filename filter in the ViewModel, then reloads the tree (so branches with no
+        // matching files disappear / reappear) and the currently open gallery (page 1).
+        // beforeload in both stores sends nameFilter to the backend.
         applyNameFilter: function (value) {
             var me = this;
             me.lookupViewModel().set('nameFilter', value);
+
+            // Reload the tree so empty Year/Month/Day branches are hidden (or restored when cleared)
+            me.getStore().reload();
+
             var gallery = Ext.ComponentQuery.query('homeGalleryDataView')[0];
             if (gallery) {
                 gallery.getStore().loadPage(1); // safe for both paginated and non-paginated stores

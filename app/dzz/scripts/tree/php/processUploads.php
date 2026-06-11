@@ -53,6 +53,10 @@ if (false === $showPhotos && false === $showVideos) {
 
 $paginateData = isset($_REQUEST['paginateData']) ? ('false' == $_REQUEST['paginateData'] ? false : true) : false;
 
+// 2026-06: filename filter (case-insensitive, part of name). Shared by getPhotos (which files to
+// return) and countDirFiles (tree node counts → empty branches get hidden when a filter is active).
+$nameFilter = isset($_REQUEST['nameFilter']) ? trim($_REQUEST['nameFilter']) : '';
+
 switch ($targetAction) {
 
     case 'ping':
@@ -328,7 +332,7 @@ function generateDirStruct()
 
 function getTreeLevel($nodePath)
 {
-    global $photosDir;
+    global $photosDir, $nameFilter;
 
     $baseDir = ($nodePath === '') ? $photosDir : "$photosDir/$nodePath";
     $depth = ($nodePath === '') ? 0 : substr_count($nodePath, '/') + 1;
@@ -355,6 +359,11 @@ function getTreeLevel($nodePath)
                 ];
             }
         } else { // year or month level → non-leaf, no children yet
+            // With an active filter, skip a Year/Month that has no matching files anywhere beneath it
+            // (countDirFiles is recursive), so empty branches don't linger in the tree.
+            if ($nameFilter !== '' && countDirFiles("$photosDir/$fullPath", "*thumb*") === 0) {
+                continue;
+            }
             $iconCls = ($depth == 0) ? 'fas fa-calendar' : 'fas fa-calendar-alt';
             $nodes[] = [
                 'leaf'       => false,
@@ -378,20 +387,6 @@ function getPhotos($req)
 
     $arr = [];
 
-    // 2026-06: filename filter (case-insensitive, part of name). Applied at Finder level via
-    // ->filter() so non-matching files are skipped before any per-file processing.
-    // Note: Finder ->name() calls are OR-combined, so a name filter cannot be added that way;
-    // ->filter() callbacks are AND-combined with the existing extension restrictions.
-    $nameFilter = isset($req['nameFilter']) ? trim($req['nameFilter']) : '';
-    $applyNameFilter = function (Finder $f) use ($nameFilter) {
-        if ($nameFilter !== '') {
-            $f->filter(function (\SplFileInfo $file) use ($nameFilter) {
-                return mb_stripos($file->getFilename(), $nameFilter) !== false;
-            });
-        }
-        return $f;
-    };
-
     // Lazy mode: load photos from multiple specific Day-level paths
     if (!empty($req['paths'])) {
         $pathList = json_decode($req['paths'], true);
@@ -408,7 +403,7 @@ function getPhotos($req)
             } else {
                 $dayFinder->files()->name($videos_extensions)->in("$photosDir/$dayPath");
             }
-            $applyNameFilter($dayFinder);
+            applyNameFilterToFinder($dayFinder);
             foreach ($dayFinder as $file) {
                 $uriBase = $glob['paths']['photosDir'] . "/" . $dayPath . "/";
                 $thumbUri = $uriBase . $file->getFilename();
@@ -435,7 +430,7 @@ function getPhotos($req)
         } else { //only videos
             $finder->files()->name($videos_extensions)->in("$photosDir/$path");
         }
-        $applyNameFilter($finder);
+        applyNameFilterToFinder($finder);
 
         if ($finder->hasResults()) {
             foreach ($finder as $file) {
@@ -887,19 +882,35 @@ function adjustTree($arr)
     return $arr;
 }
 
+// Applies the active filename filter to a Finder via ->filter() (AND-combined with the existing
+// ->name() extension restrictions, which are themselves OR-combined and so cannot carry it).
+// No-op when no filter is set. Recursive by default — counting on a Year/Month dir reaches all descendants.
+function applyNameFilterToFinder(Finder $finder)
+{
+    global $nameFilter;
+    if ($nameFilter !== '') {
+        $nf = $nameFilter;
+        $finder->filter(function (\SplFileInfo $file) use ($nf) {
+            return mb_stripos($file->getFilename(), $nf) !== false;
+        });
+    }
+    return $finder;
+}
+
 function countDirFiles($dir, $pattern)
 {
     global $showPhotos, $showVideos, $photos_extensions, $videos_extensions;
-    
+
     $finder = new Finder();
     if ($showPhotos && $showVideos) {
-        $res = $finder->files()->name($pattern)->in($dir)->count();
+        $finder->files()->name($pattern)->in($dir);
     } elseif ($showPhotos) { //only photos
-        $res = $finder->files()->name($photos_extensions)->in($dir)->count();
+        $finder->files()->name($photos_extensions)->in($dir);
     } else { //only videos
-        $res = $finder->files()->name($videos_extensions)->in($dir)->count();
+        $finder->files()->name($videos_extensions)->in($dir);
     }
-    
+    $res = applyNameFilterToFinder($finder)->count();
+
     unset($finder);
     return $res;
 }
