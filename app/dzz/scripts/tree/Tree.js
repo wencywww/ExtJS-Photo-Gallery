@@ -45,6 +45,9 @@ Ext.onReady(function () {
                     panel.photosSort = 'DESC';
                     localStorage.setItem('ext-gallery-photosSort', 'DESC');
                 }
+            },
+            {
+                type: 'search', tooltip: captions['sortDESC']
             }
         ],
 

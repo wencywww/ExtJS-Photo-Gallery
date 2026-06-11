@@ -48,6 +48,7 @@
       "paginateDataView": "Paginate gallery",
       "sortASC": "Sort by date, ascending",
       "sortDESC": "Sort by date, descending",
+      "filterFilename": "Filter by filename / part of filename",
       "lazyLoad": "Lazy tree loading",
       "sortOrder": "Sort order",
       "sectionDisplay": "Display",
