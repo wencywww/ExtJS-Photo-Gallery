@@ -181,6 +181,11 @@ function handleBackNavigation() {
     if (store.nodeSheetOpen)       { store.nodeSheetOpen = false;      return true; }
     if (store.uploadOpen)          { store.uploadOpen = false;         return true; }
     if (store.settingsOpen)        { store.settingsOpen = false;       return true; }
+    if (store.searchOpen)          {
+        store.searchOpen = false;
+        if (store.nameFilter) store.nameFilter = '';
+        return true;
+    }
     if (store.selectionMode)       {
         store.selectionMode = false;
         store.selectedPhotos = [];

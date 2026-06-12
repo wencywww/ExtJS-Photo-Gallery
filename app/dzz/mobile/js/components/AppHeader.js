@@ -18,6 +18,33 @@ export const AppHeader = {
             store.selectedPhotos  = [];
         }
 
+        // ===== Filename filter =====
+        let filterDebounce = null;
+
+        /** Toggles the search bar; hiding it clears an active filter, opening focuses the input. */
+        function toggleSearch() {
+            store.searchOpen = !store.searchOpen;
+            if (!store.searchOpen && store.nameFilter) {
+                store.nameFilter = '';
+            } else if (store.searchOpen) {
+                setTimeout(() => document.querySelector('.search-bar input')?.focus(), 50);
+            }
+        }
+
+        /** Debounced (400 ms) input handler — pushes the value into store.nameFilter. */
+        function onSearchInput(evt) {
+            clearTimeout(filterDebounce);
+            const value = evt.target.value;
+            filterDebounce = setTimeout(() => { store.nameFilter = value.trim(); }, 400);
+        }
+
+        /** Clears the filter but keeps the search bar open. */
+        function clearSearch(evt) {
+            clearTimeout(filterDebounce);
+            evt.target.closest('.search-bar').querySelector('input').value = '';
+            store.nameFilter = '';
+        }
+
         /** Opens the photo action sheet if at least one photo is selected. */
         function openActionSheet() {
             if (store.selectedPhotos.length > 0) {
@@ -43,7 +70,8 @@ export const AppHeader = {
                 : (store.t.sortASC  || '▲ Date');
         });
 
-        return { store, toggleSort, cancelSelection, openActionSheet, galleryTitle, sortIcon, sortLabel };
+        return { store, toggleSort, cancelSelection, openActionSheet, galleryTitle, sortIcon, sortLabel,
+                 toggleSearch, onSearchInput, clearSearch };
     },
     template: `
         <!-- Selection mode header -->
@@ -79,6 +107,17 @@ export const AppHeader = {
                 <span>{{ store.photosSort }}</span>
             </button>
 
+            <!-- Filename filter toggle -->
+            <button
+                class="header-btn"
+                :class="{ 'search-active': store.searchOpen || store.nameFilter }"
+                @click="toggleSearch"
+                :title="store.t.filterFilenameTip || 'Filter by filename'"
+                aria-label="Filter by filename"
+            >
+                <i class="fas fa-search"></i>
+            </button>
+
             <!-- Settings -->
             <button
                 class="header-btn"
@@ -100,5 +139,22 @@ export const AppHeader = {
                 <span class="badge">{{ store.pendingUploads }}</span>
             </button>
         </header>
+
+        <!-- Filename filter bar (slides below the header) -->
+        <div v-if="store.searchOpen && !store.selectionMode" class="search-bar">
+            <i class="fas fa-search search-bar-icon"></i>
+            <input
+                type="search"
+                :value="store.nameFilter"
+                :placeholder="store.t.filterFilenameEmptyText || 'Filter by filename...'"
+                @input="onSearchInput"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+            />
+            <button v-if="store.nameFilter" class="search-bar-clear" @click="clearSearch" aria-label="Clear filter">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
     `
 };

@@ -22,7 +22,8 @@ export const api = {
             targetAction: 'getTreeLevel',
             nodePath,
             showPhotos: store.showPhotos,   // URLSearchParams → 'true'/'false' (PHP expects 'false')
-            showVideos: store.showVideos
+            showVideos: store.showVideos,
+            nameFilter: store.nameFilter
         });
     },
 
@@ -31,7 +32,8 @@ export const api = {
         return post({
             targetAction: 'generateDirStruct',
             showPhotos: store.showPhotos,
-            showVideos: store.showVideos
+            showVideos: store.showVideos,
+            nameFilter: store.nameFilter
         });
     },
 
@@ -42,6 +44,7 @@ export const api = {
             photosSort:   store.photosSort,
             showPhotos:   store.showPhotos,
             showVideos:   store.showVideos,
+            nameFilter:   store.nameFilter,
             paginateData: store.paginateDataView ? 1 : 0,
             start:        store.paginateDataView ? ((page - 1) * store.pageSize) : 0,
             limit:        store.pageSize

@@ -25,6 +25,10 @@ export const store = reactive({
     lazyLoad:            true,  // always on in mobile; not user-configurable
     photosSort:          lsGetStr('photosSort', 'DESC'),
 
+    // Filename filter (part of name, case-insensitive; server-side) — session-only, not persisted
+    nameFilter:          '',
+    searchOpen:          false,
+
     // Navigation
     tree:            [],     // array of year nodes (each may have .children)
     drawerOpen:      false,

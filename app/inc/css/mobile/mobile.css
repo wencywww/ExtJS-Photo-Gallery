@@ -199,6 +199,65 @@ html, body {
     pointer-events: none;
 }
 
+/* Active state of the filename-filter toggle in the header */
+.header-btn.search-active {
+    background: rgba(255,255,255,0.25);
+}
+
+/* ===== Filename filter bar (below the fixed header) ===== */
+.search-bar {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    z-index: 99;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
+.search-bar-icon {
+    color: var(--color-text-muted, #757575);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.search-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-text);
+    font-size: 1rem;
+    min-width: 0;
+}
+
+.search-bar input::-webkit-search-cancel-button {
+    display: none; /* we render our own clear button */
+}
+
+.search-bar-clear {
+    background: none;
+    border: none;
+    color: var(--color-text-muted, #757575);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.search-bar-clear:active {
+    background: var(--color-border);
+}
+
 .header-title {
     flex: 1;
     text-align: center;

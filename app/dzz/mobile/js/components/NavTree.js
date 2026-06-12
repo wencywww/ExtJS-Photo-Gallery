@@ -233,6 +233,15 @@ export const NavTree = {
             reloadCurrentPhotos();
         });
 
+        // Filename filter change → reload tree (empty branches get hidden / restored),
+        // drop stale drill-down levels (root cards share store.tree) and reload photos from page 1
+        watch(() => store.nameFilter, () => {
+            loadRoot();
+            store.drillStack = [];
+            store.page = 1;
+            reloadCurrentPhotos();
+        });
+
         // Watch for lazyLoad toggle → reload entire tree
         watch(() => store.lazyLoad, () => {
             store.tree      = [];
