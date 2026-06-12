@@ -31,11 +31,19 @@ export const AppHeader = {
             }
         }
 
-        /** Debounced (400 ms) input handler — pushes the value into store.nameFilter. */
+        /**
+         * Debounced (600 ms) input handler — pushes the value into store.nameFilter.
+         * Requires at least 3 pattern characters, counted after a leading '!'
+         * (which inverts the match server-side); below the threshold → no filter.
+         */
         function onSearchInput(evt) {
             clearTimeout(filterDebounce);
-            const value = evt.target.value;
-            filterDebounce = setTimeout(() => { store.nameFilter = value.trim(); }, 400);
+            const raw = evt.target.value.trim();
+            filterDebounce = setTimeout(() => {
+                const core = raw.startsWith('!') ? raw.slice(1).trim() : raw;
+                const effective = core.length >= 3 ? raw : '';
+                if (effective !== store.nameFilter) store.nameFilter = effective;
+            }, 600);
         }
 
         /** Clears the filter but keeps the search bar open. */

@@ -84,10 +84,19 @@ Ext.onReady(function () {
                         },
                         listeners: {
                             change: {
-                                buffer: 400,
+                                buffer: 600,
                                 fn: function (field, value) {
                                     field.getTrigger('clear').setVisible(!!value);
-                                    field.up('dzzAppNavTree').applyNameFilter(value);
+                                    var tree = field.up('dzzAppNavTree');
+                                    // Min 3 pattern chars (counted after a leading '!', which inverts
+                                    // the match server-side); below the threshold → no filter
+                                    var raw = value.trim();
+                                    var core = raw.charAt(0) === '!' ? raw.substring(1).trim() : raw;
+                                    var effective = core.length >= 3 ? raw : '';
+                                    // Skip redundant reloads while typing below the threshold
+                                    if (effective !== tree.lookupViewModel().get('nameFilter')) {
+                                        tree.applyNameFilter(effective);
+                                    }
                                 }
                             }
                         }

@@ -55,7 +55,19 @@ $paginateData = isset($_REQUEST['paginateData']) ? ('false' == $_REQUEST['pagina
 
 // 2026-06: filename filter (case-insensitive, part of name). Shared by getPhotos (which files to
 // return) and countDirFiles (tree node counts → empty branches get hidden when a filter is active).
+// A leading '!' inverts the match (not-containing logic). The pattern itself must be at least
+// 3 characters long — counted AFTER stripping the '!' sign ("!ab" → inactive, "!abc" → active).
+// Shorter input is treated as no filter (frontends enforce the same, this is a server-side guard).
 $nameFilter = isset($_REQUEST['nameFilter']) ? trim($_REQUEST['nameFilter']) : '';
+$nameFilterNegate = false;
+if ($nameFilter !== '' && $nameFilter[0] === '!') {
+    $nameFilterNegate = true;
+    $nameFilter = trim(substr($nameFilter, 1)); // pattern = everything after the '!'
+}
+if (mb_strlen($nameFilter) < 3) { // length of the pattern, '!' excluded
+    $nameFilter = '';
+    $nameFilterNegate = false;
+}
 
 switch ($targetAction) {
 
@@ -887,11 +899,13 @@ function adjustTree($arr)
 // No-op when no filter is set. Recursive by default — counting on a Year/Month dir reaches all descendants.
 function applyNameFilterToFinder(Finder $finder)
 {
-    global $nameFilter;
+    global $nameFilter, $nameFilterNegate;
     if ($nameFilter !== '') {
         $nf = $nameFilter;
-        $finder->filter(function (\SplFileInfo $file) use ($nf) {
-            return mb_stripos($file->getFilename(), $nf) !== false;
+        $negate = $nameFilterNegate;
+        $finder->filter(function (\SplFileInfo $file) use ($nf, $negate) {
+            $matches = mb_stripos($file->getFilename(), $nf) !== false;
+            return $negate ? !$matches : $matches;
         });
     }
     return $finder;
