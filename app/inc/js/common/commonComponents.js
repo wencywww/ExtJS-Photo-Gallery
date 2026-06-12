@@ -408,6 +408,9 @@ Ext.onReady(function () {
 
             me.task = {
                 run: function () {
+                    // Skip pings while an index rebuild is running (see Tree.js rebuildIndexChunked)
+                    // — avoids SQLite read contention with the rebuild's write transactions.
+                    if (dzz.indexRebuilding) return;
                     me.doRequest('ping');
                 },
                 interval: 5000

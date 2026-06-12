@@ -559,6 +559,8 @@ function changePhotoDates()
     $newPath = "$photosDir/$newDate";
     $fileSystem->mkdir($newPath);
 
+    $touchedDirs = [];
+
     foreach ($files as $file) {
         $filePath = pathinfo($file, PATHINFO_DIRNAME);
         $fileName = pathinfo($file, PATHINFO_BASENAME);
@@ -585,11 +587,13 @@ function changePhotoDates()
             touch($newThumbFileName, $touchTime);
 
             giMoveFile(giDayFromWebPath($filePath), $fileName, $newDate, $touchTime);
+
+            $touchedDirs[] = $_SERVER['DOCUMENT_ROOT'] . $filePath;
         }
 
     }
 
-    removeEmptyDirs($photosDir);
+    removeEmptyDirsForPaths($touchedDirs);
 
 }
 
@@ -889,6 +893,8 @@ function deletePhotos()
 
     $files = json_decode($_REQUEST['photos']);
 
+    $touchedDirs = [];
+
     foreach ($files as $file) {
         $filePath = pathinfo($file, PATHINFO_DIRNAME);
         $fileName = pathinfo($file, PATHINFO_BASENAME);
@@ -909,11 +915,13 @@ function deletePhotos()
             $fileSystem->remove($existingThumbFileName);
 
             giDeleteFile(giDayFromWebPath($filePath), $fileName);
+
+            $touchedDirs[] = $_SERVER['DOCUMENT_ROOT'] . $filePath;
         }
 
     }
 
-    removeEmptyDirs($photosDir);
+    removeEmptyDirsForPaths($touchedDirs);
 
 }
 
@@ -1042,6 +1050,39 @@ function removeEmptyDirs($root)
         unset($finder);
         if ($curDir->count() == 0) {
             $fileSystem->remove($dir->getRealPath());
+        }
+    }
+}
+
+// Targeted alternative to removeEmptyDirs($photosDir): only checks the day dirs touched by
+// the current operation (plus their month/year parents), bottom-up, instead of recursively
+// scanning the entire photos tree. $dirPaths are full filesystem paths of touched day dirs.
+function removeEmptyDirsForPaths(array $dirPaths)
+{
+    global $imgPattern;
+
+    $fileSystem = new Filesystem();
+
+    $candidates = [];
+    foreach ($dirPaths as $dir) {
+        $dir = rtrim(str_replace('\\', '/', $dir), '/');
+        if ($dir === '') continue;
+        $candidates[] = $dir;                    // day
+        $candidates[] = dirname($dir);           // month
+        $candidates[] = dirname(dirname($dir));  // year
+    }
+    $candidates = array_unique($candidates);
+
+    // Deepest first, so an emptied day dir is gone before its month parent is checked
+    usort($candidates, function ($a, $b) { return strlen($b) - strlen($a); });
+
+    foreach ($candidates as $dir) {
+        if (!is_dir($dir)) continue;
+        $finder = new Finder();
+        $res = $finder->files()->name($imgPattern)->in($dir);
+        unset($finder);
+        if ($res->count() == 0) {
+            $fileSystem->remove($dir);
         }
     }
 }

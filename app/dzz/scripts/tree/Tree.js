@@ -330,6 +330,10 @@ Ext.onReady(function () {
             var CHUNK_SIZE = 10; // day dirs per request
             var t0 = Date.now();
 
+            // Pauses the indexerButton's periodic 'ping' (see commonComponents.js) — avoids
+            // SQLite read contention with this rebuild's write transactions.
+            dzz.indexRebuilding = true;
+
             var progress = Ext.MessageBox.progress(captions['rebuildIndex'], '...');
 
             Ext.Ajax.request({
@@ -339,6 +343,7 @@ Ext.onReady(function () {
                 callback: function (opts, success, response) {
                     var r = success ? Ext.decode(response.responseText, true) : null;
                     if (!r || !r.success) {
+                        dzz.indexRebuilding = false;
                         Ext.Msg.hide();
                         Ext.Msg.alert(captions['rebuildIndex'], 'Error');
                         return;
@@ -355,6 +360,7 @@ Ext.onReady(function () {
                                 method: 'POST',
                                 params: { targetAction: 'rebuildIndexFinish', days: Ext.encode(days) },
                                 callback: function (o, ok, resp) {
+                                    dzz.indexRebuilding = false;
                                     Ext.Msg.hide();
                                     var fr = ok ? Ext.decode(resp.responseText, true) : null;
                                     if (fr && fr.success) {
@@ -382,6 +388,7 @@ Ext.onReady(function () {
                             callback: function (o, ok, resp) {
                                 var cr = ok ? Ext.decode(resp.responseText, true) : null;
                                 if (!cr || !cr.success) {
+                                    dzz.indexRebuilding = false;
                                     Ext.Msg.hide();
                                     Ext.Msg.alert(captions['rebuildIndex'], 'Error');
                                     return;

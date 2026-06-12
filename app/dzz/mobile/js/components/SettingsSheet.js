@@ -23,6 +23,7 @@ export const SettingsSheet = {
         async function rebuildIndex() {
             if (rebuilding.value) return;
             rebuilding.value = true;
+            store.indexRebuilding = true; // pauses the periodic ping in app.js
             rebuildProgress.value = '';
             const CHUNK_SIZE = 10;
             const t0 = Date.now();
@@ -50,6 +51,7 @@ export const SettingsSheet = {
                 alert('Error');
             }
             rebuilding.value = false;
+            store.indexRebuilding = false;
             rebuildProgress.value = '';
         }
 

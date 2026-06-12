@@ -284,6 +284,7 @@ async function bootstrap() {
 
     // 6. Periodic ping every 10 seconds
     setInterval(async () => {
+        if (store.indexRebuilding) return; // avoid SQLite read contention during rebuild
         try {
             const pingResult = await api.ping();
             const details = pingResult.details || {};

@@ -87,6 +87,7 @@ export const store = reactive({
     uploadDone:     false,
     pendingUploads: 0,
     diskStatus:     null,
+    indexRebuilding: false, // true while a chunked index rebuild runs (see SettingsSheet.js) — pauses periodic ping
 
     // i18n
     t:      {},
