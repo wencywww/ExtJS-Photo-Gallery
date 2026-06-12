@@ -459,9 +459,11 @@ Ext.onReady(function () {
                             me.setText(txt);
                         }
 
-                        var diskStatusLabel = me.up('window').down('tbtext[dzzRole=diskStatusLabel]');
-                        if (diskStatusLabel) {
-                            diskStatusLabel.setData(details.diskStatus);
+                        if (details.diskStatus) {
+                            var diskStatusLabel = me.up('window').down('tbtext[dzzRole=diskStatusLabel]');
+                            if (diskStatusLabel) {
+                                diskStatusLabel.setData(details.diskStatus);
+                            }
                         }
                     }
 

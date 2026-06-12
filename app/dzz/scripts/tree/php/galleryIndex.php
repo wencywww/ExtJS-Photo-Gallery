@@ -58,11 +58,19 @@ function giConnect($create = false)
             fileType TEXT    NOT NULL,
             mtime    INTEGER NOT NULL,
             hasGps   INTEGER NOT NULL DEFAULT 0,
+            size     INTEGER NOT NULL DEFAULT 0,
             PRIMARY KEY (day, filename)
         )');
         $pdo->exec('CREATE INDEX IF NOT EXISTS idx_files_day ON files(day)');
         $pdo->exec('CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)');
         $pdo->exec("INSERT OR IGNORE INTO meta (key, value) VALUES ('schemaVersion', '1')");
+
+        // Migration: pre-existing databases (schemaVersion 1) lack the 'size' column
+        $cols = $pdo->query('PRAGMA table_info(files)')->fetchAll(PDO::FETCH_COLUMN, 1);
+        if (!in_array('size', $cols, true)) {
+            $pdo->exec('ALTER TABLE files ADD COLUMN size INTEGER NOT NULL DEFAULT 0');
+        }
+
         return $pdo;
     } catch (Throwable $e) {
         $pdo = null;
@@ -123,13 +131,13 @@ function giFilterSql(array &$bind)
 
 // ============================== Write hooks ==============================
 
-function giUpsertFile($day, $filename, $fileType, $mtime, $hasGps)
+function giUpsertFile($day, $filename, $fileType, $mtime, $hasGps, $size = 0)
 {
     try {
         $pdo = giConnect();
         if (!$pdo) return;
-        $pdo->prepare('INSERT OR REPLACE INTO files (day, filename, fileType, mtime, hasGps) VALUES (?,?,?,?,?)')
-            ->execute([$day, $filename, $fileType, (int)$mtime, (int)$hasGps]);
+        $pdo->prepare('INSERT OR REPLACE INTO files (day, filename, fileType, mtime, hasGps, size) VALUES (?,?,?,?,?,?)')
+            ->execute([$day, $filename, $fileType, (int)$mtime, (int)$hasGps, (int)$size]);
     } catch (Throwable $e) { /* index must never break a file operation */ }
 }
 
@@ -165,6 +173,38 @@ function giDeleteFile($day, $filename)
         $pdo->prepare('DELETE FROM files WHERE day = ? AND filename = ?')
             ->execute([$day, $filename]);
     } catch (Throwable $e) { }
+}
+
+// ============================== Rebuild lock ==============================
+// A marker file (mtime = last activity) flags an in-progress chunked rebuild, so respondToPing()
+// can skip the diskStatus computation (avoids SQLite contention while giRebuildDays() holds
+// write transactions). Auto-expires if the client abandons the rebuild (closed tab, etc.) —
+// each rebuildIndexChunk call refreshes the timestamp, so >STALE_SECONDS of silence clears it.
+const GI_REBUILD_LOCK_STALE_SECONDS = 60;
+
+function giRebuildLockFile()
+{
+    return giDbFile() . '.rebuilding';
+}
+
+function giSetRebuilding($on)
+{
+    if ($on) {
+        @touch(giRebuildLockFile());
+    } else {
+        @unlink(giRebuildLockFile());
+    }
+}
+
+function giIsRebuilding()
+{
+    $f = giRebuildLockFile();
+    if (!file_exists($f)) return false;
+    if (time() - filemtime($f) > GI_REBUILD_LOCK_STALE_SECONDS) {
+        @unlink($f); // abandoned rebuild — stop blocking diskStatus
+        return false;
+    }
+    return true;
 }
 
 // ============================== Rebuild ==============================
@@ -222,7 +262,8 @@ function giIndexOneDay(PDO $pdo, PDOStatement $ins, $day)
                 $hasGps = 1;
             }
         }
-        $ins->execute([$day, $realName, $fileType, filemtime($realPath), $hasGps]);
+        $size = filesize($realPath) + $file->getSize(); // real file + its thumb
+        $ins->execute([$day, $realName, $fileType, filemtime($realPath), $hasGps, $size]);
         $count++;
     }
     return $count;
@@ -241,7 +282,7 @@ function giRebuildDays(array $days)
     $count = 0;
     $pdo->beginTransaction();
     try {
-        $ins = $pdo->prepare('INSERT OR REPLACE INTO files (day, filename, fileType, mtime, hasGps) VALUES (?,?,?,?,?)');
+        $ins = $pdo->prepare('INSERT OR REPLACE INTO files (day, filename, fileType, mtime, hasGps, size) VALUES (?,?,?,?,?,?)');
         foreach ($days as $day) {
             $day = str_replace('\\', '/', $day);
             // Day paths come from giListDays() but guard against traversal anyway
@@ -308,6 +349,21 @@ function giRebuildIndex()
     }
 
     return ['count' => $r['count'], 'duration' => round(microtime(true) - $t0, 1)];
+}
+
+// Aggregate file count + total size (real files + their thumbs) for the ping/diskStatus cache.
+// Returns null on any error (incl. missing db) → caller falls back to a full disk scan.
+function giGetDiskStatus()
+{
+    $pdo = giConnect();
+    if (!$pdo) return null;
+
+    try {
+        $row = $pdo->query('SELECT COUNT(*) AS cnt, COALESCE(SUM(size), 0) AS total FROM files')->fetch(PDO::FETCH_ASSOC);
+        return ['filesCount' => (int)$row['cnt'], 'totalSize' => (int)$row['total']];
+    } catch (Throwable $e) {
+        return null;
+    }
 }
 
 // ============================== Read path ==============================

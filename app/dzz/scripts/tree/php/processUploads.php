@@ -147,17 +147,21 @@ switch ($targetAction) {
         die();
         break;
     case 'rebuildIndex': // single-shot (CLI / small galleries); web UIs use the chunked flow below
+        giSetRebuilding(true);
         $res = giRebuildIndex();
+        giSetRebuilding(false);
         header("Content-type: application/json");
         print json_encode(['success' => !isset($res['error']), 'count' => $res['count'], 'duration' => $res['duration']]);
         die();
         break;
     case 'rebuildIndexInit': // chunked rebuild, step 1: list all day dirs (fast)
+        giSetRebuilding(true);
         header("Content-type: application/json");
         print json_encode(['success' => true, 'days' => giListDays()]);
         die();
         break;
     case 'rebuildIndexChunk': // step 2 (repeated): index a batch of days
+        giSetRebuilding(true); // refresh the lock timestamp — keeps it alive for long rebuilds
         $days = json_decode($_REQUEST['days'] ?? '[]', true);
         $res = giRebuildDays(is_array($days) ? $days : []);
         header("Content-type: application/json");
@@ -167,6 +171,7 @@ switch ($targetAction) {
     case 'rebuildIndexFinish': // step 3: purge stale days, stamp lastRebuild
         $days = json_decode($_REQUEST['days'] ?? '[]', true);
         $res = giRebuildFinish(is_array($days) ? $days : []);
+        giSetRebuilding(false);
         header("Content-type: application/json");
         print json_encode(['success' => !isset($res['error']), 'total' => $res['total']]);
         die();
@@ -196,17 +201,32 @@ function respondToPing()
     if ($fileSystem->exists($diskStatusFileName)) {
         $arr['diskStatus'] = json_decode(file_get_contents($diskStatusFileName));
         $arr['test'] = true; //simply report that data is from the cache
+    } elseif (giIsRebuilding()) {
+        // Skip diskStatus entirely while a chunked index rebuild is running — avoids SQLite
+        // contention with giRebuildDays()'s write transactions. Client keeps its last value;
+        // ping resumes computing diskStatus once the rebuild finishes (or is abandoned).
     } else {
-        $finder = new Finder();
-        $res = $finder->files()->name($imgPattern)->in($photosDir);
-        unset($finder);
         $diskTotalSpace = FileSizeConvert(disk_total_space($photosDir));
         $diskFreeSpace = FileSizeConvert(disk_free_space($photosDir));
         $diskFreeSpacePercent = (disk_free_space($photosDir) / disk_total_space($photosDir)) * 100;
         $diskFreeSpacePercent = number_format($diskFreeSpacePercent, 2, '.', '') . '%';
-        $photosDirSize = FileSizeConvert(getDirectorySize($photosDir));
 
-        $arr['diskStatus'] = (object) ['filesCount' => $res->count() / 2, 'totalSize' => $photosDirSize, 'diskFreeSpace' => $diskFreeSpace, 'diskTotalSpace' => $diskTotalSpace, 'freePercent' => $diskFreeSpacePercent];
+        // 2026-06: prefer the SQLite index for filesCount/totalSize — avoids a full recursive
+        // scan of $photosDir (getDirectorySize), which can take very long for large galleries
+        // and blocks the single-threaded `php -S` dev server. Falls back to a Finder scan.
+        $idxStatus = giGetDiskStatus();
+        if ($idxStatus !== null) {
+            $filesCount = $idxStatus['filesCount'];
+            $photosDirSize = FileSizeConvert($idxStatus['totalSize']);
+        } else {
+            $finder = new Finder();
+            $res = $finder->files()->name($imgPattern)->in($photosDir);
+            unset($finder);
+            $filesCount = $res->count() / 2;
+            $photosDirSize = FileSizeConvert(getDirectorySize($photosDir));
+        }
+
+        $arr['diskStatus'] = (object) ['filesCount' => $filesCount, 'totalSize' => $photosDirSize, 'diskFreeSpace' => $diskFreeSpace, 'diskTotalSpace' => $diskTotalSpace, 'freePercent' => $diskFreeSpacePercent];
         //print $diskStatusFileName;
         file_put_contents($diskStatusFileName, json_encode($arr['diskStatus']));
     }
@@ -349,7 +369,8 @@ function processUploads()
 
             //5. Index the new file (GPS presence read from the already-parsed EXIF; videos have none)
             $hasGps = (!$isVideo && $exifPresent && getExif($fileName)->getGPS() !== false) ? 1 : 0;
-            giUpsertFile($targetPath, $file->getFilename(), $isVideo ? 'video' : 'photo', $fileTimestamp, $hasGps);
+            $fileSize = filesize($newFileName) + filesize($thumbName);
+            giUpsertFile($targetPath, $file->getFilename(), $isVideo ? 'video' : 'photo', $fileTimestamp, $hasGps, $fileSize);
 
             $fileSystem->remove($fileName);
         }
