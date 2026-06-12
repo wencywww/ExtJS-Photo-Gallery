@@ -146,10 +146,29 @@ switch ($targetAction) {
         $fileSystem->remove($diskStatusFileName);
         die();
         break;
-    case 'rebuildIndex':
+    case 'rebuildIndex': // single-shot (CLI / small galleries); web UIs use the chunked flow below
         $res = giRebuildIndex();
         header("Content-type: application/json");
         print json_encode(['success' => !isset($res['error']), 'count' => $res['count'], 'duration' => $res['duration']]);
+        die();
+        break;
+    case 'rebuildIndexInit': // chunked rebuild, step 1: list all day dirs (fast)
+        header("Content-type: application/json");
+        print json_encode(['success' => true, 'days' => giListDays()]);
+        die();
+        break;
+    case 'rebuildIndexChunk': // step 2 (repeated): index a batch of days
+        $days = json_decode($_REQUEST['days'] ?? '[]', true);
+        $res = giRebuildDays(is_array($days) ? $days : []);
+        header("Content-type: application/json");
+        print json_encode(['success' => !isset($res['error']), 'count' => $res['count']]);
+        die();
+        break;
+    case 'rebuildIndexFinish': // step 3: purge stale days, stamp lastRebuild
+        $days = json_decode($_REQUEST['days'] ?? '[]', true);
+        $res = giRebuildFinish(is_array($days) ? $days : []);
+        header("Content-type: application/json");
+        print json_encode(['success' => !isset($res['error']), 'total' => $res['total']]);
         die();
         break;
     default:

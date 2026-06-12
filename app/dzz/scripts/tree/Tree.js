@@ -237,27 +237,7 @@ Ext.onReady(function () {
                         text: captions['rebuildIndex'],
                         iconCls: 'fas fa-database',
                         handler: function () {
-                            Ext.Msg.wait(captions['rebuildIndex'], dzz.i18n.common.loadingTxt);
-                            Ext.Ajax.request({
-                                url: 'scripts/tree/php/processUploads.php',
-                                method: 'POST',
-                                timeout: 600000, //rebuild of a large gallery takes minutes (EXIF reads)
-                                params: { targetAction: 'rebuildIndex' },
-                                callback: function (opts, success, response) {
-                                    Ext.Msg.hide();
-                                    var r = success ? Ext.decode(response.responseText, true) : null;
-                                    if (r && r.success) {
-                                        Ext.Msg.alert(captions['rebuildIndex'],
-                                            Ext.String.format(captions['rebuildIndexDone'], r.count, r.duration));
-                                        me.getStore().reload();
-                                        if (Ext.ComponentQuery.query('homeGalleryDataView').length > 0) {
-                                            Ext.ComponentQuery.query('homeGalleryDataView')[0].getStore().reload();
-                                        }
-                                    } else {
-                                        Ext.Msg.alert(captions['rebuildIndex'], 'Error');
-                                    }
-                                }
-                            });
+                            me.rebuildIndexChunked();
                         }
                     }
                 ]
@@ -340,6 +320,89 @@ Ext.onReady(function () {
         },
 
         //loads the center region content
+        // Chunked SQLite index rebuild: fetches the list of day dirs, then indexes them in
+        // small batches (separate short requests) with a progress bar. No request runs long
+        // enough to hit Ajax/proxy timeouts, and an aborted run never corrupts the index
+        // (every chunk is its own transaction over its own days).
+        rebuildIndexChunked: function () {
+            var me = this;
+            var captions = dzz.i18n.txt[1];
+            var CHUNK_SIZE = 10; // day dirs per request
+            var t0 = Date.now();
+
+            var progress = Ext.MessageBox.progress(captions['rebuildIndex'], '...');
+
+            Ext.Ajax.request({
+                url: 'scripts/tree/php/processUploads.php',
+                method: 'POST',
+                params: { targetAction: 'rebuildIndexInit' },
+                callback: function (opts, success, response) {
+                    var r = success ? Ext.decode(response.responseText, true) : null;
+                    if (!r || !r.success) {
+                        Ext.Msg.hide();
+                        Ext.Msg.alert(captions['rebuildIndex'], 'Error');
+                        return;
+                    }
+
+                    var days = r.days;
+                    var processed = 0;
+                    var filesCount = 0;
+
+                    var processNext = function () {
+                        if (processed >= days.length) { // done → finish step
+                            Ext.Ajax.request({
+                                url: 'scripts/tree/php/processUploads.php',
+                                method: 'POST',
+                                params: { targetAction: 'rebuildIndexFinish', days: Ext.encode(days) },
+                                callback: function (o, ok, resp) {
+                                    Ext.Msg.hide();
+                                    var fr = ok ? Ext.decode(resp.responseText, true) : null;
+                                    if (fr && fr.success) {
+                                        var duration = Math.round((Date.now() - t0) / 1000);
+                                        Ext.Msg.alert(captions['rebuildIndex'],
+                                            Ext.String.format(captions['rebuildIndexDone'], fr.total, duration));
+                                        me.getStore().reload();
+                                        if (Ext.ComponentQuery.query('homeGalleryDataView').length > 0) {
+                                            Ext.ComponentQuery.query('homeGalleryDataView')[0].getStore().reload();
+                                        }
+                                    } else {
+                                        Ext.Msg.alert(captions['rebuildIndex'], 'Error');
+                                    }
+                                }
+                            });
+                            return;
+                        }
+
+                        var chunk = days.slice(processed, processed + CHUNK_SIZE);
+                        Ext.Ajax.request({
+                            url: 'scripts/tree/php/processUploads.php',
+                            method: 'POST',
+                            timeout: 120000,
+                            params: { targetAction: 'rebuildIndexChunk', days: Ext.encode(chunk) },
+                            callback: function (o, ok, resp) {
+                                var cr = ok ? Ext.decode(resp.responseText, true) : null;
+                                if (!cr || !cr.success) {
+                                    Ext.Msg.hide();
+                                    Ext.Msg.alert(captions['rebuildIndex'], 'Error');
+                                    return;
+                                }
+                                filesCount += cr.count;
+                                processed += chunk.length;
+                                progress.updateProgress(
+                                    processed / days.length,
+                                    Ext.String.format(captions['rebuildIndexProgress'], processed, days.length)
+                                );
+                                processNext();
+                            }
+                        });
+                    };
+
+                    progress.updateProgress(0, Ext.String.format(captions['rebuildIndexProgress'], 0, days.length));
+                    processNext();
+                }
+            });
+        },
+
         // Stores the filename filter in the ViewModel, then reloads the tree (so branches with no
         // matching files disappear / reappear) and the currently open gallery (page 1).
         // beforeload in both stores sends nameFilter to the backend.

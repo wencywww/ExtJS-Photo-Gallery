@@ -63,7 +63,8 @@
       "allLabel": "all",
       "useIndex": "Use SQLite index (faster browsing)",
       "rebuildIndex": "Rebuild index",
-      "rebuildIndexDone": "Index rebuilt: {0} files in {1} s"
+      "rebuildIndexDone": "Index rebuilt: {0} files in {1} s",
+      "rebuildIndexProgress": "Indexed {0} of {1} days"
     },
     "**2": "**--** file - /dzz/scripts/Main.js",
     "2": {

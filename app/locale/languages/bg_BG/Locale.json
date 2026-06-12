@@ -63,7 +63,8 @@
       "allLabel": "всички",
       "useIndex": "Използване на SQLite индекс (по-бързо разглеждане)",
       "rebuildIndex": "Преизграждане на индекса",
-      "rebuildIndexDone": "Индексът е преизграден: {0} файла за {1} сек."
+      "rebuildIndexDone": "Индексът е преизграден: {0} файла за {1} сек.",
+      "rebuildIndexProgress": "Индексирани {0} от {1} дни"
     },
     "**2": "**--** file - /dzz/scripts/Main.js",
     "2": {

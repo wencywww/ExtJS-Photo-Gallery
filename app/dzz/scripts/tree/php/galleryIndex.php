@@ -168,60 +168,146 @@ function giDeleteFile($day, $filename)
 }
 
 // ============================== Rebuild ==============================
+// The rebuild is CHUNKED so a large gallery never needs one long-running HTTP request
+// (which hits Ajax/proxy timeouts). Flow driven by the client:
+//   1. rebuildIndexInit   → giListDays()        — fast dir scan, returns all 'YYYY/MM/DD' paths
+//   2. rebuildIndexChunk  → giRebuildDays([..]) — indexes a batch of days (one transaction)
+//   3. rebuildIndexFinish → giRebuildFinish([..all days..]) — removes stale days, stamps meta
+// Each chunk deletes + re-inserts only its own days, so an aborted rebuild leaves the index
+// partially refreshed but never broken. giRebuildIndex() (single-shot) reuses the same parts.
 
-// Full rebuild from the filesystem. Iterates THUMB files (a row = what the gallery can
-// display), derives the real file, reads GPS presence from EXIF (photos only).
-// One big transaction — WAL readers keep seeing the previous snapshot until commit.
-function giRebuildIndex()
+// Lists every Day directory ('YYYY/MM/DD') — directory scan only, no file enumeration
+function giListDays()
+{
+    global $photosDir;
+
+    $finder = new Finder();
+    $finder->directories()->depth('== 2')->in($photosDir);
+    $days = [];
+    foreach ($finder as $dir) {
+        $days[] = str_replace('\\', '/', $dir->getRelativePathname());
+    }
+    sort($days);
+    return $days;
+}
+
+// Re-indexes one day directory: deletes its rows, scans its thumbs, inserts fresh rows.
+// Returns the number of indexed files.
+function giIndexOneDay(PDO $pdo, PDOStatement $ins, $day)
 {
     global $photosDir, $videoPattern;
 
+    $pdo->prepare('DELETE FROM files WHERE day = ?')->execute([$day]);
+
+    if (!is_dir("$photosDir/$day")) {
+        return 0;
+    }
+
+    $count = 0;
+    $finder = new Finder();
+    $finder->files()->name('*.thumb.*')->depth('== 0')->in("$photosDir/$day");
+    foreach ($finder as $file) {
+        $thumbFilename = $file->getFilename();
+        $realName = substr($thumbFilename, 0, mb_stripos($thumbFilename, '.thumb.'));
+        $realPath = "$photosDir/$day/$realName";
+        if ($realName === '' || !is_file($realPath)) {
+            continue; // orphan thumb
+        }
+        // EXACT legacy fileType expression (see getPhotos) so index/legacy never disagree
+        $fileType = (preg_match($videoPattern, str_replace('.thumb.jpg', '', $thumbFilename))) ? ('video') : ('photo');
+        $hasGps = 0;
+        if ($fileType === 'photo') {
+            $exif = @exif_read_data($realPath);
+            if (isset($exif['GPSLatitude']) && isset($exif['GPSLongitude'])) { // EXACT gpsDataExists() test
+                $hasGps = 1;
+            }
+        }
+        $ins->execute([$day, $realName, $fileType, filemtime($realPath), $hasGps]);
+        $count++;
+    }
+    return $count;
+}
+
+// Indexes a batch of day paths in one transaction. Returns ['count' => files indexed].
+function giRebuildDays(array $days)
+{
     set_time_limit(0);
-    $t0 = microtime(true);
 
     $pdo = giConnect(true); // creates db + schema if missing
     if (!$pdo) {
-        return ['count' => 0, 'duration' => 0, 'error' => 'pdo_sqlite unavailable'];
+        return ['count' => 0, 'error' => 'pdo_sqlite unavailable'];
     }
 
     $count = 0;
     $pdo->beginTransaction();
     try {
-        $pdo->exec('DELETE FROM files');
         $ins = $pdo->prepare('INSERT OR REPLACE INTO files (day, filename, fileType, mtime, hasGps) VALUES (?,?,?,?,?)');
-
-        $finder = new Finder();
-        $finder->files()->name('*.thumb.*')->in($photosDir);
-        foreach ($finder as $file) {
-            $day = str_replace('\\', '/', $file->getRelativePath()); // 'YYYY/MM/DD'
-            $thumbFilename = $file->getFilename();
-            $realName = substr($thumbFilename, 0, mb_stripos($thumbFilename, '.thumb.'));
-            $realPath = "$photosDir/$day/$realName";
-            if ($realName === '' || !is_file($realPath)) {
-                continue; // orphan thumb
+        foreach ($days as $day) {
+            $day = str_replace('\\', '/', $day);
+            // Day paths come from giListDays() but guard against traversal anyway
+            if (!preg_match('#^\d{4}/\d{2}/\d{2}$#', $day)) {
+                continue;
             }
-            // EXACT legacy fileType expression (see getPhotos) so index/legacy never disagree
-            $fileType = (preg_match($videoPattern, str_replace('.thumb.jpg', '', $thumbFilename))) ? ('video') : ('photo');
-            $hasGps = 0;
-            if ($fileType === 'photo') {
-                $exif = @exif_read_data($realPath);
-                if (isset($exif['GPSLatitude']) && isset($exif['GPSLongitude'])) { // EXACT gpsDataExists() test
-                    $hasGps = 1;
-                }
-            }
-            $ins->execute([$day, $realName, $fileType, filemtime($realPath), $hasGps]);
-            $count++;
+            $count += giIndexOneDay($pdo, $ins, $day);
         }
-
-        $pdo->prepare("INSERT OR REPLACE INTO meta (key, value) VALUES ('lastRebuild', ?)")
-            ->execute([date('c')]);
         $pdo->commit();
     } catch (Throwable $e) {
         $pdo->rollBack();
-        return ['count' => 0, 'duration' => round(microtime(true) - $t0, 1), 'error' => $e->getMessage()];
+        return ['count' => 0, 'error' => $e->getMessage()];
     }
 
-    return ['count' => $count, 'duration' => round(microtime(true) - $t0, 1)];
+    return ['count' => $count];
+}
+
+// Finishes a rebuild: removes rows of days that no longer exist on disk, stamps lastRebuild.
+// Returns ['total' => row count in the index].
+function giRebuildFinish(array $allDays)
+{
+    $pdo = giConnect(true);
+    if (!$pdo) {
+        return ['total' => 0, 'error' => 'pdo_sqlite unavailable'];
+    }
+
+    try {
+        $valid = array_flip(array_map(function ($d) { return str_replace('\\', '/', $d); }, $allDays));
+        $stale = [];
+        foreach ($pdo->query('SELECT DISTINCT day FROM files')->fetchAll(PDO::FETCH_COLUMN) as $day) {
+            if (!isset($valid[$day])) {
+                $stale[] = $day;
+            }
+        }
+        if ($stale) {
+            $del = $pdo->prepare('DELETE FROM files WHERE day = ?');
+            foreach ($stale as $day) {
+                $del->execute([$day]);
+            }
+        }
+        $pdo->prepare("INSERT OR REPLACE INTO meta (key, value) VALUES ('lastRebuild', ?)")
+            ->execute([date('c')]);
+
+        return ['total' => (int)$pdo->query('SELECT COUNT(*) FROM files')->fetchColumn()];
+    } catch (Throwable $e) {
+        return ['total' => 0, 'error' => $e->getMessage()];
+    }
+}
+
+// Single-shot full rebuild (CLI / small galleries). The web UIs use the chunked flow instead.
+function giRebuildIndex()
+{
+    set_time_limit(0);
+    $t0 = microtime(true);
+
+    $days = giListDays();
+    $r = giRebuildDays($days);
+    if (isset($r['error'])) {
+        return ['count' => 0, 'duration' => round(microtime(true) - $t0, 1), 'error' => $r['error']];
+    }
+    $f = giRebuildFinish($days);
+    if (isset($f['error'])) {
+        return ['count' => 0, 'duration' => round(microtime(true) - $t0, 1), 'error' => $f['error']];
+    }
+
+    return ['count' => $r['count'], 'duration' => round(microtime(true) - $t0, 1)];
 }
 
 // ============================== Read path ==============================

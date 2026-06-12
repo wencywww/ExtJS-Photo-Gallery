@@ -15,26 +15,45 @@ export const SettingsSheet = {
             if (store._reloadPhotos) store._reloadPhotos();
         }
 
-        // ===== SQLite index rebuild =====
+        // ===== SQLite index rebuild (chunked — no single long request, see galleryIndex.php) =====
         const rebuilding = ref(false);
+        const rebuildProgress = ref('');
 
-        /** Triggers a full server-side index rebuild and reports the result. */
+        /** Runs the chunked server-side index rebuild with live progress. */
         async function rebuildIndex() {
             if (rebuilding.value) return;
             rebuilding.value = true;
+            rebuildProgress.value = '';
+            const CHUNK_SIZE = 10;
+            const t0 = Date.now();
             try {
-                const r = await api.rebuildIndex();
+                const init = await api.rebuildIndexInit();
+                if (!init.success) throw new Error('init failed');
+                const days = init.days;
+
+                for (let i = 0; i < days.length; i += CHUNK_SIZE) {
+                    const chunk = days.slice(i, i + CHUNK_SIZE);
+                    const r = await api.rebuildIndexChunk(chunk);
+                    if (!r.success) throw new Error('chunk failed');
+                    rebuildProgress.value = Math.min(i + CHUNK_SIZE, days.length) + ' / ' + days.length;
+                }
+
+                const fin = await api.rebuildIndexFinish(days);
+                if (!fin.success) throw new Error('finish failed');
+
+                const duration = Math.round((Date.now() - t0) / 1000);
                 const msg = (store.t.rebuildIndexDone || 'Index rebuilt: {0} files in {1} s')
-                    .replace('{0}', r.count).replace('{1}', r.duration);
-                alert(r.success ? msg : 'Error');
-                if (r.success && store._loadRoot) store._loadRoot();
+                    .replace('{0}', fin.total).replace('{1}', duration);
+                alert(msg);
+                if (store._loadRoot) store._loadRoot();
             } catch (e) {
                 alert('Error');
             }
             rebuilding.value = false;
+            rebuildProgress.value = '';
         }
 
-        return { store, close, setSort, rebuildIndex, rebuilding };
+        return { store, close, setSort, rebuildIndex, rebuilding, rebuildProgress };
     },
     template: `
         <div>
@@ -155,6 +174,9 @@ export const SettingsSheet = {
                             <i :class="rebuilding ? 'fas fa-spinner fa-spin' : 'fas fa-database'"
                                style="margin-right:8px; color:var(--color-primary)"></i>
                             {{ store.t.rebuildIndex || 'Rebuild index' }}
+                        </span>
+                        <span v-if="rebuildProgress" style="font-size:0.8rem; color:var(--color-text-muted)">
+                            {{ rebuildProgress }}
                         </span>
                     </div>
 

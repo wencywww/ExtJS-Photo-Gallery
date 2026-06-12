@@ -121,9 +121,19 @@ export const api = {
         });
     },
 
-    /** Rebuilds the server-side SQLite index from the filesystem; returns {success, count, duration}. */
-    rebuildIndex() {
-        return post({ targetAction: 'rebuildIndex' });
+    /** Chunked index rebuild, step 1: returns {success, days: ['YYYY/MM/DD', ...]}. */
+    rebuildIndexInit() {
+        return post({ targetAction: 'rebuildIndexInit' });
+    },
+
+    /** Chunked index rebuild, step 2 (repeated): indexes a batch of days; returns {success, count}. */
+    rebuildIndexChunk(days) {
+        return post({ targetAction: 'rebuildIndexChunk', days: JSON.stringify(days) });
+    },
+
+    /** Chunked index rebuild, step 3: purges stale days, stamps meta; returns {success, total}. */
+    rebuildIndexFinish(days) {
+        return post({ targetAction: 'rebuildIndexFinish', days: JSON.stringify(days) });
     },
 
     /** CRUD operations for saved GPS locations; action is 'read'|'create'|'update'|'destroy'. */
