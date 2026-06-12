@@ -22,6 +22,7 @@ export const store = reactive({
     autoPlayVideos:      lsGetBool('autoPlayVideos', false),
     paginateDataView:    lsGetBool('paginateDataView', false),
     darkMode:            lsGetBool('darkMode', false),
+    useIndex:            lsGetBool('useIndex', true),  // SQLite index reads (server falls back to Finder)
     lazyLoad:            true,  // always on in mobile; not user-configurable
     photosSort:          lsGetStr('photosSort', 'DESC'),
 
@@ -95,7 +96,7 @@ export const store = reactive({
 // Persist settings to localStorage on change (identical keys with desktop)
 const boolKeys = [
     'showExifData', 'indicateGpsLocation', 'showPhotos', 'showVideos',
-    'autoPlayVideos', 'paginateDataView', 'darkMode'
+    'autoPlayVideos', 'paginateDataView', 'darkMode', 'useIndex'
 ];
 boolKeys.forEach(key => {
     watch(() => store[key], val => localStorage.setItem(LS_PREFIX + key, String(val)));

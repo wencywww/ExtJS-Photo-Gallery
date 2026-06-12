@@ -144,6 +144,7 @@ Ext.onReady(function () {
                     store.getProxy().setExtraParam('showVideos', me.lookupViewModel().get('showVideos'));
                     store.getProxy().setExtraParam('paginateData', me.lookupViewModel().get('paginateDataView'));
                     store.getProxy().setExtraParam('nameFilter', me.lookupViewModel().get('nameFilter') || '');
+                    store.getProxy().setExtraParam('useIndex', me.lookupViewModel().get('useIndex'));
                 }
             });
 

@@ -218,6 +218,47 @@ Ext.onReady(function () {
                             root.set('loaded', false);
                             root.expand();
                         }
+                    },
+                    {
+                        xtype: 'menucheckitem',
+                        checked: true,
+                        text: captions['useIndex'],
+                        bind: {
+                            checked: '{useIndex}'
+                        },
+                        checkHandler: function (item, checked) {
+                            me.getStore().reload();
+                            if (Ext.ComponentQuery.query('homeGalleryDataView').length > 0) {
+                                Ext.ComponentQuery.query('homeGalleryDataView')[0].getStore().reload();
+                            }
+                        }
+                    },
+                    {
+                        text: captions['rebuildIndex'],
+                        iconCls: 'fas fa-database',
+                        handler: function () {
+                            Ext.Msg.wait(captions['rebuildIndex'], dzz.i18n.common.loadingTxt);
+                            Ext.Ajax.request({
+                                url: 'scripts/tree/php/processUploads.php',
+                                method: 'POST',
+                                timeout: 600000, //rebuild of a large gallery takes minutes (EXIF reads)
+                                params: { targetAction: 'rebuildIndex' },
+                                callback: function (opts, success, response) {
+                                    Ext.Msg.hide();
+                                    var r = success ? Ext.decode(response.responseText, true) : null;
+                                    if (r && r.success) {
+                                        Ext.Msg.alert(captions['rebuildIndex'],
+                                            Ext.String.format(captions['rebuildIndexDone'], r.count, r.duration));
+                                        me.getStore().reload();
+                                        if (Ext.ComponentQuery.query('homeGalleryDataView').length > 0) {
+                                            Ext.ComponentQuery.query('homeGalleryDataView')[0].getStore().reload();
+                                        }
+                                    } else {
+                                        Ext.Msg.alert(captions['rebuildIndex'], 'Error');
+                                    }
+                                }
+                            });
+                        }
                     }
                 ]
             });
@@ -225,7 +266,7 @@ Ext.onReady(function () {
             // Save all settings to localStorage whenever ViewModel values change
             var vm = me.lookupViewModel();
             if (vm) {
-                ['showExifData', 'indicateGpsLocation', 'showPhotos', 'showVideos', 'autoPlayVideos', 'paginateDataView', 'lazyLoad'].forEach(function (key) {
+                ['showExifData', 'indicateGpsLocation', 'showPhotos', 'showVideos', 'autoPlayVideos', 'paginateDataView', 'lazyLoad', 'useIndex'].forEach(function (key) {
                     vm.bind('{' + key + '}', function (val) {
                         localStorage.setItem('ext-gallery-' + key, String(val));
                     });
@@ -282,6 +323,7 @@ Ext.onReady(function () {
                     store.getProxy().setExtraParam('showPhotos', me.lookupViewModel().get('showPhotos'));
                     store.getProxy().setExtraParam('showVideos', me.lookupViewModel().get('showVideos'));
                     store.getProxy().setExtraParam('nameFilter', me.lookupViewModel().get('nameFilter') || '');
+                    store.getProxy().setExtraParam('useIndex', me.lookupViewModel().get('useIndex'));
                     if (me.lookupViewModel().get('lazyLoad')) {
                         var node = operation.node;
                         var nodePath = (node.get('id') === 'rootNode') ? '' : (node.get('path') || '');

@@ -1,9 +1,10 @@
-const { inject } = Vue;
+const { inject, ref } = Vue;
 
 export const SettingsSheet = {
     name: 'SettingsSheet',
     setup() {
         const store = inject('store');
+        const api   = inject('api');
 
         /** Closes the settings bottom sheet. */
         function close() { store.settingsOpen = false; }
@@ -14,7 +15,26 @@ export const SettingsSheet = {
             if (store._reloadPhotos) store._reloadPhotos();
         }
 
-        return { store, close, setSort };
+        // ===== SQLite index rebuild =====
+        const rebuilding = ref(false);
+
+        /** Triggers a full server-side index rebuild and reports the result. */
+        async function rebuildIndex() {
+            if (rebuilding.value) return;
+            rebuilding.value = true;
+            try {
+                const r = await api.rebuildIndex();
+                const msg = (store.t.rebuildIndexDone || 'Index rebuilt: {0} files in {1} s')
+                    .replace('{0}', r.count).replace('{1}', r.duration);
+                alert(r.success ? msg : 'Error');
+                if (r.success && store._loadRoot) store._loadRoot();
+            } catch (e) {
+                alert('Error');
+            }
+            rebuilding.value = false;
+        }
+
+        return { store, close, setSort, rebuildIndex, rebuilding };
     },
     template: `
         <div>
@@ -118,6 +138,25 @@ export const SettingsSheet = {
                             <span class="toggle-track"><span class="toggle-thumb"></span></span>
                         </span>
                     </label>
+
+                    <label class="settings-row">
+                        <span class="settings-row-label">
+                            <i class="fas fa-bolt" style="margin-right:8px; color:var(--color-primary)"></i>
+                            {{ store.t.useIndex || 'Use SQLite index' }}
+                        </span>
+                        <span class="toggle">
+                            <input type="checkbox" v-model="store.useIndex">
+                            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                        </span>
+                    </label>
+
+                    <div class="settings-row" style="cursor:pointer" @click="rebuildIndex">
+                        <span class="settings-row-label">
+                            <i :class="rebuilding ? 'fas fa-spinner fa-spin' : 'fas fa-database'"
+                               style="margin-right:8px; color:var(--color-primary)"></i>
+                            {{ store.t.rebuildIndex || 'Rebuild index' }}
+                        </span>
+                    </div>
 
                     <!-- Appearance -->
                     <div class="settings-section-label" style="margin-top:8px">{{ store.t.sectionAppearance || 'Appearance' }}</div>

@@ -60,7 +60,10 @@
       "btnCancel": "Cancel",
       "btnClose": "Close",
       "nSelected": "selected",
-      "allLabel": "all"
+      "allLabel": "all",
+      "useIndex": "Use SQLite index (faster browsing)",
+      "rebuildIndex": "Rebuild index",
+      "rebuildIndexDone": "Index rebuilt: {0} files in {1} s"
     },
     "**2": "**--** file - /dzz/scripts/Main.js",
     "2": {

@@ -31,6 +31,7 @@ Ext.onReady(function () {
             paginateDataView: lsGetBool('paginateDataView', false), //determines if we want to paginate the data view
             lazyLoad: lsGetBool('lazyLoad', true), //determines if the tree loads nodes level by level (lazy) or all at once
             nameFilter: '', //filename filter (part of name) applied to the gallery; sent to getPhotos
+            useIndex: lsGetBool('useIndex', true), //read photos/tree from the SQLite index (falls back to Finder server-side)
         },
         formulas: {
             exifDataFiltered: function (get) {

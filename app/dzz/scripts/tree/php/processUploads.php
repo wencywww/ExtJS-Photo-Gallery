@@ -13,6 +13,9 @@ $savedLocationsFileName = $_SERVER['DOCUMENT_ROOT'] . $glob['paths']['savedLocat
 //require($_SERVER['DOCUMENT_ROOT'] . "/libraries/php/vendor/autoload.php");
 require $glob['paths']['appRootPathAbsolute'] . "/libraries/php/vendor/autoload.php";
 
+//2026-06: optional SQLite read-acceleration index (gi* functions)
+require __DIR__ . "/galleryIndex.php";
+
 use Imagine\Filter\Basic;
 use lsolesen\pel\PelDataWindow;
 use lsolesen\pel\PelEntryAscii;
@@ -52,6 +55,10 @@ if (false === $showPhotos && false === $showVideos) {
 }
 
 $paginateData = isset($_REQUEST['paginateData']) ? ('false' == $_REQUEST['paginateData'] ? false : true) : false;
+
+// 2026-06: read photos/tree from the SQLite index when requested and available (default on);
+// falls back silently to Finder scanning. Write hooks run regardless of this preference.
+$useIndex = isset($_REQUEST['useIndex']) ? ('false' == $_REQUEST['useIndex'] ? false : true) : true;
 
 // 2026-06: filename filter (case-insensitive, part of name). Shared by getPhotos (which files to
 // return) and countDirFiles (tree node counts → empty branches get hidden when a filter is active).
@@ -137,6 +144,12 @@ switch ($targetAction) {
         header("Content-type: application/json");
         print json_encode(['success' => true]);
         $fileSystem->remove($diskStatusFileName);
+        die();
+        break;
+    case 'rebuildIndex':
+        $res = giRebuildIndex();
+        header("Content-type: application/json");
+        print json_encode(['success' => !isset($res['error']), 'count' => $res['count'], 'duration' => $res['duration']]);
         die();
         break;
     default:
@@ -315,6 +328,10 @@ function processUploads()
             $fileSystem->touch($newFileName, $fileTimestamp);
             $fileSystem->touch($thumbName, $fileTimestamp);
 
+            //5. Index the new file (GPS presence read from the already-parsed EXIF; videos have none)
+            $hasGps = (!$isVideo && $exifPresent && getExif($fileName)->getGPS() !== false) ? 1 : 0;
+            giUpsertFile($targetPath, $file->getFilename(), $isVideo ? 'video' : 'photo', $fileTimestamp, $hasGps);
+
             $fileSystem->remove($fileName);
         }
     }
@@ -324,6 +341,11 @@ function processUploads()
 function generateDirStruct()
 {
     global $finder, $photosDir;
+
+    if (giReadEnabled()) {
+        $r = giGenerateDirStruct();
+        if ($r !== null) return $r;
+    }
 
     $finder->directories()->in($photosDir);
 
@@ -345,6 +367,11 @@ function generateDirStruct()
 function getTreeLevel($nodePath)
 {
     global $photosDir, $nameFilter;
+
+    if (giReadEnabled()) {
+        $r = giGetTreeLevel($nodePath);
+        if ($r !== null) return $r;
+    }
 
     $baseDir = ($nodePath === '') ? $photosDir : "$photosDir/$nodePath";
     $depth = ($nodePath === '') ? 0 : substr_count($nodePath, '/') + 1;
@@ -396,6 +423,11 @@ function getPhotos($req)
     global $finder, $photosDir, $imgPattern, $videoPattern, $glob;
     global $showPhotos, $showVideos, $photos_extensions, $videos_extensions;
     global $paginateData;
+
+    if (giReadEnabled()) {
+        $r = giGetPhotos($req);
+        if ($r !== null) return $r;
+    }
 
     $arr = [];
 
@@ -511,6 +543,8 @@ function changePhotoDates()
             $touchTime = strtotime($newDate);
             touch($newFileName, $touchTime);
             touch($newThumbFileName, $touchTime);
+
+            giMoveFile(giDayFromWebPath($filePath), $fileName, $newDate, $touchTime);
         }
 
     }
@@ -710,6 +744,14 @@ function setGpsData()
 
         //and restore its mtime
         touch($targetFile, $targetFileMtime);
+
+        //index hook: re-read the EXIF to capture the exact result (incl. preserveExisting semantics)
+        $exifNow = @exif_read_data($targetFile);
+        giUpdateGps(
+            giDayFromWebPath(pathinfo($file, PATHINFO_DIRNAME)),
+            $fileName,
+            (int)(isset($exifNow['GPSLatitude']) && isset($exifNow['GPSLongitude']))
+        );
     }
 }
 
@@ -825,6 +867,8 @@ function deletePhotos()
         if ($fileSystem->exists($existingFileName) && $fileSystem->exists($existingThumbFileName)) {
             $fileSystem->remove($existingFileName);
             $fileSystem->remove($existingThumbFileName);
+
+            giDeleteFile(giDayFromWebPath($filePath), $fileName);
         }
 
     }

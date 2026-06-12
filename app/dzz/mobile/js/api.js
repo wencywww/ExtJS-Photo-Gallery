@@ -23,7 +23,8 @@ export const api = {
             nodePath,
             showPhotos: store.showPhotos,   // URLSearchParams → 'true'/'false' (PHP expects 'false')
             showVideos: store.showVideos,
-            nameFilter: store.nameFilter
+            nameFilter: store.nameFilter,
+            useIndex:   store.useIndex
         });
     },
 
@@ -33,7 +34,8 @@ export const api = {
             targetAction: 'generateDirStruct',
             showPhotos: store.showPhotos,
             showVideos: store.showVideos,
-            nameFilter: store.nameFilter
+            nameFilter: store.nameFilter,
+            useIndex:   store.useIndex
         });
     },
 
@@ -45,6 +47,7 @@ export const api = {
             showPhotos:   store.showPhotos,
             showVideos:   store.showVideos,
             nameFilter:   store.nameFilter,
+            useIndex:     store.useIndex,
             paginateData: store.paginateDataView ? 1 : 0,
             start:        store.paginateDataView ? ((page - 1) * store.pageSize) : 0,
             limit:        store.pageSize
@@ -101,7 +104,8 @@ export const api = {
         });
     },
 
-    /** Fetches all photos for a single day path without pagination (used by NodeActionSheet). */
+    /** Fetches all photos for a single day path without pagination (used by NodeActionSheet).
+     *  Intentionally omits nameFilter — whole-day actions must see every file of the day. */
     getAllPhotosForDay(path) {
         return post({
             targetAction: 'getPhotos',
@@ -110,10 +114,16 @@ export const api = {
             photosSort:   store.photosSort,
             showPhotos:   store.showPhotos,
             showVideos:   store.showVideos,
+            useIndex:     store.useIndex,
             paginateData: 0,
             start:        0,
             limit:        9999
         });
+    },
+
+    /** Rebuilds the server-side SQLite index from the filesystem; returns {success, count, duration}. */
+    rebuildIndex() {
+        return post({ targetAction: 'rebuildIndex' });
     },
 
     /** CRUD operations for saved GPS locations; action is 'read'|'create'|'update'|'destroy'. */

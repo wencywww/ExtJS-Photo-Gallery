@@ -228,7 +228,8 @@ export const NavTree = {
         store._loadRoot     = loadRoot;
 
         // Watch for filter/sort changes → re-sort tree + reload photos
-        watch(() => [store.showPhotos, store.showVideos, store.photosSort], () => {
+        // (useIndex included: toggling the read path should re-fetch for verification/trust)
+        watch(() => [store.showPhotos, store.showVideos, store.photosSort, store.useIndex], () => {
             resortTree(store.tree);
             reloadCurrentPhotos();
         });
