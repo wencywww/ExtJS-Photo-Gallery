@@ -29,9 +29,10 @@ ExtJS Photo Gallery
   * Ability to recursively traverse the uploads directory for photos/videos in subdirs 
   * Ability to show only videos or only photos 
   * Ability to paginate large dataviews
+  * Ability to filter by filename substrings, including negate matching with ! in the beginning of the string
   * Photos with GPS data can be indicated on the thumbnails
   * The GUI supports English and Bulgarian Language
-  * **No database required!**
+  * **No database required!** (but SQLite indexing is possible and recommended for galleries with large number of files)
 
 
 **INSTALLATION**
@@ -139,6 +140,7 @@ ExtJS Photo Gallery
 
 **List of Changes**
 
+  * **2026-06-12**, Integrated SQLite indexing for filenames & GPS Exif data. This is optional, but useful for very large galleries. Not extensively tested. Switch functionality via the settings menu. SQLite file is placed in the data directory so it will be preserved upon Docker rebuilds
   * **2026-06-12**, Provide filename filtering capability, including inverse matching
   * **2026-06-04**, Update Fancybox to 6.1.14
   * **2026-05-18**, Replaced elevation-api.io with api.open-elevation.com

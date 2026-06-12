@@ -18,7 +18,7 @@ This Docker image provides an **ExtJS Photo Gallery** built with PHP 8.4 and Sen
 * Ability to paginate large dataviews
 * Photos with GPS data can be indicated on the thumbnails
 * The GUI supports English and Bulgarian Language
-* **No database required!**
+* **No database required!** (but SQLite indexing is possible and recommended for galleries with large number of files)
 
 It's ready to run, but requires a local configuration file and a folder for your photos.
 
