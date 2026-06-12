@@ -48,7 +48,7 @@
       "paginateDataView": "Paginate gallery",
       "sortASC": "Sort by date, ascending",
       "sortDESC": "Sort by date, descending",
-      "filterFilenameTip": "Filter by filename / part of filename",
+      "filterFilenameTip": "Filter by filename / part of filename (! for inverse match)",
       "filterFilenameEmptyText": "Filter by filename",
       "lazyLoad": "Lazy tree loading",
       "sortOrder": "Sort order",
