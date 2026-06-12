@@ -139,6 +139,7 @@ ExtJS Photo Gallery
 
 **List of Changes**
 
+  * **2026-06-12**, Provide filename filtering capability, including inverse matching
   * **2026-06-04**, Update Fancybox to 6.1.14
   * **2026-05-18**, Replaced elevation-api.io with api.open-elevation.com
   * **2026-02-27**, Added responsive stuff for mobile devices
