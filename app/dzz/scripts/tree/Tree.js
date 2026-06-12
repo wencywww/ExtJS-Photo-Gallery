@@ -98,8 +98,23 @@ Ext.onReady(function () {
                                         tree.applyNameFilter(effective);
                                     }
                                 }
+                            },
+                            // Esc: clear the filter (if any) and hide the search bar
+                            specialkey: function (field, e) {
+                                if (e.getKey() !== e.ESC) return;
+                                var bar = field.up('[dzzRole=searchBar]');
+                                if (field.getValue()) {
+                                    field.setValue(''); // triggers change → clears the filter
+                                }
+                                bar.setHidden(true);
                             }
                         }
+                    },
+                    {
+                        xtype: 'tbtext',
+                        dzzRole: 'filterCountLabel',
+                        hidden: true,
+                        style: 'margin-left: 8px; white-space: nowrap;'
                     }
                 ]
             }
@@ -424,6 +439,43 @@ Ext.onReady(function () {
             if (gallery) {
                 gallery.getStore().loadPage(1); // safe for both paginated and non-paginated stores
             }
+
+            me.updateFilterCount(value);
+        },
+
+        // Shows the total number of files matching the active filter next to the search field.
+        // Hidden when the filter is cleared.
+        updateFilterCount: function (value) {
+            var me = this;
+            var label = me.down('[dzzRole=filterCountLabel]');
+            if (!label) return;
+
+            if (!value) {
+                label.setHidden(true);
+                return;
+            }
+
+            var vm = me.lookupViewModel();
+            Ext.Ajax.request({
+                url: 'scripts/tree/php/processUploads.php',
+                method: 'POST',
+                params: {
+                    targetAction: 'getFilteredCount',
+                    nameFilter: value,
+                    showPhotos: vm.get('showPhotos'),
+                    showVideos: vm.get('showVideos'),
+                    useIndex: vm.get('useIndex')
+                },
+                callback: function (opts, success, response) {
+                    var r = success ? Ext.decode(response.responseText, true) : null;
+                    if (r && r.success) {
+                        label.setText(Ext.String.format('{0}: {1}', dzz.i18n.common.filesCount, r.count));
+                        label.setHidden(false);
+                    } else {
+                        label.setHidden(true);
+                    }
+                }
+            });
         },
 
         loadObject: function (view, record) {

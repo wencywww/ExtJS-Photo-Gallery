@@ -366,6 +366,24 @@ function giGetDiskStatus()
     }
 }
 
+// Counts files matching the active type/name filters (giFilterSql) across the whole gallery.
+// Returns null on any error (incl. missing db) → caller falls back to a Finder count.
+function giCountFilteredFiles()
+{
+    $pdo = giConnect();
+    if (!$pdo) return null;
+
+    try {
+        $bind = [];
+        $where = '1=1' . giFilterSql($bind);
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM files WHERE $where");
+        $stmt->execute($bind);
+        return (int)$stmt->fetchColumn();
+    } catch (Throwable $e) {
+        return null;
+    }
+}
+
 // ============================== Read path ==============================
 // All read functions return null on any error → callers fall back to the legacy Finder path.
 

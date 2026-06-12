@@ -107,6 +107,11 @@ switch ($targetAction) {
         print json_encode(['success' => true, 'RECORDS' => $nodes]);
         die();
         break;
+    case 'getFilteredCount': // total files matching the active type/name filters (search field counter)
+        header("Content-type: application/json");
+        print json_encode(['success' => true, 'count' => countFilteredFiles()]);
+        die();
+        break;
     case 'getPhotos':
         $results = getPhotos($_REQUEST);
         $photos = $results['data'];
@@ -984,6 +989,30 @@ function adjustTree($arr)
     }
 
     return $arr;
+}
+
+// Total file count under the active type (showPhotos/showVideos) + filename filters,
+// across the whole gallery — used for the search field's result counter.
+function countFilteredFiles()
+{
+    global $photosDir, $showPhotos, $showVideos, $photos_extensions, $videos_extensions;
+
+    if (giReadEnabled()) {
+        $c = giCountFilteredFiles();
+        if ($c !== null) return $c;
+    }
+
+    $finder = new Finder();
+    if ($showPhotos && $showVideos) {
+        $finder->files()->name('*.thumb.*')->in($photosDir);
+    } elseif ($showPhotos) {
+        $finder->files()->name($photos_extensions)->in($photosDir);
+    } else {
+        $finder->files()->name($videos_extensions)->in($photosDir);
+    }
+    applyNameFilterToFinder($finder);
+
+    return $finder->count();
 }
 
 // Applies the active filename filter to a Finder via ->filter() (AND-combined with the existing
