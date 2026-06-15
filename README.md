@@ -140,6 +140,7 @@ ExtJS Photo Gallery
 
 **List of Changes**
 
+  * **2026-06-15**, Added help files for the gallery functionality
   * **2026-06-12**, Integrated SQLite indexing for filenames & GPS Exif data. This is optional, but useful for very large galleries. Not extensively tested. Switch functionality via the settings menu. SQLite file is placed in the data directory so it will be preserved upon Docker rebuilds
   * **2026-06-12**, Provide filename filtering capability, including inverse matching
   * **2026-06-04**, Update Fancybox to 6.1.14
