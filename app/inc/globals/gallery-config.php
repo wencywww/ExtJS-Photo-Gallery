@@ -8,5 +8,8 @@ ini_set('date.timezone', 'Europe/Sofia');
 $glob['usr'] = "admin";
 $glob['pass'] = "admin";
 
+
+$glob['mapsProvider'] = "OSM"; //Google Maps (GM) or Open Street Maps (OSM)
+
 //place your own GMaps API key here
 $glob['gmapsApiKey'] = "place-your-own-api-key-here";

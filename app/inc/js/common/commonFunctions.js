@@ -77,6 +77,19 @@ Ext.onReady(function () {
 
             },
 
+            //sanitizes GPS coordinates coming from EXIF data - some photos contain invalid/out-of-range
+            //Lat/Lng values which would otherwise break the maps (Leaflet throws on invalid LatLng)
+            //falls back to 0/0 when the values are not valid numbers within range
+            sanitizeLatLng: function (lat, lng) {
+                if (typeof lat !== 'number' || isNaN(lat) || lat < -90 || lat > 90) {
+                    lat = 0;
+                }
+                if (typeof lng !== 'number' || isNaN(lng) || lng < -180 || lng > 180) {
+                    lng = 0;
+                }
+                return { lat: lat, lng: lng };
+            },
+
             //2020-05-20: uses XHR to convert an image URL to a dataURL - https://stackoverflow.com/questions/6150289/how-can-i-convert-an-image-into-base64-string-using-javascript
             //Seems that there are 2 methods available for getting a base64-encoded string for a given image (from its real url)
             //One of them involves using a canvas element, which does not make an additional server request, but does not preserve the image meta data, so it is useless in ou case

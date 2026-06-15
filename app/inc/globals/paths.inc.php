@@ -43,5 +43,8 @@ $glob['paths']['exifreader-js'] = $glob['paths']['appRootPrefix'] . "/libraries/
 
 $glob['paths']['googlemaps-js'] = "https://maps.google.com/maps/api/js";
 
+$glob['paths']['leaflet-css'] = $glob['paths']['appRootPrefix'] . "/libraries/js/leaflet/leaflet-1.9.4/dist/leaflet.css";
+$glob['paths']['leaflet-js'] = $glob['paths']['appRootPrefix'] . "/libraries/js/leaflet/leaflet-1.9.4/dist/leaflet.js";
+
 
 ?>

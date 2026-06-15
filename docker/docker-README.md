@@ -8,8 +8,8 @@ This Docker image provides an **ExtJS Photo Gallery** built with PHP 8.4 and Sen
 * Items are automatically arranged by Year, Month and Day based on the EXIF information (if available)
 * The data view can display items for particular day/month/year or all available items
 * Slideshow available via Fancybox
-* Photo geographical locations (latitude/longitude/altitude) can be fine-tuned if needed via intuitive Google Maps-based editor
-* The EXIF data and location of the currently active slide can be visualized using a grid & Google Maps panel (using [ExifReader](https://github.com/mattiasw/ExifReader) JS library)
+* Photo geographical locations (latitude/longitude/altitude) can be fine-tuned if needed via intuitive Google Maps or Open Street Map-based editor
+* The EXIF data and location of the currently active slide can be visualized using a grid & Google Maps / Open Street Map panel (using [ExifReader](https://github.com/mattiasw/ExifReader) JS library)
 * File uploading via [DropZone.js](https://www.dropzonejs.com/)
 * Automatic thumbnail creation
 * Ability to delete, rotate and change the date of the item/items manually
@@ -22,7 +22,7 @@ This Docker image provides an **ExtJS Photo Gallery** built with PHP 8.4 and Sen
 
 It's ready to run, but requires a local configuration file and a folder for your photos.
 
-A valid Google API Key with access to Maps JavaScript API is also required. [Get your own here](https://developers.google.com/maps/documentation/javascript/get-api-key).
+A valid Google API Key with access to Maps JavaScript API is also required if you want to use Google as Map provider. [Get your own here](https://developers.google.com/maps/documentation/javascript/get-api-key). Otherwise, use the default Open Street Map provider. 
 
 ---
 
@@ -50,7 +50,7 @@ ini_set('date.timezone', 'Europe/Sofia');
 $glob['usr'] = "admin";
 $glob['pass'] = "admin";
 
-// Place your own Google Maps API key here
+// Place your own Google Maps API key here if using Google as Map provider (default is Open Street Map)
 $glob['gmapsApiKey'] = "place-your-own-api-key-here";
 ```
 
@@ -96,4 +96,4 @@ Point your browser to the IP address of your Docker host, for example: `http://l
 * The timezone setting in `gallery-config.php` is critical as it affects how dates are displayed and organized
 * Make sure the `gallery_data` directory has proper write permissions (777 or appropriate for your system)
 * Both volume mounts are required for the container to function properly
-* Remember to replace `place-your-own-api-key-here` with your actual Google Maps API key
+* Remember to replace `place-your-own-api-key-here` with your actual Google Maps API key (if using Google as Map provider)

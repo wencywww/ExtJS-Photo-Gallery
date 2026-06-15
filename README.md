@@ -21,8 +21,8 @@ ExtJS Photo Gallery
   * Items are automatically arranged by Year, Month and Day based on the EXIF information (if available)  
   * The data view can display items for particular day/month/year or all available items
   * Slideshow available via Fancybox
-  * Photo geographical locations (latitude/longitude/altitude) can be fine-tuned if needed via intuitive Google Maps-based editor 
-  * The EXIF data and location of the currently active slide can be visualised using a grid & Google Maps panel (using [ExifReader](https://github.com/mattiasw/ExifReader) JS library)
+  * Photo geographical locations (latitude/longitude/altitude) can be fine-tuned if needed via intuitive Google Maps / Open Street Map-based editor 
+  * The EXIF data and location of the currently active slide can be visualised using a grid & Google Maps / Open Street Map panel (using [ExifReader](https://github.com/mattiasw/ExifReader) JS library)
   * File uploading via the [DropZone.js](https://www.dropzonejs.com/)
   * Automatic thumbnail creation
   * Ability to delete, rotate and change the date of the item/items manually
@@ -46,7 +46,7 @@ ExtJS Photo Gallery
     * Apache webserver
     * PHP => 8.0 (instructions below use 8.4.16) with the GD extension
     * Composer installed
-    * A valid Google API Key with access to Maps JavaScript API, [get your own here](https://developers.google.com/maps/documentation/javascript/get-api-key)
+    * A valid Google API Key with access to Maps JavaScript API (Open Street Map mode does not require this), [get your own here](https://developers.google.com/maps/documentation/javascript/get-api-key)
     * Recommended browser versions: Chrome/Edge Chromium => v.81; Firefox => v.77; Opera => v.68 
     for proper image orientation (see Orientation issues section below)
   
@@ -114,7 +114,7 @@ ExtJS Photo Gallery
     $glob['usr'] = "admin";
     $glob['pass'] = "admin";
     //place your own GMaps API key here
-    $glob['gmapsApiKey'] = "place-your-own-api-key-here";
+    $glob['gmapsApiKey'] = "place-your-own-api-key-here"; (if using Google Maps Mode)
     ```
 
 
@@ -140,6 +140,7 @@ ExtJS Photo Gallery
 
 **List of Changes**
 
+  * **2026-06-15**, Added Open Street Map as default map provider. Valid for both GPS data visualisation and editing
   * **2026-06-15**, Added help files for the gallery functionality
   * **2026-06-12**, Integrated SQLite indexing for filenames & GPS Exif data. This is optional, but useful for very large galleries. Not extensively tested. Switch functionality via the settings menu. SQLite file is placed in the data directory so it will be preserved upon Docker rebuilds
   * **2026-06-12**, Provide filename filtering capability, including inverse matching

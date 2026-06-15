@@ -20,7 +20,18 @@
     <script type="text/javascript" src="<?=$glob['paths']['extThemeJS']?>"></script>
 
 
-    <script type="text/javascript" src="<?=$glob['paths']['googlemaps-js']?>?key=<?=$glob['gmapsApiKey']?>"></script>
+    <?php if ($glob['effectiveMapsProvider'] === 'OSM') { ?>
+        <!-- Leaflet / OpenStreetMap -->
+        <link rel="stylesheet" type="text/css" href="<?=$glob['paths']['leaflet-css']?>"/>
+        <script type="text/javascript" src="<?=$glob['paths']['leaflet-js']?>"></script>
+    <?php } else { ?>
+        <script type="text/javascript" src="<?=$glob['paths']['googlemaps-js']?>?key=<?=$glob['gmapsApiKey']?>"></script>
+    <?php } ?>
+
+    <script type="text/javascript">
+        var dzz = window.dzz || {};
+        dzz.mapsProvider = "<?=$glob['effectiveMapsProvider']?>";
+    </script>
 
     <!-- fancybox -->
     <link rel="stylesheet" href="<?=$glob['paths']['jquery-fancybox-css']?>">

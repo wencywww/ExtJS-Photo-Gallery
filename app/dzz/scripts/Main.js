@@ -53,9 +53,10 @@ Ext.onReady(function () {
                     this.set({ exifVisualiserMapVisible: false });
                     return null;
                 }
+                var latLng = dzz.func.sanitizeLatLng(gps.Latitude, gps.Longitude);
                 return {
-                    lat: gps.Latitude,
-                    lng: gps.Longitude,
+                    lat: latLng.lat,
+                    lng: latLng.lng,
                     marker: { title: Ext.util.Format.number(gps.Latitude, '0.00') + ' / ' + Ext.util.Format.number(gps.Longitude, '0.00') + ' / Altitude: ' + gps.Altitude + ' m' }
                 };
             }

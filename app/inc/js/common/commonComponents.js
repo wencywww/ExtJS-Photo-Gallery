@@ -947,7 +947,7 @@ Ext.onReady(function () {
             {
                 title: LOC.exifVisualiser.mapTitle,
                 iconCls: 'fas fa-map-marker-alt',
-                xtype: 'gmappanel',
+                xtype: (dzz.mapsProvider === 'OSM') ? 'osmmappanel' : 'gmappanel',
                 gmapType: 'map',
                 center: {
                     lat: 0,
@@ -955,7 +955,7 @@ Ext.onReady(function () {
                     marker: { title: '' }
                 },
                 mapOptions: {
-                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                    mapTypeId: 'roadmap'
                 },
                 bind: {
                     center: '{exifMapCenter}',
@@ -964,6 +964,8 @@ Ext.onReady(function () {
                 },
                 setCenter: function (center) { //handles the 'center' binding
                     var newCenter = center ? center : this.center;
+                    this.center = newCenter; //dzz addition - keep up to date for lazy (OSM) map creation
+                    if (!this.gmap || !this.gMapMarker) { return; } //dzz addition - map not created yet, createMap() will use this.center
                     this.gmap.setCenter(newCenter);
                     this.gMapMarker.setPosition(newCenter);
                     this.gMapMarker.setTitle(newCenter.marker.title);
@@ -1066,6 +1068,10 @@ Ext.onReady(function () {
                 marker.position = new google.maps.LatLng(marker.lat, marker.lng);
             }
 
+            if (typeof marker.animation === 'string') { //dzz addition - allow provider-agnostic animation name
+                marker.animation = google.maps.Animation[marker.animation];
+            }
+
             o = new google.maps.Marker(marker);
 
             Ext.Object.each(marker.listeners, function (name, fn) {
@@ -1109,6 +1115,168 @@ Ext.onReady(function () {
 
     });
 
+    //OpenStreetMap (Leaflet) equivalent of Ext.ux.GMapPanel - exposes a compatible subset of the API
+    //(this.gmap, this.gMapMarker, createMap, addMarker, redraw) so callers can use either provider
+    Ext.define('Ext.ux.LeafletMapPanel', {
+        extend: 'Ext.panel.Panel',
+
+        alias: 'widget.osmmappanel',
+
+        initComponent: function () {
+            Ext.applyIf(this, {
+                plain: true,
+                gmapType: 'map',
+                border: false
+            });
+
+            this.callParent();
+        },
+
+        onBoxReady: function () {
+            this.callParent(arguments);
+
+            if (!this.center) {
+                Ext.raise('center is required');
+            }
+
+            //dzz note - map creation is deferred to afterComponentLayout, since Leaflet needs the
+            //container to already have its final size (this.body.dom is still 0x0 here for
+            //floating/flex-laid-out panels such as the GPS editor)
+        },
+
+        createMap: function (center, marker) {
+            var options = Ext.apply({}, this.mapOptions);
+
+            options = Ext.applyIf(options, {
+                zoom: 14
+            });
+
+            var map = L.map(this.body.dom, {
+                zoomControl: true,
+                attributionControl: true
+            }).setView([center.lat, center.lng], options.zoom);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            //dzz addition - mimic google.maps.Map#setCenter({lat,lng}) used by callers
+            //adjustMapSettings calls setCenter() immediately followed by setZoom() - panTo() here
+            //changes only the position (no zoom side effects/events), and the target is remembered
+            //in _dzzCenter so the subsequent setZoom() below can re-apply it reliably
+            map.setCenter = function (latlng) {
+                this._dzzCenter = [latlng.lat, latlng.lng];
+                this.panTo(this._dzzCenter, { animate: false });
+            };
+
+            //dzz addition - mimic google.maps.Map#setZoom, re-centering on the position set via
+            //setCenter() above rather than relying on getCenter() (which can be stale right after
+            //a zoom change)
+            map.setZoom = function (zoom, options) {
+                var center = this._dzzCenter || this.getCenter();
+                return L.Map.prototype.setView.call(this, center, zoom, Ext.apply({ animate: false }, options));
+            };
+
+            //dzz addition - mimic google.maps.Map#addListener, mapping the event names used by callers
+            map.addListener = function (name, fn) {
+                var evtMap = { zoom_changed: 'zoomend' };
+                return this.on(evtMap[name] || name, fn);
+            };
+
+            this.gmap = map; //dzz addition - keep the same property name as GMapPanel for compatibility
+
+            if (!marker && center.marker) { //dzz addition
+                marker = center.marker;
+            }
+
+            if (marker) {
+                this.addMarker(Ext.applyIf(marker, {
+                    position: center
+                }));
+            }
+
+            Ext.each(this.markers, this.addMarker, this);
+            this.fireEvent('mapready', this, map);
+        },
+
+        addMarker: function (marker) {
+            var pos = marker.position || { lat: marker.lat, lng: marker.lng };
+
+            var o = L.marker([pos.lat, pos.lng], {
+                draggable: !!marker.draggable,
+                title: marker.title || ''
+            }).addTo(this.gmap);
+
+            //dzz addition - mimic the subset of google.maps.Marker API used by callers
+            o.setPosition = function (latlng) {
+                this.setLatLng([latlng.lat, latlng.lng]);
+            };
+
+            o.getPosition = function () {
+                var ll = this.getLatLng();
+                return {
+                    lat: function () { return ll.lat; },
+                    lng: function () { return ll.lng; }
+                };
+            };
+
+            o.setTitle = function (title) {
+                this.options.title = title;
+                if (this.getElement()) {
+                    this.getElement().title = title;
+                }
+            };
+
+            o.setDraggable = function (draggable) {
+                if (draggable) { this.dragging.enable(); } else { this.dragging.disable(); }
+            };
+
+            //dzz addition - mimic google.maps.Marker#addListener (handlers here don't rely on the event arg)
+            o.addListener = function (name, fn) {
+                return this.on(name, fn);
+            };
+
+            //dzz addition - adapt Leaflet drag events to expose evt.latLng.lat()/lng() like google.maps
+            Ext.Object.each(marker.listeners, function (name, fn) {
+                o.on(name, function () {
+                    var ll = o.getLatLng();
+                    fn({
+                        latLng: {
+                            lat: function () { return ll.lat; },
+                            lng: function () { return ll.lng; }
+                        }
+                    });
+                });
+            });
+
+            this.gMapMarker = o; //dzz addition - same property name as GMapPanel
+
+            return o;
+        },
+
+        afterComponentLayout: function (w, h) {
+            this.callParent(arguments);
+
+            if (!this.gmap) {
+                //dzz addition - create the map only once the panel body has a real size
+                if (this.body.dom.clientWidth > 0 && this.body.dom.clientHeight > 0) {
+                    this.createMap(this.center);
+                }
+            }
+            else {
+                this.redraw();
+            }
+        },
+
+        redraw: function () {
+            if (this.gmap) {
+                this.gmap.invalidateSize();
+            }
+        }
+
+    });
+
     //panel for changing the GPS information of the photos
     Ext.define('dzz.COMPONENTS.gpsEditor', {
         extend: 'Ext.form.Panel',
@@ -1137,15 +1305,15 @@ Ext.onReady(function () {
             { xtype: 'hiddenfield', name: 'photos', value: '' },
             {
                 flex: .70,
-                xtype: 'gmappanel',
+                xtype: (dzz.mapsProvider === 'OSM') ? 'osmmappanel' : 'gmappanel',
                 gmapType: 'map',
                 center: {
                     lat: 0,
                     lng: 0,
-                    marker: { title: '', animation: google.maps.Animation.DROP }
+                    marker: { title: '', animation: 'DROP' }
                 },
                 mapOptions: {
-                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                    mapTypeId: 'roadmap'
                 }
             },
             {
@@ -1480,8 +1648,8 @@ Ext.onReady(function () {
             var me = this;
             var vm = me.getViewModel();
 
-            var map = me.down('gmappanel').gmap;
-            var marker = me.down('gmappanel').gMapMarker;
+            var map = me.down('gmappanel,osmmappanel').gmap;
+            var marker = me.down('gmappanel,osmmappanel').gMapMarker;
 
             //We need to be able to drag the marker
             marker.setDraggable(true);
@@ -1539,9 +1707,10 @@ Ext.onReady(function () {
                 dzz.func.imgBlobToExifData(blob, me, function (cmp, exifData) {
                     if (exifData.success && exifData.data.gps) {
                         var gps = exifData.data.gps;
+                        var latLng = dzz.func.sanitizeLatLng(gps.Latitude, gps.Longitude);
                         vm.set({
-                            lat: gps.Latitude,
-                            lng: gps.Longitude,
+                            lat: latLng.lat,
+                            lng: latLng.lng,
                             alt: gps.Altitude != null ? Math.round(gps.Altitude) : 0,
                             zoom: 14,
                             centerMap: true

@@ -98,7 +98,7 @@
             <li>Ако <strong>Показване на EXIF данни</strong> е включено, в долната част на прегледа се показват две малки икони:
                 <ul>
                     <li><i class="fas fa-info-circle"></i> отваря панел с EXIF метаданните на снимката (камера, експозиция, дата/час и др.).</li>
-                    <li><i class="fas fa-map-marker-alt"></i> отваря панел с Google Maps, показващ къде е направена снимката, ако има GPS данни.</li>
+                    <li><i class="fas fa-map-marker-alt"></i> отваря панел с карта (Google Maps или OpenStreetMap, в зависимост от конфигурацията), показващ къде е направена снимката, ако има GPS данни.</li>
                 </ul>
             </li>
         </ul>
@@ -111,7 +111,7 @@
             <li><strong>Смяна на датата...</strong> — отваря диалог за задаване на нова дата на избраните файлове; това също ги премества в съответната папка Година/Месец/Ден и обновява EXIF датата във файла.</li>
             <li><strong>GPS данни...</strong> — отваря <strong>редактора на GPS координати</strong>:
                 <ul>
-                    <li>Преместете маркера на картата на Google Maps или въведете директно ширина/дължина/височина.</li>
+                    <li>Преместете маркера на картата (Google Maps или OpenStreetMap, в зависимост от конфигурацията) или въведете директно ширина/дължина/височина.</li>
                     <li>Отметката <strong>Детекция на височина</strong> автоматично извлича надморската височина за избраните координати.</li>
                     <li>Отметката <strong>Запазване на наличните GPS данни</strong> прескача файловете, които вече съдържат GPS информация (без отметка — данните се обновяват принудително във всички избрани файлове).</li>
                     <li>Използвайте <strong>Съхранени локации</strong>, за да запазвате често ползвани места (име + координати + ниво на мащаб) и да ги прилагате бързо по-късно. Бутоните "Нова"/"Редакция"/"Изтриване" управляват списъка.</li>
@@ -241,14 +241,15 @@
 mkdir ~/ext-gallery/gallery_data
 chmod -R 777 ~/ext-gallery/gallery_data</code></pre>
             </li>
-            <li>Създайте <code>~/ext-gallery/gallery-config.php</code> с вашата часова зона, данни за вход и Google Maps API ключ:
+            <li>Създайте <code>~/ext-gallery/gallery-config.php</code> с вашата часова зона, данни за вход и настройки на картовия провайдър:
                 <pre><code>&lt;?php
 ini_set('date.timezone', 'Europe/Sofia');
 
 $glob['usr'] = "admin";
 $glob['pass'] = "admin";
 
-$glob['gmapsApiKey'] = "place-your-own-api-key-here";</code></pre>
+$glob['mapsProvider'] = "OSM"; // "OSM" (OpenStreetMap, без API ключ) или "GM" (Google Maps)
+$glob['gmapsApiKey'] = "place-your-own-api-key-here"; // необходим само ако mapsProvider е "GM"</code></pre>
             </li>
             <li>Стартирайте контейнера, директно:
                 <pre><code>docker run -d \
@@ -277,7 +278,7 @@ $glob['gmapsApiKey'] = "place-your-own-api-key-here";</code></pre>
         <ul>
             <li><strong>Часовата зона</strong> в <code>gallery-config.php</code> е важна — тя определя как се интерпретират датите на снимките и как файловете се организират в дървото Година/Месец/Ден.</li>
             <li>Папката <code>gallery_data</code> трябва да е достъпна за запис от контейнера (права <code>777</code> или еквивалентни).</li>
-            <li>За функциите с GPS карта (панел с местоположение в прегледа, редактор на GPS, съхранени локации) е необходим валиден <strong>Google Maps JavaScript API ключ</strong>.</li>
+            <li><strong>Картовият провайдър</strong>, използван за функциите с GPS карта (панел с местоположение в прегледа, редактор на GPS, съхранени локации), се управлява чрез <code>$glob['mapsProvider']</code>: задайте <code>"OSM"</code> за OpenStreetMap/Leaflet (не е необходим API ключ) или <code>"GM"</code> за Google Maps (изисква валиден <code>gmapsApiKey</code>). Ако <code>mapsProvider</code> е зададен на <code>"GM"</code>, но няма валиден API ключ, или ако <code>mapsProvider</code> липсва/е невалиден, галерията автоматично преминава към OpenStreetMap.</li>
             <li>На екрана за вход може да смените <strong>езика</strong> (български/английски) и <strong>визуалната тема</strong>; изборът се запазва за следващи посещения.</li>
             <li>При много големи колекции включете <strong>SQLite индекса</strong> от менюто с настройки и веднъж изпълнете <strong>Преизграждане на индекса</strong>, за да ускорите разглеждането.</li>
         </ul>

@@ -98,7 +98,7 @@
             <li>If <strong>Show EXIF data</strong> is enabled, two small icons appear at the bottom of the slideshow:
                 <ul>
                     <li><i class="fas fa-info-circle"></i> opens a panel with the photo's EXIF metadata (camera, exposure, date/time, etc.).</li>
-                    <li><i class="fas fa-map-marker-alt"></i> opens a Google Maps panel showing where the photo was taken, if GPS data is present.</li>
+                    <li><i class="fas fa-map-marker-alt"></i> opens a map panel (Google Maps or OpenStreetMap, depending on configuration) showing where the photo was taken, if GPS data is present.</li>
                 </ul>
             </li>
         </ul>
@@ -111,7 +111,7 @@
             <li><strong>Change date...</strong> — opens a dialog to set a new date for the selected files; this also moves them to the corresponding Year/Month/Day folder and updates the EXIF date in the file.</li>
             <li><strong>GPS data...</strong> — opens the <strong>GPS Location Editor</strong>:
                 <ul>
-                    <li>Drag the marker on the Google Map, or type latitude/longitude/altitude directly.</li>
+                    <li>Drag the marker on the map (Google Maps or OpenStreetMap, depending on configuration), or type latitude/longitude/altitude directly.</li>
                     <li>Check <strong>Use elevation API</strong> to fetch the altitude automatically for the chosen coordinates.</li>
                     <li>Check <strong>Preserve existing GPS data in files</strong> to skip files that already contain GPS information (uncheck to force-overwrite all selected files).</li>
                     <li>Use <strong>Saved Locations</strong> to store frequently-used places (name + coordinates + zoom level) and quickly re-apply them later. New/Edit/Delete buttons manage the list.</li>
@@ -239,14 +239,15 @@
 mkdir ~/ext-gallery/gallery_data
 chmod -R 777 ~/ext-gallery/gallery_data</code></pre>
             </li>
-            <li>Create <code>~/ext-gallery/gallery-config.php</code> with your timezone, login credentials and Google Maps API key:
+            <li>Create <code>~/ext-gallery/gallery-config.php</code> with your timezone, login credentials and map provider settings:
                 <pre><code>&lt;?php
 ini_set('date.timezone', 'Europe/Sofia');
 
 $glob['usr'] = "admin";
 $glob['pass'] = "admin";
 
-$glob['gmapsApiKey'] = "place-your-own-api-key-here";</code></pre>
+$glob['mapsProvider'] = "OSM"; // "OSM" (OpenStreetMap, no API key needed) or "GM" (Google Maps)
+$glob['gmapsApiKey'] = "place-your-own-api-key-here"; // only needed when mapsProvider is "GM"</code></pre>
             </li>
             <li>Start the container, either directly:
                 <pre><code>docker run -d \
@@ -275,7 +276,7 @@ $glob['gmapsApiKey'] = "place-your-own-api-key-here";</code></pre>
         <ul>
             <li>The <strong>timezone</strong> in <code>gallery-config.php</code> is important &mdash; it determines how photo dates are interpreted and how files are organized into the Year/Month/Day tree.</li>
             <li>The <code>gallery_data</code> directory must be writable by the container (permissions <code>777</code> or equivalent).</li>
-            <li>A valid <strong>Google Maps JavaScript API key</strong> is required for the GPS map features (slideshow location panel, GPS editor, saved locations).</li>
+            <li>The <strong>map provider</strong> used for the GPS map features (slideshow location panel, GPS editor, saved locations) is controlled by <code>$glob['mapsProvider']</code>: set it to <code>"OSM"</code> to use OpenStreetMap/Leaflet (no API key required), or <code>"GM"</code> to use Google Maps (requires a valid <code>gmapsApiKey</code>). If <code>mapsProvider</code> is set to <code>"GM"</code> but no valid API key is configured, or if <code>mapsProvider</code> is missing/invalid, the gallery automatically falls back to OpenStreetMap.</li>
             <li>On the login screen you can switch the <strong>language</strong> (English / Bulgarian) and the <strong>visual theme</strong>; these choices are remembered for future visits.</li>
             <li>For very large collections, enable the <strong>SQLite index</strong> from the Settings menu and run <strong>Rebuild index</strong> once to speed up browsing.</li>
         </ul>
