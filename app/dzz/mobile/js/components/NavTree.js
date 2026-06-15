@@ -236,7 +236,19 @@ export const NavTree = {
 
         // Filename filter change → reload tree (empty branches get hidden / restored),
         // drop stale drill-down levels (root cards share store.tree) and reload photos from page 1
-        watch(() => store.nameFilter, () => {
+        watch(() => store.nameFilter, (newVal, oldVal) => {
+            // Starting a search from within a Day's photo view leaves the breadcrumb/photos
+            // pointing at a view whose drillStack entry was just dropped — if the filtered
+            // result is empty, both the "back to cards" button and the Android back handler
+            // have nothing to act on. Returning to the home (year) level keeps the view
+            // consistent regardless of the filter's result.
+            if (!oldVal && newVal) {
+                store.breadcrumb      = [];
+                store.currentPath     = null;
+                store.currentDayPaths = null;
+                store.photos          = [];
+                store.totalPhotos     = 0;
+            }
             loadRoot();
             store.drillStack = [];
             store.page = 1;
