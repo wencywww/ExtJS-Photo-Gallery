@@ -1,0 +1,199 @@
+:root {
+    --color-primary: #6200EE;
+    --color-text: #222;
+    --color-text-muted: #666;
+    --color-border: #e0e0e0;
+    --color-bg: #fafafa;
+    --color-card: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--color-text);
+    background: var(--color-bg);
+    line-height: 1.6;
+}
+
+.help-header {
+    background: var(--color-primary);
+    color: #fff;
+    padding: 24px 16px;
+    text-align: center;
+}
+
+.help-header h1 {
+    margin: 0 0 4px 0;
+    font-size: 1.6rem;
+}
+
+.help-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.lang-switch {
+    text-align: center;
+    padding: 10px;
+    font-size: 0.9rem;
+    background: #fff;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.lang-switch a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.lang-switch a:hover {
+    text-decoration: underline;
+}
+
+.help-container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+.help-toc {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+}
+
+.help-toc h2 {
+    margin-top: 0;
+    font-size: 1.1rem;
+}
+
+.help-toc ul {
+    margin: 0;
+    padding-left: 1.2em;
+}
+
+.help-toc a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.help-toc a:hover {
+    text-decoration: underline;
+}
+
+section.help-section {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+}
+
+section.help-section h2 {
+    margin-top: 0;
+    color: var(--color-primary);
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 6px;
+}
+
+section.help-section h3 {
+    margin-top: 24px;
+    color: var(--color-text);
+}
+
+section.help-section h3 i {
+    color: var(--color-primary);
+    margin-right: 8px;
+    width: 1.2em;
+    text-align: center;
+}
+
+section.help-section code {
+    background: #f0f0f0;
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-size: 0.9em;
+}
+
+section.help-section pre {
+    background: #2b2b2b;
+    color: #f5f5f5;
+    padding: 12px 14px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.85em;
+}
+
+section.help-section pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+}
+
+section.help-section table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+}
+
+section.help-section th, section.help-section td {
+    border: 1px solid var(--color-border);
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 0.92em;
+}
+
+section.help-section th {
+    background: #f5f0ff;
+}
+
+.help-footer {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    padding: 24px 0;
+}
+
+.back-to-top {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 0.85em;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.back-to-top:hover {
+    text-decoration: underline;
+}
+
+[data-theme="dark"], body.dark {
+    --color-text: #eee;
+    --color-text-muted: #aaa;
+    --color-border: #3a3a3a;
+    --color-bg: #1b1b1b;
+    --color-card: #262626;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        --color-text: #eee;
+        --color-text-muted: #aaa;
+        --color-border: #3a3a3a;
+        --color-bg: #1b1b1b;
+        --color-card: #262626;
+    }
+    section.help-section th {
+        background: #322046;
+    }
+    section.help-section code {
+        background: #333;
+    }
+}

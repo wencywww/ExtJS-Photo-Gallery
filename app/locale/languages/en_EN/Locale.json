@@ -63,12 +63,14 @@
       "allLabel": "all",
       "useIndex": "Use SQLite index (faster browsing)",
       "rebuildIndex": "Rebuild index",
+      "rebuildIndexConfirm": "Rebuild the SQLite index now? This may take a while for large collections.",
       "rebuildIndexDone": "Index rebuilt: {0} files in {1} s",
       "rebuildIndexProgress": "Indexed {0} of {1} days"
     },
     "**2": "**--** file - /dzz/scripts/Main.js",
     "2": {
-      "btnStartUploader": "File Uploader..."
+      "btnStartUploader": "File Uploader...",
+      "btnHelp": "Help"
     },
     "**4": "**--** file - inc/js/common/commonComponents.js",
     "4": {

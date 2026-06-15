@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Gallery — User Guide</title>
+<link rel="stylesheet" href="help.css">
+<link rel="stylesheet" href="../libraries/css/fa/fontawesome-free-7.2.0-web/css/all.css">
+</head>
+<body>
+
+<div class="help-header">
+    <h1><i class="fas fa-images"></i> Photo Gallery — User Guide</h1>
+    <p>Desktop application, mobile application and installation overview</p>
+</div>
+
+<div class="lang-switch">
+    🌐 <a href="help-bg.html">Български</a> | <strong>English</strong>
+</div>
+
+<div class="help-container">
+
+    <nav class="help-toc" id="top">
+        <h2>Contents</h2>
+        <ul>
+            <li><a href="#desktop">1. Desktop application</a>
+                <ul>
+                    <li><a href="#desktop-tree">Navigation tree</a></li>
+                    <li><a href="#desktop-gallery">Photo gallery</a></li>
+                    <li><a href="#desktop-filters">Filters and search</a></li>
+                    <li><a href="#desktop-lightbox">Slideshow, EXIF and GPS data</a></li>
+                    <li><a href="#desktop-actions">Photo actions (rotate, delete, date, GPS)</a></li>
+                    <li><a href="#desktop-upload">Uploading files</a></li>
+                    <li><a href="#desktop-settings">Settings menu</a></li>
+                    <li><a href="#desktop-status">Indexer button and disk status</a></li>
+                </ul>
+            </li>
+            <li><a href="#mobile">2. Mobile application</a>
+                <ul>
+                    <li><a href="#mobile-nav">Home screen and navigation</a></li>
+                    <li><a href="#mobile-gallery">Photo grid and slideshow</a></li>
+                    <li><a href="#mobile-selection">Selection mode and actions</a></li>
+                    <li><a href="#mobile-upload">Uploading files</a></li>
+                    <li><a href="#mobile-settings">Settings</a></li>
+                    <li><a href="#mobile-pagination">Pagination and swipe</a></li>
+                </ul>
+            </li>
+            <li><a href="#install">3. Installation / Docker</a>
+                <ul>
+                    <li><a href="#install-quickstart">Quick start</a></li>
+                    <li><a href="#install-notes">Important notes</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- =========================== DESKTOP =========================== -->
+    <section class="help-section" id="desktop">
+        <h2><i class="fas fa-desktop"></i> 1. Desktop application</h2>
+        <p>
+            The desktop application organizes your photos and videos in a tree by
+            <strong>Year &rarr; Month &rarr; Day</strong>, based on the date each file was taken
+            (read from EXIF data when available). The gallery view on the right shows the photos
+            and videos for the day(s) currently selected in the tree.
+        </p>
+
+        <h3 id="desktop-tree"><i class="fas fa-sitemap"></i> Navigation tree</h3>
+        <ul>
+            <li>The tree root (<strong>ALL</strong>) represents the whole collection.</li>
+            <li><strong>Double-click</strong> a Year or Month node to expand / collapse it.</li>
+            <li><strong>Single click</strong> on a collapsed Year/Month node does nothing (use double-click to expand it first).</li>
+            <li><strong>Single click</strong> on an <em>already expanded</em> Year/Month node loads all the photos from every visible Day node underneath it.</li>
+            <li><strong>Single click</strong> on a Day node loads only the photos for that day. Day nodes also show the number of files they contain.</li>
+            <li>Tree nodes are loaded on demand ("lazy loading") by default for faster startup with very large collections. This can be turned off from the Settings menu.</li>
+        </ul>
+
+        <h3 id="desktop-gallery"><i class="fas fa-th"></i> Photo gallery</h3>
+        <ul>
+            <li>Photos and videos are displayed as thumbnails in a grid.</li>
+            <li>Use the <strong>sort buttons</strong> (&#9650; / &#9660;) to switch between oldest-first and newest-first ordering.</li>
+            <li>Enable <strong>Paginate gallery</strong> in Settings to split large result sets into pages, with a page-size field and navigation controls at the bottom.</li>
+            <li>If <strong>Indicate GPS location</strong> is enabled, thumbnails that contain GPS coordinates show a small location icon.</li>
+            <li>Video thumbnails can optionally auto-play (<strong>Autoplay video thumbs</strong> in Settings).</li>
+        </ul>
+
+        <h3 id="desktop-filters"><i class="fas fa-filter"></i> Filters and search</h3>
+        <ul>
+            <li><strong>Show Photos</strong> / <strong>Show Videos</strong> toggles in Settings control which file types appear in the gallery and in the day-node file counts.</li>
+            <li>The <strong>search icon</strong> in the tree toolbar opens a filename filter field. Type part of a filename to show only matching files.</li>
+            <li>Prefix the search text with <code>!</code> to show files whose name does <em>not</em> match (inverse match), e.g. <code>!IMG</code>.</li>
+            <li>While filtering, a counter next to the field shows how many files match the current filter.</li>
+            <li>Press <strong>Esc</strong> in the filter field to clear the text and hide the filter field again.</li>
+        </ul>
+
+        <h3 id="desktop-lightbox"><i class="fas fa-expand"></i> Slideshow, EXIF and GPS data</h3>
+        <ul>
+            <li>Click any thumbnail to open the full-size slideshow (lightbox) with navigation arrows and keyboard support.</li>
+            <li>If <strong>Show EXIF data</strong> is enabled, two small icons appear at the bottom of the slideshow:
+                <ul>
+                    <li><i class="fas fa-info-circle"></i> opens a panel with the photo's EXIF metadata (camera, exposure, date/time, etc.).</li>
+                    <li><i class="fas fa-map-marker-alt"></i> opens a Google Maps panel showing where the photo was taken, if GPS data is present.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3 id="desktop-actions"><i class="fas fa-edit"></i> Photo actions (rotate, delete, date, GPS)</h3>
+        <p>Select one or more photos in the gallery (click to select, Ctrl/Shift-click to multi-select), then right-click (or use the toolbar) to access:</p>
+        <ul>
+            <li><strong>Rotation</strong> — rotate the selected files by 90&deg;, -90&deg; or 180&deg;.</li>
+            <li><strong>Erase selected...</strong> — permanently deletes the selected files (and their thumbnails) after confirmation.</li>
+            <li><strong>Change date...</strong> — opens a dialog to set a new date for the selected files; this also moves them to the corresponding Year/Month/Day folder and updates the EXIF date in the file.</li>
+            <li><strong>GPS data...</strong> — opens the <strong>GPS Location Editor</strong>:
+                <ul>
+                    <li>Drag the marker on the Google Map, or type latitude/longitude/altitude directly.</li>
+                    <li>Check <strong>Use elevation API</strong> to fetch the altitude automatically for the chosen coordinates.</li>
+                    <li>Check <strong>Preserve existing GPS data in files</strong> to skip files that already contain GPS information (uncheck to force-overwrite all selected files).</li>
+                    <li>Use <strong>Saved Locations</strong> to store frequently-used places (name + coordinates + zoom level) and quickly re-apply them later. New/Edit/Delete buttons manage the list.</li>
+                    <li>Click <strong>Write GPS</strong> to save the coordinates into the selected files' EXIF data.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3 id="desktop-upload"><i class="fas fa-upload"></i> Uploading files</h3>
+        <ul>
+            <li>Click <strong>File Uploader...</strong> in the left panel to open the upload window.</li>
+            <li>Drag and drop photos/videos onto the drop area, or click it to choose files from your device.</li>
+            <li>Click <strong>Start upload</strong> to upload the queued files.</li>
+            <li>After uploading, you will be asked whether to process the files immediately (read EXIF data, generate thumbnails, sort into the Year/Month/Day tree) or do it later via the <strong>Process Files</strong> button / the play button described below.</li>
+        </ul>
+
+        <h3 id="desktop-settings"><i class="fas fa-cog"></i> Settings menu</h3>
+        <p>Click the gear icon in the tree toolbar to open the settings menu:</p>
+        <table>
+            <tr><th>Option</th><th>Description</th></tr>
+            <tr><td>Show EXIF data</td><td>Shows/hides the EXIF and GPS info icons in the slideshow.</td></tr>
+            <tr><td>Indicate GPS location presence in thumbs</td><td>Shows a small marker icon on thumbnails that have GPS data.</td></tr>
+            <tr><td>Show Photos / Show Videos</td><td>Filters the gallery and file counts by media type.</td></tr>
+            <tr><td>Autoplay video thumbs</td><td>Automatically plays video thumbnails on hover/visibility.</td></tr>
+            <tr><td>Paginate gallery</td><td>Splits the gallery into pages instead of one long list.</td></tr>
+            <tr><td>Lazy tree loading</td><td>Loads tree nodes on demand instead of building the whole tree at once. Recommended for large collections.</td></tr>
+            <tr><td>Use SQLite index (faster browsing)</td><td>Uses a local SQLite database to speed up tree/gallery loading and the filename filter, instead of scanning the filesystem each time.</td></tr>
+            <tr><td>Rebuild index</td><td>Rebuilds the SQLite index from the files on disk. Useful after manual file changes outside the app, or after enabling the index for the first time. Shows progress while running.</td></tr>
+        </table>
+        <p>All of these preferences are remembered between sessions (stored in your browser).</p>
+
+        <h3 id="desktop-status"><i class="fas fa-database"></i> Indexer button and disk status</h3>
+        <ul>
+            <li>The <strong>play button</strong> (<i class="fas fa-play-circle"></i>) in the left panel checks the uploads folder for new files and processes them (EXIF reading, thumbnail generation, sorting into the tree). A badge shows how many files are pending.</li>
+            <li>The status bar at the bottom of the tree shows the total number of files, the total size of your collection, and the free/total disk space on the server.</li>
+        </ul>
+    </section>
+
+    <!-- =========================== MOBILE =========================== -->
+    <section class="help-section" id="mobile">
+        <h2><i class="fas fa-mobile-alt"></i> 2. Mobile application</h2>
+        <p>
+            The mobile app provides a touch-friendly, full-screen experience for browsing your
+            gallery on phones and tablets, with the same underlying data as the desktop app.
+        </p>
+
+        <h3 id="mobile-nav"><i class="fas fa-home"></i> Home screen and navigation</h3>
+        <ul>
+            <li>The home screen shows <strong>year cards</strong>. Tap a year to drill into its <strong>months</strong>, then a month to drill into its <strong>days</strong>, then a day to view its <strong>photos</strong>.</li>
+            <li>The <strong>breadcrumb</strong> at the top shows your current location; tap any part of it to jump back to that level.</li>
+            <li>A back-to-cards button next to the breadcrumb returns you to the drill-down cards from a photo list.</li>
+            <li>On phones, the navigation tree opens as a <strong>drawer</strong> (swipe or use the menu button); on tablets it is shown as a persistent sidebar.</li>
+            <li>In the navigation tree, tap the chevron to expand/collapse a node, and tap the label to load the photos for that node.</li>
+            <li>The <strong>Android back button</strong> is supported throughout the app: it closes open dialogs/sheets first, then steps back through navigation levels and pagination before exiting.</li>
+        </ul>
+
+        <h3 id="mobile-gallery"><i class="fas fa-th-large"></i> Photo grid and slideshow</h3>
+        <ul>
+            <li>Photos and videos are shown in a responsive grid (2 columns on phones, 3-4 on larger screens).</li>
+            <li>Tap a thumbnail to open the full-screen slideshow (lightbox) with swipe navigation.</li>
+            <li>A small marker icon indicates photos that contain GPS data, if enabled in Settings.</li>
+        </ul>
+
+        <h3 id="mobile-selection"><i class="fas fa-check-square"></i> Selection mode and actions</h3>
+        <ul>
+            <li><strong>Long-press</strong> a photo to enter selection mode, then tap additional photos to add them to the selection.</li>
+            <li>With one or more photos selected, use the action sheet to:
+                <ul>
+                    <li>Rotate the selected photos (90&deg;, -90&deg;, 180&deg;).</li>
+                    <li>Delete the selected photos/videos.</li>
+                    <li>Change the date of the selected files (also moves them in the Year/Month/Day tree).</li>
+                    <li>Edit GPS data using the GPS editor and map, including saved locations &mdash; same capabilities as on desktop.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3 id="mobile-upload"><i class="fas fa-camera-retro"></i> Uploading files</h3>
+        <ul>
+            <li>Tap the floating camera button to open the upload panel.</li>
+            <li>Select photos/videos from your device and upload them.</li>
+            <li>A badge on the upload button shows the number of files pending processing.</li>
+        </ul>
+
+        <h3 id="mobile-settings"><i class="fas fa-sliders-h"></i> Settings</h3>
+        <p>Open Settings from the menu to access:</p>
+        <ul>
+            <li><strong>Sort order</strong> — newest first or oldest first.</li>
+            <li><strong>Display</strong> — Show Photos / Show Videos / Show EXIF data / Indicate GPS location / Autoplay video thumbs.</li>
+            <li><strong>Navigation</strong> — Paginate gallery, and toggle/rebuild the <strong>SQLite index</strong> for faster browsing (same as the desktop option).</li>
+            <li><strong>Appearance</strong> — Dark mode.</li>
+            <li><strong>Logout</strong>, and the current app version.</li>
+        </ul>
+
+        <h3 id="mobile-pagination"><i class="fas fa-arrows-alt-h"></i> Pagination and swipe</h3>
+        <ul>
+            <li>When <strong>Paginate gallery</strong> is enabled, a pagination bar appears at the bottom of the photo grid.</li>
+            <li><strong>Swipe left/right</strong> on the photo grid to move to the next/previous page.</li>
+        </ul>
+    </section>
+
+    <!-- =========================== INSTALL / DOCKER =========================== -->
+    <section class="help-section" id="install">
+        <h2><i class="fas fa-server"></i> 3. Installation / Docker</h2>
+        <p>
+            The gallery is distributed as a ready-to-run Docker image
+            (<code>wencywwww/extjs-photo-gallery</code>). No database is required &mdash; all data
+            is stored as files on disk, optionally with a local SQLite index for faster browsing.
+        </p>
+
+        <h3 id="install-quickstart"><i class="fas fa-rocket"></i> Quick start</h3>
+        <ol>
+            <li>Create a folder for your data and a configuration file, for example:
+                <pre><code>mkdir ~/ext-gallery
+mkdir ~/ext-gallery/gallery_data
+chmod -R 777 ~/ext-gallery/gallery_data</code></pre>
+            </li>
+            <li>Create <code>~/ext-gallery/gallery-config.php</code> with your timezone, login credentials and Google Maps API key:
+                <pre><code>&lt;?php
+ini_set('date.timezone', 'Europe/Sofia');
+
+$glob['usr'] = "admin";
+$glob['pass'] = "admin";
+
+$glob['gmapsApiKey'] = "place-your-own-api-key-here";</code></pre>
+            </li>
+            <li>Start the container, either directly:
+                <pre><code>docker run -d \
+  --name gallery \
+  -p 8080:80 \
+  -v ~/ext-gallery/gallery-config.php:/var/www/html/inc/globals/gallery-config.php \
+  -v ~/ext-gallery/gallery_data:/var/www/html/data/photos \
+  wencywwww/extjs-photo-gallery</code></pre>
+                ...or with Docker Compose (<code>~/ext-gallery/docker-compose.yml</code>):
+                <pre><code>services:
+  gallery:
+    image: wencywwww/extjs-photo-gallery
+    container_name: gallery
+    ports:
+      - "8080:80"
+    volumes:
+      - ./gallery-config.php:/var/www/html/inc/globals/gallery-config.php:ro
+      - ./gallery_data:/var/www/html/data/photos
+    restart: unless-stopped</code></pre>
+                then run <code>docker compose up -d</code>.
+            </li>
+            <li>Open <code>http://localhost:8080</code> (or your Docker host's address) in a browser, and log in with the username/password set in <code>gallery-config.php</code>.</li>
+        </ol>
+
+        <h3 id="install-notes"><i class="fas fa-exclamation-circle"></i> Important notes</h3>
+        <ul>
+            <li>The <strong>timezone</strong> in <code>gallery-config.php</code> is important &mdash; it determines how photo dates are interpreted and how files are organized into the Year/Month/Day tree.</li>
+            <li>The <code>gallery_data</code> directory must be writable by the container (permissions <code>777</code> or equivalent).</li>
+            <li>A valid <strong>Google Maps JavaScript API key</strong> is required for the GPS map features (slideshow location panel, GPS editor, saved locations).</li>
+            <li>On the login screen you can switch the <strong>language</strong> (English / Bulgarian) and the <strong>visual theme</strong>; these choices are remembered for future visits.</li>
+            <li>For very large collections, enable the <strong>SQLite index</strong> from the Settings menu and run <strong>Rebuild index</strong> once to speed up browsing.</li>
+        </ul>
+    </section>
+
+    <p class="help-footer">
+        <a href="#top" class="back-to-top"><i class="fas fa-arrow-up"></i> Back to top</a>
+    </p>
+
+</div>
+
+</body>
+</html>

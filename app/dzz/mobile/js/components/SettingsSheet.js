@@ -22,6 +22,8 @@ export const SettingsSheet = {
         /** Runs the chunked server-side index rebuild with live progress. */
         async function rebuildIndex() {
             if (rebuilding.value) return;
+            var confirmMsg = store.t.rebuildIndexConfirm || 'Rebuild the SQLite index now? This may take a while for large collections.';
+            if (!confirm(confirmMsg)) return;
             rebuilding.value = true;
             store.indexRebuilding = true; // pauses the periodic ping in app.js
             rebuildProgress.value = '';
@@ -195,6 +197,18 @@ export const SettingsSheet = {
                             <span class="toggle-track"><span class="toggle-thumb"></span></span>
                         </span>
                     </label>
+
+                    <!-- Help -->
+                    <a :href="'../../help/help-' + (store.locale === 'bg' ? 'bg' : 'en') + '.html'"
+                       target="_blank"
+                       class="settings-row"
+                       style="text-decoration:none; color:inherit">
+                        <span class="settings-row-label">
+                            <i class="fas fa-circle-question" style="margin-right:8px; color:var(--color-primary)"></i>
+                            {{ store.t.btnHelp || 'Help' }}
+                        </span>
+                        <i class="fas fa-arrow-up-right-from-square" style="color:var(--color-text-muted)"></i>
+                    </a>
 
                     <!-- Logout -->
                     <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--color-border); display:flex; flex-direction:column; align-items:center; gap:8px">

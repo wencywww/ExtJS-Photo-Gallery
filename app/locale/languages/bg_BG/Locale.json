@@ -63,12 +63,14 @@
       "allLabel": "всички",
       "useIndex": "Използване на SQLite индекс (по-бързо разглеждане)",
       "rebuildIndex": "Преизграждане на индекса",
+      "rebuildIndexConfirm": "Да се преизгради ли SQLite индексът сега? Това може да отнеме време за големи колекции.",
       "rebuildIndexDone": "Индексът е преизграден: {0} файла за {1} сек.",
       "rebuildIndexProgress": "Индексирани {0} от {1} дни"
     },
     "**2": "**--** file - /dzz/scripts/Main.js",
     "2": {
-      "btnStartUploader": "Качване на файлове..."
+      "btnStartUploader": "Качване на файлове...",
+      "btnHelp": "Помощ"
     },
     "**4": "**--** file - inc/js/common/commonComponents.js",
     "4": {

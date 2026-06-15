@@ -252,7 +252,11 @@ Ext.onReady(function () {
                         text: captions['rebuildIndex'],
                         iconCls: 'fas fa-database',
                         handler: function () {
-                            me.rebuildIndexChunked();
+                            Ext.Msg.confirm(captions['rebuildIndex'], captions['rebuildIndexConfirm'], function (btn) {
+                                if (btn === 'yes') {
+                                    me.rebuildIndexChunked();
+                                }
+                            });
                         }
                     }
                 ]

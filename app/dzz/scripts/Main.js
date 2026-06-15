@@ -98,6 +98,17 @@ Ext.onReady(function () {
                             handler: function () {
                                 Ext.widget('photoUploader');
                             }
+                        },
+                        {
+                            xtype: 'button',
+                            text: LOC.btnHelp,
+                            scale: 'medium',
+                            iconAlign: 'top',
+                            iconCls: 'fas fa-circle-question',
+                            handler: function () {
+                                var lang = (dzz.i18n.locale == 'bg') ? 'bg' : 'en';
+                                window.open('../help/help-' + lang + '.html', '_blank');
+                            }
                         }
 
                     ]
