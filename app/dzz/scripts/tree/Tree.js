@@ -258,6 +258,15 @@ Ext.onReady(function () {
                                 }
                             });
                         }
+                    },
+                    '-',
+                    {
+                        text: dzz.i18n.txt[2].btnHelp,
+                        iconCls: 'fas fa-circle-question',
+                        handler: function () {
+                            var lang = (dzz.i18n.locale == 'bg') ? 'bg' : 'en';
+                            window.open('../help/help-' + lang + '.html', '_blank');
+                        }
                     }
                 ]
             });

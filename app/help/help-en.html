@@ -143,6 +143,17 @@
         </table>
         <p>All of these preferences are remembered between sessions (stored in your browser).</p>
 
+        <p>
+            <i class="fas fa-info-circle"></i>
+            <strong>About the SQLite index:</strong> the index is just a local cache file
+            (<code>galleryIndex.sqlite</code> in your photos folder) that speeds up browsing —
+            it does not store your photos or videos. It is safe to delete this file (and its
+            companion <code>-wal</code>/<code>-shm</code> files, if present) if you ever suspect
+            it is out of date or corrupted. The app will simply rebuild it from the files on disk
+            the next time <strong>Rebuild index</strong> is run, or fall back to scanning the
+            filesystem directly while the index is missing.
+        </p>
+
         <h3 id="desktop-status"><i class="fas fa-database"></i> Indexer button and disk status</h3>
         <ul>
             <li>The <strong>play button</strong> (<i class="fas fa-play-circle"></i>) in the left panel checks the uploads folder for new files and processes them (EXIF reading, thumbnail generation, sorting into the tree). A badge shows how many files are pending.</li>
@@ -268,6 +279,31 @@ $glob['gmapsApiKey'] = "place-your-own-api-key-here";</code></pre>
             <li>On the login screen you can switch the <strong>language</strong> (English / Bulgarian) and the <strong>visual theme</strong>; these choices are remembered for future visits.</li>
             <li>For very large collections, enable the <strong>SQLite index</strong> from the Settings menu and run <strong>Rebuild index</strong> once to speed up browsing.</li>
         </ul>
+
+        <h3 id="install-update"><i class="fas fa-rotate"></i> Updating to a new version</h3>
+        <p>
+            Your photos, configuration and the SQLite index all live in the mounted
+            <code>gallery_data</code> folder and the <code>gallery-config.php</code> file
+            outside the container, so updating the image does not affect your data.
+        </p>
+        <ol>
+            <li>Pull the new image:
+                <pre><code>docker pull wencywwww/extjs-photo-gallery</code></pre>
+            </li>
+            <li>Recreate the container with the new image:
+                <ul>
+                    <li>With <code>docker run</code>: stop and remove the old container (<code>docker stop gallery && docker rm gallery</code>), then run the same <code>docker run</code> command shown above again &mdash; it will use the freshly pulled image.</li>
+                    <li>With Docker Compose: simply run <code>docker compose pull</code> followed by <code>docker compose up -d</code> &mdash; it will recreate the container with the new image automatically.</li>
+                </ul>
+            </li>
+            <li>Open the gallery in your browser. Your photos, settings and saved locations remain unchanged.</li>
+        </ol>
+        <p>
+            <i class="fas fa-info-circle"></i>
+            If something looks off after an update (e.g. file counts seem out of date), it is safe
+            to <strong>rebuild the SQLite index</strong> from the Settings menu &mdash; see the note
+            in the Desktop section above.
+        </p>
     </section>
 
     <p class="help-footer">
