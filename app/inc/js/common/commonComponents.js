@@ -927,7 +927,7 @@ Ext.onReady(function () {
             type: 'vbox', align: 'stretch'
         },
         floating: true,
-        draggable: true, resizable: true,
+        draggable: { delegate: '.x-panel-header' }, resizable: true,
         //shadow: false,
         defaults: {
             //margin: 20
