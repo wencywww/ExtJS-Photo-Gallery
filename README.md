@@ -105,7 +105,7 @@ ExtJS Photo Gallery
     $glob['paths']['appRootPrefix'] = "";
     ```
     
-    Set your timezone and change the default username/password. Enter your Google Maps API key (see requirements section above) if you want to show the map panel with the position of the currently visible slide:
+    Set your timezone and change the default username/password. Choose your map provider (OSM is the default and requires no API key; GM requires a valid Google Maps API key):
     ```php
     nano /var/www/html/inc/globals/gallery-config.php
     
@@ -113,8 +113,8 @@ ExtJS Photo Gallery
     ini_set('date.timezone', 'Europe/Sofia');
     $glob['usr'] = "admin";
     $glob['pass'] = "admin";
-    //place your own GMaps API key here
-    $glob['gmapsApiKey'] = "place-your-own-api-key-here"; (if using Google Maps Mode)
+    $glob['mapsProvider'] = "OSM"; // "OSM" (OpenStreetMap, no API key needed) or "GM" (Google Maps)
+    $glob['gmapsApiKey'] = "place-your-own-api-key-here"; // only needed when mapsProvider is "GM"
     ```
 
 
@@ -128,7 +128,7 @@ ExtJS Photo Gallery
   * If case of viewing many photos + videos on a single screen - use view pagination trough the gear icon
   * Double click an item to start the fancybox slideshow
   * When the fancybox slideshow is active, the EXIF data presence is auto-detected and can be displayed using the 2 icons from the launcher on the bottom center (it is automatically hidden/shown depending on the EXIF presence for the current slide). 
-  * EXIF text data and GPS coordinates are displayed using a property grid and Google Maps panel on the right side of the screen. Both can be toggled on/off by clicking the launcher icons.
+  * EXIF text data and GPS coordinates are displayed using a property grid and Google Maps / OpenStreetMap panel on the right side of the screen. Both can be toggled on/off by clicking the launcher icons.
   * Both the launcher and the visualisation components can be dragged on the screen. The visualisation container can be resized.
   * Displaying the EXIF information can be switched off using the Settings menu on the top of the tree
   * Sort items asc/desc using the two arrow buttons on the top of the tree panel 

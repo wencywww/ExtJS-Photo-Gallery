@@ -50,7 +50,10 @@ ini_set('date.timezone', 'Europe/Sofia');
 $glob['usr'] = "admin";
 $glob['pass'] = "admin";
 
-// Place your own Google Maps API key here if using Google as Map provider (default is Open Street Map)
+// Map provider: "OSM" (OpenStreetMap, no API key needed) or "GM" (Google Maps)
+$glob['mapsProvider'] = "OSM";
+
+// Google Maps API key — only needed when mapsProvider is "GM"
 $glob['gmapsApiKey'] = "place-your-own-api-key-here";
 ```
 
@@ -96,4 +99,4 @@ Point your browser to the IP address of your Docker host, for example: `http://l
 * The timezone setting in `gallery-config.php` is critical as it affects how dates are displayed and organized
 * Make sure the `gallery_data` directory has proper write permissions (777 or appropriate for your system)
 * Both volume mounts are required for the container to function properly
-* Remember to replace `place-your-own-api-key-here` with your actual Google Maps API key (if using Google as Map provider)
+* The default map provider is **OpenStreetMap** (no API key required). To use Google Maps instead, set `$glob['mapsProvider'] = "GM"` and replace `place-your-own-api-key-here` with your actual Google Maps API key
