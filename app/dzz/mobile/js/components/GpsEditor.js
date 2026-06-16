@@ -1,4 +1,4 @@
-const { ref, reactive, onMounted, onUnmounted, inject, computed } = Vue;
+const { ref, reactive, onMounted, onUnmounted, nextTick, inject, computed } = Vue;
 
 export const GpsEditor = {
     name: 'GpsEditor',
@@ -40,15 +40,56 @@ export const GpsEditor = {
             store.gpsEditorPhotos = [];
         }
 
-        // Initialize Google Map
+        const isOSM = store.mapsProvider === 'OSM';
+
+        // Initialize the map (Leaflet/OSM or Google Maps, depending on store.mapsProvider)
         onMounted(async () => {
             await loadSavedLocations();
 
-            mapsAvailable.value = !!(window.google && window.google.maps);
-            if (!mapsAvailable.value) return;
-
             const defaultLat = parseFloat(form.lat) || 42.698334;
             const defaultLng = parseFloat(form.lng) || 23.319941;
+
+            if (isOSM) {
+                mapsAvailable.value = true; // OSM/Leaflet needs no API key
+
+                gMap = L.map(mapEl.value, { zoomControl: true, attributionControl: true })
+                    .setView([defaultLat, defaultLng], 6);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 19
+                }).addTo(gMap);
+
+                gMarker = L.marker([defaultLat, defaultLng], {
+                    draggable: true,
+                    title:     'Drag to set location'
+                }).addTo(gMap);
+
+                // Drag end → update fields
+                gMarker.on('dragend', function(evt) {
+                    const pos = evt.target.getLatLng();
+                    form.lat = pos.lat.toFixed(7);
+                    form.lng = pos.lng.toFixed(7);
+                    if (form.useElevationApi) fetchElevation();
+                });
+
+                // Map click → move marker + update fields
+                gMap.on('click', function(evt) {
+                    const pos = evt.latlng;
+                    gMarker.setLatLng(pos);
+                    form.lat = pos.lat.toFixed(7);
+                    form.lng = pos.lng.toFixed(7);
+                    if (form.useElevationApi) fetchElevation();
+                });
+
+                // Container may not have its final size yet on first paint
+                await nextTick();
+                gMap.invalidateSize();
+                return;
+            }
+
+            mapsAvailable.value = !!(window.google && window.google.maps);
+            if (!mapsAvailable.value) return;
 
             gMap = new google.maps.Map(mapEl.value, {
                 center:    { lat: defaultLat, lng: defaultLng },
@@ -85,6 +126,9 @@ export const GpsEditor = {
         });
 
         onUnmounted(() => {
+            if (isOSM && gMap) {
+                gMap.remove();
+            }
             gMap    = null;
             gMarker = null;
         });
@@ -95,9 +139,14 @@ export const GpsEditor = {
             const lat = parseFloat(form.lat);
             const lng = parseFloat(form.lng);
             if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-                const pos = { lat, lng };
-                gMarker.setPosition(pos);
-                gMap.setCenter(pos);
+                if (isOSM) {
+                    gMarker.setLatLng([lat, lng]);
+                    gMap.setView([lat, lng]);
+                } else {
+                    const pos = { lat, lng };
+                    gMarker.setPosition(pos);
+                    gMap.setCenter(pos);
+                }
             }
         }
 
@@ -238,12 +287,12 @@ export const GpsEditor = {
                     </button>
                 </div>
 
-                <!-- Google Map -->
+                <!-- Map -->
                 <div class="gps-map-container">
                     <div ref="mapEl"></div>
                     <div v-if="!mapsAvailable"
                          style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--color-text-muted);font-size:0.85rem">
-                        Google Maps not available
+                        Map not available
                     </div>
                 </div>
 

@@ -37,8 +37,14 @@ require("../../inc/globals/globals.inc.php");
     <!-- ExifReader -->
     <script src="<?= $glob['paths']['exifreader-js'] ?>"></script>
 
+    <?php if ($glob['effectiveMapsProvider'] === 'OSM') { ?>
+    <!-- Leaflet / OpenStreetMap -->
+    <link rel="stylesheet" type="text/css" href="<?= $glob['paths']['leaflet-css'] ?>"/>
+    <script src="<?= $glob['paths']['leaflet-js'] ?>"></script>
+    <?php } else { ?>
     <!-- Google Maps API -->
     <script src="<?= $glob['paths']['googlemaps-js'] ?>?key=<?= $glob['gmapsApiKey'] ?>"></script>
+    <?php } ?>
 
     <!-- Vue 3 (global build, vendored) -->
     <script src="/libraries/js/vue/vue.global.prod.js"></script>
@@ -50,7 +56,8 @@ require("../../inc/globals/globals.inc.php");
             uploadUrl: '../scripts/tree/php/dropZone/dropZone.php',
             localeUrl: '../../locale/php/getJSStrings.php',
             lang: '<?= htmlspecialchars($glob['dzzLang'], ENT_QUOTES) ?>',
-            appVersion: '<?= APP_VERSION ?>'
+            appVersion: '<?= APP_VERSION ?>',
+            mapsProvider: '<?= $glob['effectiveMapsProvider'] ?>'
         };
     </script>
 </head>

@@ -39,6 +39,15 @@ export const GpsMapModal = {
                     loading.value = false;
                     return;
                 }
+
+                // Some photos contain invalid/out-of-range GPS values, which would
+                // otherwise break the map (Leaflet throws on invalid LatLng)
+                if (typeof lat.value !== 'number' || isNaN(lat.value) || lat.value < -90 || lat.value > 90) {
+                    lat.value = 0;
+                }
+                if (typeof lng.value !== 'number' || isNaN(lng.value) || lng.value < -180 || lng.value > 180) {
+                    lng.value = 0;
+                }
             } catch(e) {
                 error.value = 'Failed to read EXIF: ' + e.message;
                 loading.value = false;
@@ -49,12 +58,32 @@ export const GpsMapModal = {
             // Wait for Vue to render the v-else map div before accessing mapEl
             await nextTick();
 
+            const pos = { lat: lat.value, lng: lng.value };
+
+            if (store.mapsProvider === 'OSM') {
+                // 2. Init read-only Leaflet/OSM map
+                if (!mapEl.value) { return; }
+
+                gmap = L.map(mapEl.value, { zoomControl: true, attributionControl: true })
+                    .setView([pos.lat, pos.lng], 15);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 19
+                }).addTo(gmap);
+
+                marker = L.marker([pos.lat, pos.lng], { title: photo.caption || '' }).addTo(gmap);
+
+                await nextTick();
+                gmap.invalidateSize();
+                return;
+            }
+
             // 2. Init read-only Google Map
             if (typeof google === 'undefined' || !mapEl.value) {
                 error.value = store.t.gps?.noGpsData || 'Google Maps not available';
                 return;
             }
-            const pos = { lat: lat.value, lng: lng.value };
             gmap = new google.maps.Map(mapEl.value, {
                 zoom:      15,
                 center:    pos,
@@ -70,6 +99,9 @@ export const GpsMapModal = {
         });
 
         onUnmounted(() => {
+            if (store.mapsProvider === 'OSM' && gmap) {
+                gmap.remove();
+            }
             marker = null;
             gmap   = null;
         });

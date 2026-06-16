@@ -89,6 +89,9 @@ export const store = reactive({
     diskStatus:     null,
     indexRebuilding: false, // true while a chunked index rebuild runs (see SettingsSheet.js) — pauses periodic ping
 
+    // Map provider ('GM' or 'OSM') - resolved server-side, not user-configurable
+    mapsProvider: window.GALLERY_CONFIG?.mapsProvider || 'GM',
+
     // i18n
     t:      {},
     locale: 'en'
