@@ -87,7 +87,7 @@
       },
       "exifVisualiser":{
         "exifTitle": "EXIF данни",
-        "mapTitle": "GPS данни"
+        "mapTitle": "GPS"
       },
       "indexerButton": {
         "processingPhotos": "ОБРАБОТКА СНИМКИ",

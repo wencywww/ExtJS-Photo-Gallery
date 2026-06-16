@@ -87,7 +87,7 @@
       },
       "exifVisualiser":{
         "exifTitle": "EXIF data",
-        "mapTitle": "GPS data"
+        "mapTitle": "GPS"
       },
       "indexerButton": {
         "processingPhotos": "PROCESSING FILES",
