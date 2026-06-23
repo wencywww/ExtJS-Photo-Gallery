@@ -42,18 +42,48 @@ export const GpsEditor = {
 
         const isOSM = store.mapsProvider === 'OSM';
 
+        /** Reads existing GPS coordinates from the single selected photo's EXIF and fills the form. */
+        async function preloadPhotoGps() {
+            const photos = store.gpsEditorPhotos;
+            if (!photos || photos.length !== 1) return;
+            const photo = photos[0];
+            if (photo.gpsData != 1) return;
+            try {
+                const res = await fetch(photo.realUri);
+                if (!res.ok) return;
+                const buf  = await res.arrayBuffer();
+                const tags = ExifReader.load(buf, { expanded: true });
+                const lat  = tags.gps?.Latitude;
+                const lng  = tags.gps?.Longitude;
+                const alt  = tags.gps?.Altitude;
+                if (typeof lat === 'number' && !isNaN(lat) && lat >= -90 && lat <= 90 &&
+                    typeof lng === 'number' && !isNaN(lng) && lng >= -180 && lng <= 180) {
+                    form.lat = String(lat);
+                    form.lng = String(lng);
+                    if (typeof alt === 'number' && !isNaN(alt)) {
+                        form.alt = String(Math.round(alt));
+                    }
+                }
+            } catch(e) {
+                // ignore — fall back to the Sofia default
+            }
+        }
+
         // Initialize the map (Leaflet/OSM or Google Maps, depending on store.mapsProvider)
         onMounted(async () => {
             await loadSavedLocations();
+            await preloadPhotoGps();
 
-            const defaultLat = parseFloat(form.lat) || 42.698334;
-            const defaultLng = parseFloat(form.lng) || 23.319941;
+            const hasCoords  = form.lat !== '' && form.lng !== '';
+            const defaultLat = hasCoords ? parseFloat(form.lat) : 0;
+            const defaultLng = hasCoords ? parseFloat(form.lng) : 0;
+            const defaultZoom = hasCoords ? 14 : 0;
 
             if (isOSM) {
                 mapsAvailable.value = true; // OSM/Leaflet needs no API key
 
                 gMap = L.map(mapEl.value, { zoomControl: true, attributionControl: true })
-                    .setView([defaultLat, defaultLng], 6);
+                    .setView([defaultLat, defaultLng], defaultZoom);
 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -93,7 +123,7 @@ export const GpsEditor = {
 
             gMap = new google.maps.Map(mapEl.value, {
                 center:    { lat: defaultLat, lng: defaultLng },
-                zoom:      6,
+                zoom:      defaultZoom,
                 mapTypeId: 'roadmap',
                 streetViewControl:    false,
                 fullscreenControl:    false,
